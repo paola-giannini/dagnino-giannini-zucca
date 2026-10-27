@@ -1,0 +1,279 @@
+% !TEX root = main.tex
+
+%%%%%%%%%%%%%%%%%%%%
+%%  Editing macros 
+%%%%%%%%%%%%%%%%%%%%
+%\definecolor{blue-violet}{rgb}{0.54, 0.17, 0.89}
+\newif\ifsubmit
+\submitfalse
+%\submittrue
+\ifsubmit 
+  \newcommand{\FDComm}[1]{\relax} 
+  \newcommand{\EZComm}[1]{\relax} 
+  \newcommand{\PGComm}[1]{\relax} 
+  \def\bfd{}
+  \def\efd{} 
+  \def\bez{}
+  \def\eez{}
+  \def\bpa{}
+  \def\epa{} 
+\else
+ \newcommand{\EZComm}[1]{{\scriptsize \textcolor{blue}{[EZ{:} #1]}}}
+\newcommand{\FDComm}[1]{\textcolor{red}{\scriptsize [FD: #1]}}
+\newcommand{\PGComm}[1]{{\scriptsize \textcolor{magenta}{[PG{:} #1]}}}
+  \def\bfd{\begin{color}{red}}
+  \def\efd{\end{color}} 
+  \def\bpa{\begin{color}{magenta}} 
+  \def\epa{\end{color}} 
+  \def\bez{\begin{color}{blue}} 
+  \def\eez{\end{color}} 
+\fi
+
+\lstset{
+  basicstyle={\ttfamily\small},
+  mathescape=true,
+  showspaces=false,
+  showstringspaces=false,
+  }
+
+% generali e tipografiche  
+\newcommand{\emath}[1]{\ensuremath{#1}} 
+\newcommand{\refToRule}[1]{\textsc{\small (#1)}}
+\newcommand{\refItem}[2]{\cref{#1}(\ref{#1:#2})}
+%\newcommand{\meta}[1]{\colorbox{lightgray}{$#1$}}
+\newcommand{\Space}{\hskip 1em}
+\newcommand{\BigSpace}{\hskip 2em}
+\newcommand{\NamedRule}[4]{\scriptstyle{\textsc{(#1)}}\
+\displaystyle                  %  #1 = nome regola
+\frac{#2}{#3}         %  #2 = premesse (modo math) %  #3 = conseguenza (modo math)
+\begin{array}{l}
+#4     %  #4 = side conditions (modo math)
+\end{array}
+}
+\newcommand{\Rule}[3]{%\scriptstyle{\textsc{(#1)}}\
+\displaystyle                  
+\frac{#1}{#2}         %  #1 = premesse (modo math) %  #2 = conseguenza (modo math)
+\begin{array}{l}
+#3    %  #3 = side conditions (modo math)
+\end{array}
+}
+\newenvironment{proofOf}[1]{\begin{proof}[Proof of \cref{#1}]}{\end{proof}} 
+
+%matematiche generali
+\newcommand{\ple}[1]{\emath{\langle #1 \rangle}}
+\newcommand{\Pair}[2]     {\ple{{#1},{#2}}}
+\newcommand{\PairBar}[2]     {#1\mid#2}
+\newcommand{\Triple}[3]     {\ple{{#1},{#2},{#3}}}
+\newcommand{\fun}[3]{#1 : #2 \to #3} 
+\newcommand{\fv}[1]{\aux{fv}(#1)}
+\newcommand{\dom}[1]{\aux{dom}(#1)}
+%\newcommand{\img}[1]{\aux{img}(#1)}
+\newcommand{\N}{\mathbb{N}} 
+
+%GRADES
+\newcommand{\RR}{\mathit{R}} 
+\newcommand{\RSet}{\RC\RR}  
+\newcommand{\RC}[1]{\emath{|#1|}} 
+\newcommand{\pgr}{p}  
+\newcommand{\qgr}{q} 
+\newcommand{\ugr}{u} 
+\newcommand{\rgr}{r}  
+\newcommand{\sgr}{s} 
+\newcommand{\tgr}{t} 
+\newcommand{\Rgr}{\textsc{R}} %grado assunzione
+\newcommand{\Sgr}{\textsc{S}} %grado assunzione
+\newcommand{\Tgr}{\textsc{T}} %grado assunzione
+%\newcommand{\RW}[2]{#1\mathcal{R}\rsum#2\mathcal{W}}
+%\newcommand{\R}[1]{#1\mathcal{R}}
+%\newcommand{\W}[1]{#1\mathcal{W}}
+%operatori
+\newcommand{\rsum}{+}
+\newcommand{\rmul}{{\cdot}}
+\newcommand{\rzero}{\mathbf{0}}
+\newcommand{\rone}{\mathbf{1}} 
+\newcommand{\rord}{\preceq}
+\newcommand{\rordRev}{\succeq}
+\newcommand{\rmeet}{\sqcap}
+\newcommand{\rtop}{\infty} 
+\newcommand{\rsub}{-}
+\newcommand{\rseq}{;}
+
+%esempi
+\newcommand{\readonly}{\aux{read}}
+\newcommand{\mut}{\aux{mut}}
+
+%sintassi
+\newenvironment{grammatica}{$\begin{array}{rcll}}{\end{array}$}
+\newcommand{\produzione}[3]{#1&::=&#2&\mbox{#3}}
+\newcommand{\seguitoproduzione}[2]{&\mid&#1&\mbox{#2}}
+\newcommand{\produzioneinline}[2]{#1::=#2}
+\newcommand{\terminale}[1]{\texttt{#1}}
+\newcommand{\aux}[1]{\textsc{#1}}%stile per funzioni ausiliarie
+\newcommand{\mvar}[1]{\mathit{#1}}
+
+%SINTASSI CALCOLO
+%metavariabili
+\newcommand{\m}{\mvar{m}}
+\newcommand{\f}{\mvar{f}} %field name
+\newcommand{\fs}{\mvar{fs}} 
+\newcommand{\x}{\mvar{x}}
+\newcommand{\xs}{\mvar{xs}}
+\newcommand{\y}{\mvar{y}} 
+\newcommand{\z}{\mvar{z}}
+\newcommand{\pval}{\mvar{p}}
+\newcommand{\ps}{\mvar{ps}}
+\newcommand{\ve}{\mvar{v}}%metavariabile value expression
+\newcommand{\vs}{\mvar{vs}}
+\newcommand{\e}{\mvar{e}}
+\newcommand{\es}{\mvar{es}}
+%\newcommand{\E}{\mvar{E}}%value expression or expression
+\newcommand{\this}{\terminale{this}}
+
+%tipi
+\newcommand{\C}{\mvar{C}}
+\newcommand{\D}{\mvar{D}}
+\newcommand{\Object}{\terminale{Object}}
+\newcommand{\PT}{\mvar{P}}
+\newcommand{\Unit}{\terminale{Unit}}
+\newcommand{\T}{\mvar{T}}
+\newcommand{\Graded}[3]{{#1}^{#2\diamond#3}}
+\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
+\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
+%costrutti
+\newcommand{\New}[2]{\terminale{new}\; #1\terminale{(}#2\terminale{)}}
+\newcommand{\FieldAccess}[2]{#1\terminale{.}#2}
+%\newcommand{\FieldsMatch}[3]{\terminale{match}\ #1\ \terminale{with}\ \fields{#2}\ \terminale{in}\ #3}
+\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
+\newcommand{\MethCall}[3]{#1{\terminale{.}}#2\terminale{(}#3\terminale{)}}
+\newcommand{\Field}[2]{#1\ #2\terminale{;}}
+\newcommand{\unit}{\terminale{unit}}
+\newcommand{\Free}[1]{\terminale{free}\, #1}
+\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
+\newcommand{\Return}[1]{\terminale{return}\, #1} 
+\newcommand{\Let}[3]{\terminale{let}\ #1\ \terminale{=}\ #2\ \terminale{in}\ #3} 
+%\newcommand{\TypedLet}[6]{\terminale{let}\ \CtxElem{#1}{#2}{#3}{#4}\ \terminale{=}\ #5\ \terminale{in}\ #6} 
+
+%class table
+\newcommand{\fields}[1]{\aux{fields}(#1)}
+\newcommand{\fnames}[1]{\aux{fnames}(#1)}
+\newcommand{\mbody}[2]{\aux{mbody}(#1,#2)}
+\newcommand{\mtype}[2]{{\aux{mtype}(#1,#2)}}
+\newcommand{\mType}[4]{\Graded{\_}{#1}{#2}#3 \rightarrow #4}
+\newcommand{\mTypeDep}[5]{\Graded{\_}{#1}{#2}#3 \rightarrow #4 \mid #5}
+\newcommand{\subt}{\leq}
+
+%semantica
+\newcommand{\val}{\mathbf{v}}%metavariabile valori finali
+\newcommand{\loc} {\iota} %metavariabile locazioni
+\newcommand{\locPrime} {\kappa} %metavariabile locazioni
+\newcommand{\locSec} {\lambda} %metavariabile locazioni
+\newcommand{\obj}{\mvar{o}}
+\newcommand{\env}{\rho}
+\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
+\newcommand{\AddToEnv}[4]{#1,\EnvElem{#2}{#3}{#4}}
+\newcommand{\mem}{\mu}
+\newcommand{\MemElem}[2]{#1\mapsto#2}
+\newcommand{\conf}{\mvar{c}}
+\newcommand{\vconf}{\mathbf{c}}
+\newcommand{\Obj}[2]{[#2]^#1}
+\newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
+\newcommand{\VConf}[2]{#1\parallel#2}
+\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
+\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
+\newcommand{\RedVal}[5]{#1{\parallel}#2\Rightarrow_{#3}#4{\parallel}#5}
+\newcommand{\Subst}[3]{#1[#2/#3]}
+
+% contexts 
+\newcommand{\ctxsum}{\rsum}
+\newcommand{\ctxmul}{\rmul}
+\newcommand{\ctxord}{\preceq}
+\newcommand{\CtxElem}[4]{#1 :^{#2}_{#3}#4}
+\newcommand{\VarType}[2]{#1:#2}
+\newcommand{\VarGrade}[2]{#1:#2}
+
+%typing judgments
+\newcommand{\IsWFExp}[3]{#1\vdash#2:#3}
+%\newcommand{\IsWFExpNarrow}[3]{#1\vdash#2{:}#3}
+\newcommand{\IsWFVal}[3]{#1\vdash#2:#3}
+\newcommand{\IsWFEnv}[3]{#2\vdash#3 : #1}
+\newcommand{\IsWFObj}[3]{#1\vdash#2:#3}
+\newcommand{\IsWFMem}[2]{\vdash_{#1}#2\, \diamond}
+\newcommand{\typeof}[2]{\aux{type}_{#1}(#2)}
+
+\newcommand{\Restrict}[2]{{#1}_{\mid#2}}
+\newcommand{\DReach}[4]{#1\xrightarrow[#2]{#3}#4}
+\newcommand{\Reach}[3]{#1\xrightarrow[#2]{\star}#3}
+\newcommand{\IsWFConfPure}[5]{#1;#2\sststile{#3}{}#4:#5} 
+\newcommand{\IsWFConf}[4]{#1\sststile{#2}{}#3:#4}
+\newcommand{\ResGamma}{\Theta}
+\newcommand{\RefSet}{\mathcal{I}}
+\newcommand{\From}[2]{#1\ \aux{from}\ #2}
+
+
+%promotion
+\newcommand{\aliasing}{\mathcal{A}}
+\newcommand{\Alias}[2]{#1\Rightarrow#2}
+%\newcommand{\EqStar}[3]{#1\doteq_{#2}#3}
+%\newcommand{\NotEqStar}[3]{#1\not\doteq_{#2}#3}
+\newcommand{\OptEqs}[2]{\aliasing_{\Pair{#1}{#2}}}
+%%\newcommand{\Closure}[1]{#1^\star}
+\newcommand{\IsWFExpEq}[4]{#1\vdash#2:#3\mid #4}
+%\newcommand{\Type}[2]{\aux{T}_{#1}(#2)} %da eliminare
+\newcommand{\Borrowed}{\mathcal{B}}
+%\newcommand{\Alive}[3]{\aux{Alive}_{#1,#2}(#3)}
+%\newcommand{\Aliased}[1]{\hat{#1}}
+\newcommand{\CtxSum}[3]{#1\rsum_{#2}#3}
+\newcommand{\res}{\aux{res}}
+
+%esempi
+%\newcommand{\intType}{\terminale{int}}
+%\newcommand{\Dtt}{\texttt{D}}
+\newcommand{\fone}{\texttt{f1}}
+\newcommand{\ftwo}{\texttt{f1}}
+
+%soundness
+\newcommand{\erase}[1]{\lceil#1\rceil} 
+\newcommand{\vconfE}{\tilde{\vconf}}
+\newcommand{\reduceE}[2]{#1\Rightarrow#2}
+%\newcommand{\FinalUsage}[3]{#1\xRightarrow[#2]{\star}#3} %da eliminare
+\newcommand{\GrReach}[6]{#1\xrightarrow[#2\diamond#3]{#4\diamond#5}#6} %usato solo in soundness, da eliminare?
+
+%%USATI SOLO IN APPENDICE
+\newcommand{\IsWFConfOld}[5]{#1;#2\sststile{#3}{}#4:#5} %da eliminare
+\newcommand{\IsWFMemOld}[3]{\vdash_{#2}#3 : #1} %da eliminare
+%\newcommand{\RemoveEl}[2]{#1{\setminus}\{#2\}}
+%\newcommand{\SommaS}[2]{+_{#1}#2}
+%%\newcommand{\rsh}{\gg} 
+\newcommand{\refToRuleP}[1]{rule~\textsc{\small (#1)}}
+\newcommand{\envE}{\boldsymbol{\rho}}
+\newcommand{\memE}{\boldsymbol{\mu}}
+%\newcommand{\IsWFField}[4]{#1\vdash_{#2} #3 : #4}
+
+%%%%%%%% Double \widehat and \widetilde
+\makeatletter
+\newcommand{\doublewidetilde}[1]{{%
+  \mathpalette\double@widetilde{#1}%
+}}
+\newcommand{\double@widetilde}[2]{%
+  \sbox\z@{$\m@th#1\widetilde{#2}$}%
+  \ht\z@=.9\ht\z@
+  \widetilde{\box\z@}%
+}
+\makeatother
+
+
+
+\makeatletter
+\newcommand{\doublewidehat}[1]{{%
+  \mathpalette\double@widehat{#1}%
+}}
+\newcommand{\double@widehat}[2]{%
+  \sbox\z@{$\m@th#1\widehat{#2}$}%
+  \ht\z@=.9\ht\z@
+  \widehat{\box\z@}%
+}
+\makeatother
+
+
+
+

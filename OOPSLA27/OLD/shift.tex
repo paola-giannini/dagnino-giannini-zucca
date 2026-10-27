@@ -1,0 +1,134 @@
+
+% !TEX root = main.tex
+
+\subparagraph*{Shifting}
+
+Given a grade $\sgr$ and a pair of grades $\ple{\Rgr,\rgr}$, where the first one is regarded as an assumption grade, we define the \emph{shif} of $\ple{\Rgr,\rgr}$ by $\sgr$ as the operation 
+\begin{quote}
+$\sgr\rsh\ple{\Rgr,\rgr} = \ple{\Rgr\rsum\sgr\rmul\rgr,\rgr}$. 
+\end{quote}
+
+\PGComm{Da qui in poi \`e tutto rifatto}
+
+This operation extends to types and contexts as follows:
+\begin{itemize}
+\item $\sgr\rsh\Graded{\tau}{\Rgr}{\rgr} = \Graded{\tau}{\Rgr\rsum\sgr\rmul\rgr}{\rgr}$ ,
+\item $\sgr\rsh (\CtxElem{\loc}{\Rgr}{\rgr}{\tau},\Sigma)= \CtxElem{\loc}{\Rgr\rsum\sgr\rmul\rgr}{\rgr}{\tau},(\sgr\rsh\Sigma)$ and $\sgr\rsh\emptyset=\emptyset$.
+\end{itemize}
+It is easy to show that shifting is monotone over types and contexts and 
+\begin{quote}
+$(\ast)\quad\sgr \rsh (\rgr\rmul\Sigma) = \rgr\rmul ((\sgr\rmul\rgr)\rsh\Sigma)$ and
+\end{quote}
+
+\begin{proposition}\label{prop:rshift}
+If $\IsWFField\Sigma\mem\val\T$, then, for every grade $\sgr$ we have 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\val}{\sgr\rsh\T}$. 
+\end{proposition}
+\begin{proof}
+The proof is by coinduction. 
+The only non-trivial case is when $\val = \loc$. 
+Consider a judgement 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\loc}{\Graded\C{\Rgr\rsum\sgr\rmul\rgr}{\rgr}}$ such that $\IsWFField\Sigma\mem\loc{\Graded\C\Rgr\rgr}$ is derivable. 
+We have to show that this is the consequence of an instance of the rule \refToRule{t-ref-in-mem} where the premises are appropriately shifted. 
+Consider a judgement 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\loc}{\Graded\C{\Rgr\rsum\sgr\rmul\rgr}{\rgr}}$ such that $\IsWFField\Sigma\mem\loc{\Graded\C\Rgr\rgr}$ is derivable. 
+We have to show that this is the consequence of an instance of the rule \refToRule{t-ref-in-mem} where the premises are appropriately shifted. 
+By hypothesis we know that 
+$\mem(\loc) = \Pair{\_}
+{\Obj\C{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd\val{n}{\rgr}}} $ where
+$\fields{\C} = \Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$
+and 
+\begin{enumerate}
+\item \label{it1} $\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxord \Sigma$
+\end{enumerate} and,
+for all $i \in 1..n$ we have $\IsWFField{\Sigma_i}{\mem}{\val_i}{\T_i}$ where
+\begin{enumerate}\setcounter{enumi}{1}
+%\item  \label{it2}$\IsWFField{\Sigma_i}{\mem}{\val_i}{\T_i}$
+\item  \label{it3} $\T_i\subt\Graded{\tau_i}{\Rgr_i\ctxsum\Rgr\rmul\rgr_i}{\rgr_i}$
+\item  \label{it4}$\rgr\rmul\Sigma_i\ctxord \Sigma$
+\end{enumerate} 
+Consider as premises the judgements 
+$\IsWFField{\Sigma'_i}{\mem}{\val_i}{\T'_i}$ where $\Sigma'_i=(\sgr\rmul\rgr)\rsh\Sigma_i$ and $\T'_i=(\sgr\rmul\rgr)\rsh\T_i\ (i \in 1..n)$. For all $i \in 1..n$ we get 
+\begin{enumerate}[(a)]
+\item \label{iit1} $\rgr\rmul\Sigma'_i\ctxord\sgr\rsh\Sigma$ from (\ref{it4}), monotonicity of $\rsh$ and $(\ast)$ 
+\item \label{iit2} $\T'_i\subt\Graded{\tau_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i\rsum(\sgr\rmul\rgr\rmul\rgr_i)}{\rgr_i}=\Graded{\tau_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i\rsum(\sgr\rmul\rgr\rmul\rgr_i)}{\rgr_i}= \Graded{\tau_i}{\Rgr_i\rsum (\Rgr\rsum\sgr\rmul\rgr)\rmul\rgr_i}{\rgr_i}$ from (\ref{it3}) and monotonicity of $\rsh$ 
+\end{enumerate}
+Moreover,
+\begin{enumerate}[(a)]\setcounter{enumi}{2}
+\item \label{iit3} $\sgr\rsh\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxord \sgr\rsh\Sigma$ from  (\ref{it1}) and monotonicity of $\rsh$.
+\end{enumerate}
+From (\ref{iit1}), (\ref{iit2}) and (\ref{iit3}) we get the thesis.
+\end{proof}
+
+\begin{proposition}\label{prop:split-ty} 
+If  $\IsWFField\Sigma\mem\val{\Graded\tau\Rgr{\rgr}}$  and  $\rgr_1\rsum\rgr_2\rord\rgr$ then 
+there are $\Sigma_1$ and $\Sigma_2$ such that 
+$\Sigma_1\ctxsum\Sigma_2\ctxord\Sigma$, 
+$\IsWFField{\Sigma_1}{\mem}{\val}{\Graded\tau{\Rgr\rsum\rgr_2}{\rgr_1}}$ and 
+$\IsWFField{\Sigma_2}{\mem}{\val}{\Graded\tau{\Rgr\rsum\rgr_1}{\rgr_2}}$. 
+\end{proposition} 
+\begin{proof}
+The only non-trivial case is when $\val = \loc$. 
+By \refToRule{t-ref-in-mem} we know that 
+$\tau = \C$,  $\mem(\loc) = \Pair{\_}
+{\Obj\C{\GradedValInd{\val}{1}{\sgr},\ldots,\GradedValInd\val{n}{\sgr}}} $ where
+$\fields{\C} = \Field{\Graded{\tau_1}{\Sgr_1}{\sgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Sgr_n}{\sgr_n}}{\f_n}$
+and letting $\Sigma=\CtxElem{\loc}{\Tgr}{\tgr}{\C},\Sigma'$
+\begin{enumerate}
+\item \label{i1} $\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxord \CtxElem{\loc}{\Tgr}{\tgr}{\C}$
+\end{enumerate} and,
+for all $i \in 1..n$ we have $\IsWFField{\Sigma'_i}{\mem}{\val_i}{\T_i}$ where
+\begin{enumerate}\setcounter{enumi}{1}
+%\item  \label{it2}$\IsWFField{\Sigma_i}{\mem}{\val_i}{\T_i}$
+\item  \label{i2} $\T_i\subt\Graded{\tau_i}{\Sgr_i\ctxsum\Rgr\rmul\sgr_i}{\sgr_i}$
+\item  \label{i3}$\rgr\rmul\Sigma'_i\ctxord \Sigma$
+\end{enumerate} 
+Let $\Sigma_1 = \rgr_2\rsh\Sigma$ and  $\Sigma''_i=\rgr_2\rsh\Sigma'_i$.
+From  \cref{prop:rshift},  $\IsWFField{\Sigma''_i}{\mem}{\val_i}{\rgr_2\rsh\T_i}$ for all $i \in 1..n$.
+Let $\Sigma=\CtxElem{\loc}{\Tgr}{\tgr}{\C},\Sigma'$
+\begin{enumerate}[(a)]
+\item \label{ii1} $\CtxElem{\loc}{\Rgr\rsum\rgr_2}{\rgr_1}{\C}\bpa\ctxord?\epa\CtxElem{\loc}{\Tgr\rsum\rgr_2\rmul\tgr}{\tgr}{\C}$ from (\ref{i1}) we get $\rgr_1\rord\tgr$ and $\Tgr\rord\Rgr$ \PGComm{but this is not enough!  Come si fa?}
+\end{enumerate} 
+and for all $i \in 1..n$ we have 
+\begin{enumerate}[(a)]\setcounter{enumi}{1}
+\item  \label{ii2} $\rgr_2\rsh\T_i\subt\rgr_2\rsh\Graded{\tau_i}{\Sgr_i\ctxsum\Rgr\rmul\sgr_i}{\sgr_i}=\Graded{\tau_i}{\Sgr_i\rsum\Rgr\rmul\sgr_i\rsum\rgr_2\rmul\sgr_i}{\sgr_i}=\Graded{\tau_i}{\Sgr_i\rsum(\Rgr\rsum\rgr_2)\rmul\sgr_i}{\sgr_i}$ from (\ref{i2}), monotonicity of $\rsh$ 
+\item  \label{ii3}  $\rgr_1\ctxmul(\rgr_2\rsh\Sigma'_i)\bpa\ctxord?\epa \rgr_1\ctxmul((\rgr_2\rmul\rgr)\rsh\Sigma'_i)\rord\rgr\ctxmul((\rgr_2\rmul\rgr)\rsh\Sigma'_i)=\rgr_2\rsh(\rgr\ctxmul\Sigma'_i)\ctxord\rgr_2\rsh\Sigma$\\
+\bpa assuming the property! $\rgr_2\bpa\ctxord?\epa\rgr_2\rmul\rgr$ when $\rgr_2\rord\rgr$ \epa
+\end{enumerate} 
+Finally to prove that $\Sigma_1\ctxsum\Sigma_2 \ctxord \Sigma$, observe that for all $\CtxElem{\loc'}{\Rgr'}{\rgr'}{\C'}\in\Sigma$, \\
+\centerline{$\CtxElem{\loc'}{\Rgr'\rsum\rgr_2\rmul\rgr'}{\rgr'}{\C'}\ctxsum\CtxElem{\loc'}{\Rgr'\rsum\rgr_1\rmul\rgr'}{\rgr'}{\C'}$}
+\PGComm{Che va bene per le assunzioni ma non per gli usi. Quindi questi $\Sigma_1$ e $\Sigma_2$ non vanno bene! }
+
+Assuming the following rule
+\[
+\bpa
+\NamedRule{t-ref-in-mem}{
+  \IsWFField{\Sigma'_i}{\mem}{\val_i}{\T_i}\Space\forall i \in 1..n
+}{ \IsWFField{ \rgr\rmul\Sigma}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr}} }
+{ \mem(\iota) =\Pair{\_}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}\\
+  \fields{\C}=\Field{\Graded{\tau_1}{\Sgr_1}{\sgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Sgr_n}{\sgr_n}}{\f_n}\\
+  \T_i\subt\Graded{\tau_i}{\Sgr_i\rsum\Rgr\rmul\sgr_i}{\sgr_i}\ \ \forall i\in 1..n\\
+  (\ast)\ \CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxord\rgr\rmul\Sigma\\
+  \Sigma'_i\ctxord\Sigma\ \ \forall i\in 1..n 
+}
+\epa
+\]
+with $\Sigma_1=\rgr_2\rsh\Sigma$ and $\Sigma_2=\rgr_1\rsh\Sigma$, let $\Sigma=\CtxElem{\loc}{\Tgr}{\tgr}{\C},\Sigma'$
+ the  problem is to show $ (\ast)\ $, i.e.,
+\[
+\CtxElem{\loc}{\Rgr\rsum\rgr_2}{\rgr_1}{\C}\ctxord\CtxElem{\loc}{\Tgr\rsum\rgr_2\rmul\tgr}{\rgr_1\rmul\tgr}{\C}
+\]
+from $\rgr_1\rsum\rgr_2\rord\rgr$ and $\rgr\rord\rgr\rmul\tgr$ and $\Tgr\rord\Rgr$!
+%
+%
+%Let us set 
+%$\Sigma_1 = \CtxElem\loc{\Rgr\rsum\rgr_2}{\rgr_1}\C \ctxsum \rgr_1\rmul (\rgr_2\rsh\Sigma')$, then, by rule \refToRule{t-ref-in-mem}, we obtain 
+%$\IsWFField{\Sigma_1}{\mem}{\loc}{\Graded\C{\Rgr\rsum\rgr_2}{\rgr_1}}$. 
+%In a similar way we derive $\IsWFField{\Sigma_2}{\mem}{\loc}{\Graded\C{\Rgr\rsum\rgr_1}{\rgr_2}}$ where $\Sigma_2  = \CtxElem\loc{\Rgr\rsum\rgr_1}{\rgr_2}\C \ctxsum \rgr_2\rmul(\rgr_1\rsh\Sigma')$. 
+%Therefore, to conclude, we just have to prove that $\Sigma_1\ctxsum\Sigma_2 \ctxord \Sigma$, but this is immediate by construction, as in each side we have increased the assumption grade of each reference exactly by its usage in the other side and  $\rgr_1\rsum\rgr_2\rord\rgr$. 
+%
+
+
+\end{proof}
+
+

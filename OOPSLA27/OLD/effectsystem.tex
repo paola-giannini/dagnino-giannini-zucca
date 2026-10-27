@@ -1,0 +1,150 @@
+% !TEX root = main.tex
+
+\section{Reachability effect}\label{sect:typesystem}
+
+
+A {\em reachability graph $\graph$} is a directed graph with a finite set of nodes 
+labelled by distinct variables. If in $\graph$ there is a path from
+a node labelled $\x$ to one labelled $\y$ then the location referred by $\y$ could also be reached from $\x$.
+We represent $\graph$ with the set of its edges, $(\x,\y)$, where $\x$ is the label of the source node and
+$\y$ the one of the destination of the edge. $\Vars(\graph)$ is the set of variables labelling the nodes of $\graph$.
+
+The reachability judgments have the shapes\[
+\IsWFValGr\Gamma\ve\tau\VarSet\qquad\IsWFExpGr\Gamma\e\tau\graph
+\]
+where $\Gamma$ is a \emph{type {environment}}, written $\VarType{\x_1}{\tau_1},\ldots,\VarType{\x_n}{\tau_n}$, $\VarSet$ a set of variables and
+$\graph$ is a reachability graph.  
+The labels of the nodes of $\graph$ are variables in $\dom{\Gamma}$, plus a distinguished variable $\res$  for ``result''. 
+In the judgment for values, $\VarSet$ is the set of variables reachable from $\ve$.
+In the judgment for expressions, the 
+meaning is that $\graph$ represents the ``reachability''??  among the free
+variables of $\e$ possibly introduced by the evaluation of the expression, and
+the variables  $\x$ such that there is a path from $\x$ to $\res$ are the ones that will be
+possibly refer to the result of the expression.  
+
+For reachability graph we use the following notations:
+\begin{itemize}
+\item $\emptygraph$ for the empty graph
+  \item $\AddEdge\x\y\graph=\graph\cup\{(\x,\y)\}$ adds the edge from the node labelled $\x$ to the one labelled $\y$. 
+  \item $\SumGr{\graph_1}{\graph_2}=\graph_1\cup\graph_2$ 
+  \item $\RemoveGr\graph\VarSet=\{(\y,\z)\in\graph\mid\y\not\in\VarSet\ \wedge\ \z\not\in\VarSet)\}\cup\{(\y,\z)\in\graph\mid\x\in\VarSet\ \wedge\ (\y,\x)\in\graph\ \wedge\ (\x,\z)\in\graph\}$ removes the node with labels in $\VarSet$ from $\graph$ propagating their reachability relation
+  \item $\SubstGr\graph\VarSet\x=\{(\y,\z)\in\graph\mid(\x,\z)\in\graph\ \wedge\ \y\in\VarSet\ \wedge\ \y\neq\z\}\cup\{(\z,\y)\in\graph\mid(\z,\x)\in\graph\ \wedge\ \y\in\VarSet\ \wedge\ \y\neq\z\}$ we assume  $\VarSet\cap\Vars(G)=\emptyset$.
+  \end{itemize}
+  The type of functions should be decorated by the effect of the execution of the function body. Say $\graph$ is the effect of the typing of the function body. 
+  \begin{itemize}
+  \item The effects on the free variables are given by $\graph$.
+  \item For the effects on the ``actual'' parameter we decorate $\graph$ with the name of the ``formal'' parameter (questa \`e la dipendenza)
+ \end{itemize}
+Change to the definition of types:
+
+\begin{grammatica} 
+\produzione{\sigma,\tau}{\RefTV{\VarSet}{\tau}\mid\funTypeGr{\tau_1}{\tau_2}{\x}{\graph}\mid\dots}{}
+\end{grammatica}
+\\
+Predicate $\refType{\tau}$ holds if 
+\begin{itemize}
+\item $\tau=\RefTV{\VarSet}{\tau'}$ for some $\tau'$ and $\VarSet$ or
+\item $\tau={\PairT{\tau_1}{\tau_2}}$ and either $\refType{\tau_1}$ or $\refType{\tau_2}$.
+ \end{itemize}
+ 
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-var}{}
+{ \IsWFValGr{\VarType{\x}{\tau}}{\x}{\tau}{\VarSet} } 
+{\VarSet=\begin{cases}
+\{\x\} &  \refType{\tau}\\
+\emptyset  & \text{otherwise}
+\end{cases}}
+\BigSpace
+\NamedRule{te-basic}{}
+{
+\IsWFValGr{\emptyset}{\bv}{{\BT}}{\emptyset}
+}
+{}
+\\[3ex]
+\NamedRule{te-pair}{\IsWFValGr{\Gamma_1}{\ve_1}{{\tau_1}}{\VarSet_1}\BigSpace\IsWFValGr{\Gamma_2}{\ve_2}{{\tau_2}}{\VarSet_2}}
+{
+\IsWFValGr{\Gamma_1\ctxsumTot\Gamma_2}{\PairExp{}{\ve_1}{\ve_2}{}}{\PairT{\tau_1}{\tau_2}}{\VarSet_1\cup\VarSet_2}
+}{
+}
+\\[3ex]
+\NamedRule{t-fun}{
+\IsWFExpGr{\Gamma,\VarType{\x}{\tau_1}}{\e}{{\tau_2}}{\graph}
+}{ 
+\IsWFValGr{\Gamma}{\Fun{\x}{\e}}{\funTypeGr{\tau_1}{\tau_2}{\x}{\graph}} {\emptyset}
+}
+{
+}
+\\[3ex]
+\end{array}
+\end{math}
+\hrule
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-ret}{\IsWFValGr{\Gamma}{\ve}{\tau}{\VarSet}}{\IsWFExpGr{\Gamma}{\Return{\ve}}{\tau}{\sum_{\x\in\VarSet} \Edge{\x}{\res}}}{}\BigSpace
+\\[3ex]
+\NamedRule{t-let}{
+\IsWFExpGr{\Gamma_1}{\e_1}{\tau_1}{\graph_1}\BigSpace\IsWFExpGr{\Gamma_2,\VarType{\x}{\tau_1}}{\e_2}{\tau_2}{\graph_2}
+}{\IsWFExpGr{\Gamma_1\ctxsumTot\Gamma_2}{\Let{\x}{\e_1}{\e_2}}{\tau_2}{\RemoveGr{(\SumGr{\SubstGr{\graph_1}{\x}{\res}}{\graph_2})}{\{\x\}}}
+}{
+}
+\\[3ex]
+\NamedRule{t-match-p}{
+  \IsWFValGr{\Gamma_1}{\ve}{\PairT{\tau_1}{\tau_2}}{\VarSet}
+  \Space
+  \IsWFExpGr{\Gamma_2,\VarType{\x}{\tau_1},\VarType{\y}{\tau_2}}{\e}{\tau}{\graph}
+}{ \IsWFExpGr{\Gamma_1\ctxsumTot\Gamma_2}{\Match{\x}{\y}{\ve}{\e}}{\tau}{\RemoveGr{(\graph\cup\bigcup_{\z\in\VarSet}\{(\x,\z),(\y,\z)\})}{\{\x,\y\}}}}
+{ 
+}
+\\[3ex]
+\NamedRule{t-app}{
+  \IsWFValGr{\Gamma_1}{\ve_1}{\funTypeGr{\tau_1}{\tau_2}{\x}{\graph}}{\_}
+  \Space  
+  \IsWFValGr{\Gamma_2}{\ve_2}{\tau_1}{\VarSet}
+}{ \IsWFExpGr{\Gamma_1\ctxsumTot\Gamma_2}{\App{\ve_1}{\ve_2}}{\tau_2}{\SubstGr{\graph}{\VarSet}{\x}} }
+{
+}
+\\[3ex]
+\NamedRule{t-upd}{
+\IsWFValGr{\Gamma_1}{\ve_1}{{\RefTV{\VarSet}{\tau}}}{\VarSet_1}\BigSpace
+\IsWFValGr{\Gamma_2}{\ve_2}{{\tau}}{\VarSet_2}
+}{
+\IsWFExpGr{\Gamma_1\ctxsumTot\Gamma_2}{\Assign{\ve_1}{\ve_2}}{\tau}{\bigcup_{\x\in\VarSet_1,y\in\VarSet_2}\{(\x,\y)\}\cup\bigcup_{\z\in\VarSet}\{(\z,\res)\}}
+}
+{
+\VarSet_2\subseteq\VarSet
+}
+\\[3ex]
+\NamedRule{t-ref}{
+\IsWFValGr{\Gamma}{\ve}{\tau}\VarSet
+}
+{
+\IsWFExpGr{\Gamma}{\RefExp{\ve}}{\RefTV{\VarSet}{\tau}}{\emptygraph}
+}
+{}
+\Space
+\NamedRule{t-deref}{
+\IsWFValGr{\Gamma}{\ve}{\RefTV{\VarSet}{\tau}}{\VarSet'}
+}{
+\IsWFExpGr{\Gamma}{\Deref{\ve}}{\tau}{\sum_{\x\in\VarSet\cup\VarSet'} \Edge{\x}{\res}}
+}
+{}
+\\[3ex]
+\NamedRule{t-free}{
+\IsWFValGr{\Gamma}{\ve}{\RefTV{\VarSet}{\tau}}{\_}
+}{
+\IsWFExpGr{\Gamma}{\FreeExp{\ve}}{\tau}{\brb\sum_{\x\in\VarSet} \Edge{\x}{\res}\erb}
+}
+{}
+\\[4ex]
+\end{array}
+\end{math}
+\caption{Effect system}
+\label{fig:typing} 
+
+\end{figure}
+
+
+

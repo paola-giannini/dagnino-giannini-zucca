@@ -1,0 +1,553 @@
+% !TEX root = main.tex
+
+\section{Type system}\label{sect:typesystem}
+
+(Type and grade) contexts are defined in \cref{fig:ctx}.  The metavariable $\ResGamma$ will be used for \emph{residual contexts}, see in the following.
+
+\begin{figure}[ht]
+\begin{grammatica} 
+\produzione{\Gamma,\Delta,\ResGamma}{\CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\tau_n}}{context of variables}\\[1ex]
+\produzione{\Sigma}{\CtxElem{\loc_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\Rgr_n}{\rgr_n}{\tau_n}}{context of references}
+\end{grammatica}
+\caption{(Type-and-grade) contexts}
+\label{fig:ctx}
+\end{figure}
+
+Contexts are (sequences representing) maps which associate to either variables or references an assumption grade, a usage grade\footnote{Also called \emph{coeffect} in previous work \cite{PetricekOM13,PetricekOM14,BrunelGMZ14}.}, and a (non-graded) type.  
+
+Equivalently, a type-and-grade context, e.g., of variables, can be seen as a triple consisting of the standard type context ${\sigma=\VarType{\x_1}{\tau_1}\ldots,\VarType{\x_n}{\tau_n}}$, the \emph{assumption grade context} $\alpha=\VarGrade{\x_1}{\Rgr_1}, \ldots, \VarGrade{\x_n}{\Rgr_n}$ and the \emph{usage grade context} ${\upsilon=\VarGrade{\x_1}{\rgr_1}, \ldots, \VarGrade{\x_n}{\rgr_n}}$, where both grade contexts are (sequences representing) functions from variables into grades, as defined below:
+
+$$
+ \Pair{\alpha(\x)}{\upsilon(\x)}=
+ \begin{cases}
+ \Pair{\Rgr_i}{\rgr_i}& \mbox{if}\ \x=\x_i\ \mbox{for some}\ i\in 1..n\\
+\Pair{\infty}{\rzero}&\mbox{otherwise}
+\end{cases}
+$$
+That is, variables which are not mentioned in a grade context are meant to be never used and there is no assumption on them. 
+
+The typing rules use the following definitions.
+\begin{description}
+
+\item[Sum of grade decorations]  $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{(\Rgr_1 \rsub \rgr_2) \rmeet (\Rgr_2 \rsub \rgr_1)}{(\rgr_1\rsum\rgr_2)}$
+%\item[Sum of types] The type $\T_1\rsum\T_2$ is defined by:
+%\begin{quote}
+%$\Graded{\tau}{\Rgr_1}{\rgr_1}\rsum\Graded{\tau}{\Rgr_2}{\rgr_2}=\Graded{\tau}{\Rgr}{\rgr}$ if $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{\Rgr}{\rgr}$
+%\end{quote}
+%Note that sum of types is undefined if they have different base type ($\tau$) or if the needed subtractions of grades are undefined. Sum is associative and commutative. 
+
+
+\item[Sum] The context $\Gamma\ctxsum\Gamma'$ is defined by:
+\begin{quote}
+$\Gamma\ctxsum\emptyset=\Gamma$\\
+ $(\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}, \Gamma_1) \ctxsum(\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}, \Gamma_2) = \CtxElem{\x}{\Rgr}{\rgr}{\tau},(\Gamma_1\ctxsum\Gamma_2)$ if $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{\Rgr}{\rgr}$  \\  
+$(\CtxElem{\x}{\Rgr}{\rgr}{\tau}, \Gamma_1)\ctxsum\Gamma_2=\CtxElem{\x}{\Rgr}{\rgr}{\tau},(\Gamma_1\ctxsum\Gamma_2)$ if $\x\not\in\dom{\Gamma_2}$
+\end{quote}
+
+\item[Product] The context $\rgr\rmul\Gamma$ is defined by:
+\begin{quote}
+$\rgr\ctxmul\emptyset=\emptyset$\\
+$\rgr\ctxmul(\CtxElem{\x}{\Rgr}{\sgr}{\tau},\Gamma)=\CtxElem{\x}{\Rgr}{\rgr\rmul\sgr}{\tau},(\rgr\ctxmul\Gamma)$
+\end{quote}
+
+\item[Subtyping] The relation $\T\subt\T'$ is defined by:
+\begin{quote}
+$\GradedInd{\tau}{1}{\Rgr}{\rgr}\subt\GradedInd{\tau}{2}{\Rgr}{\rgr}$ if $\tau_1\subt\tau_2$, $\rgr_2\rord\rgr_1$, $\Rgr_1\rord\Rgr_2$
+\end{quote}
+
+%\item[Compatibility] The relation $\tau\comp\tau''$ holds if either $\tau\subt\tau'$ or $\tau'\subt\tau$.
+
+\item[Weakening]  The relation $\Gamma\ctxord\Gamma'$ is defined by
+\begin{quote}
+$\emptyset\ctxord\Gamma$\\
+$\Gamma\ctxord(\CtxElem{\x}{\Rgr}{\rgr}{\tau}, \Gamma')$ if $\x\notin \dom{\Gamma}$ and $\Gamma \ctxord \Gamma'$\\
+$(\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau},\Gamma) \ctxord (\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}, \Gamma')$ if $\rgr_1\rord\rgr_2$, $\Rgr_2\rord\Rgr_1$ and $\Gamma \ctxord \Gamma'$
+\end{quote}
+\end{description}
+ We briefly discuss the above definitions. 
+
+Sum of contexts is a key technical feature of our approach. 
+ Usually, in graded type systems, such sum is defined pointwise, that is, for each variable occurring in both sides, required to have the same type, the usage grades are summed. 
+
+%Intuitively, a context models, for each resource, its amount required by some code, hence when combining subterms the sum of the amounts is required.
+Here, the sum is still performed by-variable, but we have to take into account assumption grades as well. Assume to have $\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}$ and $\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}$ in the two contexts, respectively. In the first context, the assumption $\Rgr_1$ means that $\x$ can be used elsewhere with grade (at most) $\Rgr_1$.  When summing the contexts, $\x$ is used with grade $\rgr_2$, hence this amount should be subtracted from $\Rgr_1$. The same holds conversely. Altogether, $\x$ can still be used elsewhere with a grade which is the meet of the two residual assumptions. 
+\FDComm{il punto è che tu vuoi che l'uso esterno sommato a $\rgr_2$ non ecceda $\Rgr_1$  e idem viceviceversa e questo vale solo se l'uso esterno è più piccolo di entrambe le differenze}
+For a concrete example, consider the uniqueness grade algebra of extended natural numbers. Assuming to have $\CtxElem{\x}{3}{2}{\tau}$ and $\CtxElem{\x}{2}{3}{\tau}$ in the two contexts, respectively, we get $3-3=0$ and $2-2=0$, hence we have $\CtxElem{\x}{0}{5}{\D}$ in the sum. In \cref{ex:ex1} later we show an example of code where this situation arises. 
+
+Note that, in this way, the sum is undefined when, for some variable, the assumption in one context is not enough to cover the usage in the other. This is an additional source of partiality, besides the case in which the types in the two contexts are different. 
+
+The product of a grade with a context is defined as usual in graded type systems; note that assumption grades are not affected.
+
+In a more general type, usage grades and assumption grades can decrease and increase, respectively. For instance, considering affinity grades,
+an expression of type $\Graded{\C}{0}{\omega}$ can be used where a usage grade 1 and no assumption grade are required: as a concrete example, an argument which is unique and can be used with no constraints can be safely passed to a method handling the parameter in an affine way and assuming nothing about it. 
+
+ In a more general (weaker) context, resources can be added and/or their available usage grade can increase; on the other hand, assumption grades can dicrease. For instance, again considering affinity grades, an expression which can be typechecked assuming to have one copy of $\x$, and assumption $\infty$ (that is, no constraints on how $\x$ should be used elsewhere) can be typechecked as well if more than 1 copy of $\x$ is available, each one never used elsewhere). 
+ 
+Source code (value expressions and expressions) does not mention references, so we only need a context of variables. 
+The judgments have shape $\IsWFExp{\Gamma}{\ve}{\T}$ and $\IsWFExp{\Gamma}{\e}{\T}$, and are defined in \cref{fig:typing-exp}. 
+\newcommand{\LocalGamma}{\hat{\Gamma}}
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+
+\NamedRule{t-var}{}
+{ \IsWFExp{\CtxElem{\x}{\Rgr}{\rgr}{\tau}}{\x}{\Graded{\tau}{\Rgr}{\rgr}}} 
+{}
+%\NamedRule{t-var}{}
+%{ \IsWFExp{\Gamma,\CtxElem{\x}{\Rgr}{\rgr}{\tau}}{\x}{\T}} 
+%{\Graded{\tau}{\Rgr}{\rgr}\subt\T}
+\BigSpace
+\NamedRule{t-unit}{}
+{\IsWFExp{\emptyset}{\unit}{\Unit}} 
+{}
+
+\\[2ex]
+\end{array}
+\end{math}
+\hrule 
+\begin{math}
+\begin{array}{l}
+\\
+
+\NamedRule{t-fields-access}{
+\begin{array}{l}
+\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\sgr_1\rsum\ldots\rsum\sgr_n}}\\
+\IsWFExp{\Gamma',\LocalGamma}{\e}{\T}
+\end{array}
+}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\FieldsMatch{\x_1\ldots\x_n}{\x}{\e}}{\T}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+%sgr_i=\R{\pgr_i}, \pgr_i\neq\rzero\Space \forall i\in 1..n\\
+\LocalGamma\ctxord(\CtxElem{\x_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i}{\sgr_i\rmul\rgr_i}{\tau_i})^{i\in 1..n}
+}
+
+\\[5ex]
+
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\T'_i}}{\IsWFExp{\Gamma\ctxsum\Rgr\rmul\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}}{
+\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}\\
+i\in 1..n\\
+%\rgr=\W{\pgr},\pgr\neq\rzero\\
+\T'_i\leq\T_i
+}
+
+\\[4ex]
+\NamedRule{t-free}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\rgr}}}{\IsWFExp{\Gamma}{\Free{\x}}{\Unit}}{}
+\\[4ex]
+\NamedRule{t-invk}{
+\begin{array}{l}
+\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr}{\rgr}}\\
+\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
+\end{array}
+}{\IsWFExp{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}}{
+\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}\\
+\T'_i\leq\T_i\ \forall i\in 1..n
+}
+\\[4ex]
+
+\NamedRule{t-k-invk}{\IsWFExp{\Gamma_i}{\ve_i}{\T_i}\Space \forall i\in 1..n}{\IsWFExp{\Gamma}{\KE{\C}{\ve_1,\ldots,\ve_n}}{\C_\rgr}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\T_i\subt\Graded{\tau_i}{\Rgr_i}{\rgr\rmul\rgr_i}\ \ \forall i\in 1..n \\
+    \Sigma_i\ctxord\Sigma\ \ \forall i\in 1..n 
+ }
+
+\\[4ex]
+
+\NamedRule{t-rec-new}{\IsWFExp{\Gamma,\LocalGamma}{\ke_i}{(\C_i)_{\rgr_i}}\Space \forall i\in 1..n}{\IsWFExp{\Gamma}{\RecNew{\x_1\ldots\x_n}{\ke_1\ldots\ke_n}}{(\C_0)^\rzero_{\rgr_1}}}
+{\LocalGamma\ctxord(\CtxElem{\x_i}{\rzero}{\rgr_i}{\C_i})^{i\in 1..n}
+}
+
+\\[4ex]
+\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExp{\Gamma}{\Return{\ve}}{\T}}{}
+\\[3ex]
+
+\NamedRule{t-let}{
+\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma',\LocalGamma}{\e'}{\T}
+}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\Let{\x}{\e}{\e'}}{\T}}
+{\LocalGamma\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}
+%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
+}
+
+\\[2ex]
+\end{array}
+\end{math}
+\hrule 
+\begin{math}
+\begin{array}{l}
+\\
+
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}}{\IsWFExp{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\tau_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n
+%\\ \rgr=\R{\pgr}, \pgr\neq\rzero
+}
+
+\\[4ex]
+
+\NamedRule{t-new}{\IsWFExp{\Gamma}{\ve_i}{\T'_i}\Space \forall i\in 1..n}{\IsWFExp{\rgr\rmul\Gamma}{\New{\C}{\ve_1,\ldots,\ve_n}}{{\Graded{\C}{\rzero}{\rgr}}}}{
+\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}\\
+\T'_i\leq\T_i\ \forall i\in 1..n
+ }
+
+%\\[3ex]
+%\NamedRule{t-prom}{\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}}
+%{\IsWFExp{\Gamma'}{\e}{\Graded{\tau}\Sgr}{\rgr}{}}
+%{\Gamma\ctxord\Gamma'\\
+%\tau'\comp\tau\ \mbox{and}\  \Path{\Gamma'}{\Sgr'}{\tau'}\ \mbox{implies}\ \Sgr'\rord\Sgr 
+%}
+\end{array}
+\end{math}
+\caption{Typing rules for value expressions and expressions}
+\label{fig:typing-exp} 
+\end{figure}
+
+\EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+
+In the top section of \cref{fig:typing-exp}, the rules \refToRule{t-var} and \refToRule{t-unit}, which define the typing judgment for value expressions,  are straightforward.  
+
+The rules in the mid section define the typing judgment for expressions. 
+
+
+\noindent In rule \refToRule{t-fields-access}, the variables should be as many as the fields of the receiver's class (first side condition). The context should be the sum of two parts, needed to typecheck the receiver and the body, respectively. The usage grade of the receiver should be a sum of grades, one for each variable/field, all being non-zero read grades (second side condition). The context used to typecheck the body is enriched by a local context, strengthening that  where each introduced variable gets as non-graded type  that of the field in the class, and as usage grade the product of that of the receiver with that of the field. The assumption grade is a sum, expressing the fact that the field value can be used elsewhere as it was assumed before ($\Rgr_i$), and, now, also through  the receiver, hence with its assumption multiplied by the field usage grade ($\Rgr\rmul\rgr_i$). 
+\EZComm{fare un esempio}
+As a help for the reader, the derived rule \refToRule{t-field-access} for the standard single field-access is shown in the bottom section.
+
+Rule \refToRule{t-field-update} checks that the receiver's class has a field with the specified name (first side condition).  The context should be the sum of that needed to typecheck the receiver, and that needed to typecheck the second argument with the required type, multiplied by the assumption grade of the receiver; indeed, the second argument should be available at least as many times as the receiver is assumed to be used elsewhere. 
+The usage grade of the receiver should be a non-zero write grade.
+\EZComm{fare un esempio}
+
+
+Rule \refToRule{t-free} shows a key role of assumption grades: a reference can only be deallocated if its assumption grade is $\rzero$, that is, it is not used elsewhere. The expression gets type $\Unit$, with arbitrary grades. 
+
+Rule \refToRule{t-invk} is as in previous work \cite{BianchiniDGZ23ecoop}. Receiver and arguments are typechecked, receiver's type should be a class name, and method look-up is performed for the specified method name. If a method is found, and the argument types match the parameter types, then the expression gets the return type. The context is the sum of the needed contexts.
+
+
+In the auxiliary rule \refToRule{t-k-invk}, the type assigned to the  constructor call is the constructor's class. The context should weaken all those needed to typecheck the arguments, each one with a type matching one derived from that of the field in the class by multiplying the usage grade of the receiver with that of the field. 
+In rule \refToRule{t-rec-new}, each constructor call is typechecked in the current context enriched by a local context, strengthening that  where each introduced where each variable gets as non-graded type and usage grade those obtained by typechecking the corresponding constructor call. Assumption grades are all $\rzero$, since the local variables denote fresh references. The type assigned to the expression is, conventionally, that of the first constructor call.
+As a help for the reader, the derived rule \refToRule{new} for the standard single object creation is shown in the bottom section.
+
+
+Finally, rules \refToRule{t-ret} and \refToRule{t-let} are the standard ones in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}.
+
+\EZComm{ESEMPI TUTTI DA RIFARE}
+ We show now some examples of type derivation for expressions. To simplify, we assume that usage grades are $1$ if omitted, assumption grades are $\infty$ if omitted, and we write $\Seq{\e}{\e'}$ for $\Let{\x}{\e}{\e'}$ when $\x\not\in\fv{\e'}$. 
+\begin{example}[Sum of contexts]\label{ex:ex1}
+Consider the uniqueness grade algebra of extended natural numbers,  and assume the following class table. 
+\begin{lstlisting}
+class D extends Object {}
+class C1 extends Object {$\Graded{D}{2}{3}$ f}
+class C2 extends Object {$\Graded{D}{3}{2}$ f}
+\end{lstlisting}
+In the judgment 
+\begin{quote}
+$\IsWFExp{\CtxElem{\y}{}{}{\C_1}, \CtxElem{\z}{}{}{\C_2}, \CtxElem{\x}{0}{5}{\D}}{\Seq{\FieldUpdate{\y}{\f}{\x}}{\FieldUpdate{\z}{\f}{\x}}}{\Unit}$
+\end{quote}
+the expression is typechecked in a context where $\x$ can be used at most $5$ times, and is assumed to be never used elsewhere. 
+To obtain this typing judgment, the first occurrence of $\x$ should be typechecked assuming it is used $2$ times elsewhere, and the second occurence assuming that it is used $3$ times elsewhere, as shown below.
+\begin{small}
+\begin{quote}
+\begin{math}
+\\
+\NamedRule{t-let}{
+%{
+\NamedRule{t-field-update}
+{
+\Rule{}{\IsWFExpNarrow{\CtxElem{\y}{}{}{\C_1}}{\y}{\C_1}}{}\Space\Rule{}{\IsWFExpNarrow{\CtxElem{\x}{3}{2}{\D}}{\x}{\Graded{D}{3}{2}}}{}
+}
+{\IsWFExpNarrow{\CtxElem{\y}{}{}{\C_1},\CtxElem{\x}{3}{2}{\D}}{\FieldUpdate{\y}{\f}{\x}}{\Unit}}{}
+\Space
+\NamedRule{t-field-update}
+{
+\Rule{}{\IsWFExpNarrow{\CtxElem{\z}{}{}{\C_2}}{\y}{\C_2}}{}\Space\Rule{}{\IsWFExpNarrow{\CtxElem{\x}{2}{3}{\D}}{\x}{\Graded{D}{2}{3}}}{}
+}
+{\IsWFExpNarrow{\CtxElem{\z}{}{}{\C_2},\CtxElem{\x}{2}{3}{\D}}{\FieldUpdate{\z}{\f}{\x}}{\Unit}}{}
+%}
+}
+{
+\IsWFExpNarrow{\CtxElem{\y}{}{}{\C_1}, \CtxElem{\z}{}{}{\C_2}, \CtxElem{\x}{0}{5}{\D}}{\Seq{\FieldUpdate{\y}{\f}{\x}}{\FieldUpdate{\z}{\f}{\x}}}{\Unit}
+}{}
+\\
+\end{math}
+\end{quote}
+\end{small}
+
+Hence, we should have $\CtxElem{\x}{0}{5}{\D}=\CtxElem{\x}{3}{2}{\D}\ctxsum\CtxElem{\x}{2}{3}{\D}$. 
+This holds, since the assumption grade of $\x$ in the first context is equal to the usage grade in the second context, and conversely, hence both differences are $0$.
+\end{example}
+
+\begin{example}[Promotion]\label{ex:ex2}
+Consider again extended natural numbers as grades, and assume the following class table. 
+\begin{lstlisting}
+class D extends Object {}
+class C extends Object {D f;}
+\end{lstlisting}
+
+We can derive the following judgment:
+\begin{quote}
+\begin{math}
+\NamedRule{t-let}
+{
+\Rule{\ldots}{\IsWFExp{\CtxElem{\x}{1}{1}{\C},\CtxElem{\y}{}{}{\D}}{\FieldUpdate{\x}{\f}{\y}}{\Unit}
+}{}
+\BigSpace
+\Rule{\ldots}{\IsWFExp{\CtxElem{\x}{1}{1}{\C}}{\Return{\x}}{\Graded{\C}{1}{1}}}
+{}
+}
+{\IsWFExp{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{1}{1}}}{}
+\end{math}
+\end{quote}
+\end{example}
+In both the subterms of $\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}$, the type of $\x$ needs to have assumption $1$, since $\x$ it is used once elsewhere (in the other subterm). 
+Formally, the side condition of rule \refToRule{t-let} holds, since $\CtxElem{\x}{0}{2}=\CtxElem{\x}{1}{1}\ctxsum\CtxElem{\x}{1}{1}$. 
+
+However, the type obtained for the whole expression is $\Graded{\C}{1}{1}$, whereas it is intuitively obvious that, since $\x$ is unique, the result is a unique reference. This can be obtained by promotion:
+\begin{quote}
+\begin{math}
+\NamedRule{t-prom}{\IsWFExp{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{1}{1}}}{\IsWFExp{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{0}{1}}}{}
+\end{math}
+\end{quote}
+Indeed, the only path of type $\C$ from the context is the variable $\x$, which has assumption $0$. 
+
+\EZComm{fine esempi da rifare}
+
+Typing rules for auxiliary structures are given in \cref{fig:typing-aux}.  The definitions of sum, product and weakening  on contexts of references are exactly as those on contexts of variables. 
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-ref}{}
+{ \IsWFVal{\CtxElem{\loc}{\Rgr}{\rgr}{\C}}{\loc}{\Graded{\C}{\Rgr}{\rgr}}}
+{} 
+\BigSpace
+\NamedRule{t-unit}{}
+{\IsWFVal{\emptyset}{\unit}{\Graded{\Unit}{\Rgr}{\rgr}}} 
+{}
+\\[3ex]
+\end{array}
+\end{math}
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-env}{
+\IsWFVal{\Sigma_i}{\val_i}{\T_i}\Space \forall i \in 1..n}
+{ \IsWFEnv{\Gamma}{\Sigma_1 \ctxsum \ldots \ctxsum\Sigma_n}{\env} }
+{ \env=\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}\\
+  \Gamma= \CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\tau_1},\ldots,\CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\tau_n}\\
+  \T_i\subt\Graded{\tau_i}{\Rgr_i}{\rgr_i}\ \forall i\in 1..n
+}
+%\\[4ex]
+%
+%\NamedRule{t-ref-in-mem}{
+%  \IsWFField{\Sigma_i}{\mem}{\val_i}{\T'_i}\Space\forall i \in 1..n
+%}{ \IsWFField{\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxsum\rgr\rmul\Sigma}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr}} }
+%{ \mem(\iota) =\Pair{\_}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}\\
+%  \fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}\\
+%  \T'_i\subt\T_i\ \forall i\in 1..n\\ 
+%  \Sigma_i\ctxord\Sigma\ \forall i\in 1..n 
+%}
+%
+%\\[4ex]
+%\NamedRule{t-ref-in-mem}{
+%  \IsWFField{\Sigma_i}{\mem}{\val_i}{\T_i}\Space\forall i \in 1..n
+%}{ \IsWFField{\Sigma}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr}} }
+%{ \mem(\iota) =\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+%  \T_i\subt\Graded{\tau_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i}{\rgr_i}\ \ \forall i\in 1..n\\
+%  \CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxord\Sigma\\
+%  \rgr\rmul\Sigma_i\ctxord\Sigma\ \ \forall i\in 1..n 
+%}
+\\[4ex]
+
+\NamedRule{t-obj}{ }
+{
+\IsWFObj{\sigma}{\Obj{\C}{\GradedValInd{\val}{1}{\sgr},\ldots,\GradedValInd{\val}{n}{\sgr}}}
+}
+{  \fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\sigma(\val_i)\subt\tau_i\ \forall i\in 1..n \\
+\rgr_i\subt \sgr_i\ \forall i\in 1..n 
+
+}
+
+\\[4ex]
+
+\NamedRule{t-mem}{
+\IsWFObj{\sigma_\mem}{\obj_i}{}\Space \forall i \in 1..n}
+{
+\IsWFMem{\Sigma}{\mem}
+}{\mem=\MemElem{\loc_1}{\obj_1},\ldots\MemElem{\loc_n}{\obj_n}\\
+\SplitCtx{\Sigma}{\sigma}{\alpha}{\upsilon}\\
+\sigma\ctxord\sigma_\mu\\
+\OK{\alpha}{\upsilon}{\mem}}
+
+\\[5ex]
+\end{array}
+\end{math}
+\hrule 
+
+
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-pure-conf}
+{
+\IsWFExp{\Delta}{\ve}{\T}\BigSpace\IsWFEnv{\Gamma}{\Sigma}{\env'}
+}
+{
+\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\T}
+}
+{
+\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+
+}
+\\[5ex]
+\NamedRule{t-pure-res}
+{
+\begin{array}{l}
+\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+\end{array}
+}
+{
+\IsWFConfPure{\Gamma}{\Sigma_1\ctxsum\Sigma_2}{\ResGamma}{\VConf{\val}{\env}}{\T}
+}
+{
+\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+\T'\subt\T
+}
+\\[5ex]
+\NamedRule{t-conf}
+{
+\IsWFExp{\Delta}{\e}{\T}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma}{\env'}\BigSpace
+\IsWFMem{\Sigma}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\e}{\env}{\mem}}{\T}
+}
+{
+\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+\mem'=\From{\mem}{\dom{\Sigma}}
+}
+
+\\[5ex]
+
+\NamedRule{t-res}
+{
+\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+\IsWFMem{\Sigma_1\ctxsum\Sigma_2}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\val}{\env}{\mem}}{\T}
+}
+{
+\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+\T'\subt\T\\
+\mem'=\From{\mem}{\dom{\Sigma_1\ctxsum\Sigma_2}}
+}
+
+\end{array}
+\end{math}
+
+\caption{Typing rules for auxiliary structures}\label{fig:typing-aux}
+\end{figure}
+ The typing judgment for values has shape $\IsWFVal{\Sigma}{\val}{\T}$. The typing rules are analogous to those for value expressions, apart that they use a context of references. 
+  
+
+The typing judgment for environments has shape $\IsWFEnv{\Gamma}{\Sigma}{\env}$. As shown in rule \mbox{\refToRule{t-env}}, $\Gamma$ is a context of variables which can be \emph{extracted} from the environment, in the sense that the variables and their usage grades are exactly those in the environment. On the other hand, $\Sigma$ is the context of references \emph{needed} for that, obtained by summing those needed, for each variable, to assign to its value a subtype of that in the extracted environment.
+
+We write $\SplitCtx{\Sigma}{\sigma}{\alpha}{\upsilon}$ if $\Sigma=\CtxElem{\loc_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\Rgr_n}{\rgr_n}{\tau_n}$, $\sigma=\VarType{\loc_1}{\tau_1}, \ldots, \VarType{\loc_n}{\tau_n}$, $\alpha={\VarGrade{\loc_1}{\Rgr_1}{}, \ldots, \VarGrade{\loc_n}{\Rgr_n}{}}$, and $\upsilon=\VarGrade{\loc_1}{}{\rgr_1}, \ldots, \VarGrade{\loc_n}{}{\rgr_n}$. 
+
+The typing judgment for object states has shape $\IsWFObj{\sigma}{\obj}$. 
+%We denote by $\typeof{\mem}{\val}$ the non-graded type and usage grade of a value in $\mu$, defined as follows:
+%\begin{quote}
+%$\typeof{\mem}{\unit}=\Unit$\\
+%$\typeof{\mem}{\loc}=\C$ if $\mem(\loc)=\Obj{\C}{\_}$
+%\end{quote}
+Rule \refToRule{t-obj} checks that each field has a non-graded type in memory and a usage grade matching those declared in the class table. We assume $\sigma(\unit)=\Unit$.
+
+ The typing judgment for memories has shape $\IsWFMem{\Sigma}{\mem}$.  As shown in rule \refToRule{t-mem}, for each reference in memory its associated object state should be well-typed with respect to 
+ the standard type context extracted from the memory, defined below:
+ \begin{quote}
+ $\dom{\sigma_\mem}=\dom{\mem}$\\
+ $\sigma_\mem(\loc)=\C$ if $\mem(\loc)=\Obj{\C}{\_}$
+ \end{quote}
+ Moreover, the non-graded types assigned to references in $\Sigma$ should match those extracted from the memory (third side condition). 
+ Finally, the memory should be well-formed with respect to assumption and usage grades imposed by $\Sigma$ (last side condition, which will be formally defined at the end of the section).
+  
+
+The last four rules rely on two additional features:
+\begin{itemize}
+\item a \emph{residual context} of variables, denoted $\ResGamma$, representing an (arbitrary) external use of the resources. \EZComm{spiegare meglio}
+\item the restriction of $\mem$ to its portion \emph{reachable} from a set $\RefSet$ of references, denoted  $\From{\mem}{\RefSet}$, formally defined below. 
+\begin{quote}
+$\Reach{\loc}{\mem}{\loc}$ if $\loc\in\dom{\mem}$\\
+$\Reach{\loc}{\mem}{\loc'}$ if $\mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}$ and $\loc'=\val_i$ for some $i\in 1..n$\\
+$\Reach{\loc}{\mem}{\loc'}$ and $\Reach{\loc'}{\mem}{\loc''}$ imply $\Reach{\loc}{\mem}{\loc''}$
+\end{quote}
+Then, $\From{\mem}{\RefSet}=\{\loc'\mid\Reach{\loc}{\mem}{\loc'}\ \mbox{for some}\ \loc\in\RefSet\}$.
+\end{itemize}
+
+Rules \refToRule{t-pure-conf} and \refToRule{t-pure-res} define the typing judgments for pure configurations and results, which have shape $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\T}$ and $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\val}{\env}}{\T}$, respectively. The two components of a pure configuration/result should be well-typed. However, for the environment, we only need to consider its restriction to the variables which are either in the (context needed to typecheck) source code, in the case of \refToRule{t-pure-conf}, or in the residual context. Indeed, the remaining part of the environment is useless, and could be safely removed. \EZComm{spiegare meglio}
+Then, the configuration/result is well-typed, with the type of its value expression/value, provided that the context extracted from the  restricted environment is enough to cover the resources needed by the source code, in the case of \refToRule{t-pure-conf}, and  the residual context.
+
+Rules \refToRule{t-conf} and \refToRule{t-res} define the typing  judgments for configurations and results, which have shape $\IsWFConf{\Gamma}{\ResGamma}{\conf}{\T}$ and 
+$\IsWFConf{\Gamma}{\ResGamma}{\vconf}{\T}$, respectively. 
+These rules are analogous to those above, apart that there is an additional component, the memory. Analogously to the environment, for the memory as well we only need to consider a portion, notably that reachable from some reference which is either denoted by a variable in the restricted environment, or, in the case of \refToRule{t-res}, in the (context needed to typecheck) the final value. Indeed, the remaining part of the memory is useless, and could be safely removed. \EZComm{spiegare meglio}
+
+\EZComm{mi pare $\ResGamma$ serva solo nella prova, va spiegato bene}
+
+
+We define now the notation $\OK{\alpha}{\upsilon}{\mem}$. Clearly, a memory $\mem$ can be seen as a labelled weighted graph, where nodes are references in $\dom{\mem}$, labels are field names, and weights are pairs of assumption and usage grades. This intuition is formalized below.
+
+We write $\GrDReach{\loc}{\f_i}{\Rgr_i}{\rgr_i}{\loc'}$ iff  
+\begin{quote}
+ $\mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}$, $\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$, $i\in 1..n$, and $\val_i=\iota'$. 
+\end{quote}
+
+A (non-null) path from $\loc_0$ to $\loc_n$ is a sequence $\pi=\loc_0\xrightarrow[f_0]{\Rgr_0\diamond\rgr_0}\loc_1\xrightarrow[f_1]{\Rgr_1\diamond\rgr_1}\ldots\xrightarrow[f_{n-1}]{\Rgr_{n-1}\diamond\rgr_{n-1}}\loc_n$, for $n\geq 1$.  
+
+We can inductively define the usage and assumption grades of a path as follows.
+
+\begin{quote}
+$\AGrNonNull{\GrDReach{\loc}{\f}{\Rgr}{\rgr}{\loc'}}=\Rgr$\BigSpace$\UGrNonNull{\GrDReach{\loc}{\f}{\Rgr}{\rgr}{\loc'}}=\rgr$\\
+$\AGrNonNull{\pi\xrightarrow[\f]{\Rgr\diamond\rgr}\loc}=\Rgr\rsum\AGrNonNull{\pi}\rmul\rgr$\BigSpace$\UGrNonNull{\pi\xrightarrow[\f]{\Rgr\diamond\rgr}\loc}=	\UGrNonNull{\pi}\rmul\rgr$
+\end{quote}
+
+Set $\alpha=\VarGrade{\loc_1}{\Rgr_1}, \ldots, \VarGrade{\loc_n}{\Rgr_n}$ and $\upsilon=\VarGrade{\loc_1}{\rgr_1}, \ldots, \VarGrade{\loc_n}{\rgr_n}$ an assumption and usage grade context, respectively.
+We can extend the above definitions to null paths as follows:
+
+\begin{quote}
+$\AGr{\alpha}{\loc}=\alpha(\loc)$\BigSpace$\UGr{\upsilon}{\loc}=\upsilon(\loc)$\\
+$\AGr{\alpha}{\pi\xrightarrow[\f]{\Rgr\diamond\rgr}\loc}=\Rgr\rsum\AGr{\alpha}{\pi}\rmul\rgr$\BigSpace$\UGr{\upsilon}{\pi\xrightarrow[\f]{\Rgr\diamond\rgr}\loc}=	\UGr{\upsilon}{\pi}\rmul\rgr$
+\end{quote}
+
+Then,  $\OK{\alpha}{\upsilon}{\mem}$ is defined as follows:
+\begin{quote}
+for all $\loc\in\dom{\mem}$, $\pi_1,\ldots,\pi_n$ such that $\pi_i$ is a path from $\loc_i$ into $\loc$,\\
+for all $j\in 1..n$, $\sum_{k \neq j} \UGr{\upsilon}{\pi_k} \rord \AGr{\alpha}{\pi_j}$
+\end{quote}
+
+The following result holds. \EZComm{poi dire a cosa serve}
+
+\begin{proposition}
+If $\OK{\alpha}{\upsilon}{\mem}$, then, for each non null path $\pi$ from $\iota$,
+\begin{quote}
+$\AGr{\alpha}{\pi}=\AGrNonNull{\pi}\rsum\alpha(\iota)\rmul\UGrNonNull{\pi}$
+\end{quote}
+\end{proposition}
+\begin{proof}
+By arithmetic induction on the length of $\pi$. 
+\end{proof}
+
+
+
+
+
+
+

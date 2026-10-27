@@ -1,0 +1,108 @@
+\section{Read/write grades}
+
+\bez
+Read/write grades $\rgr, \sgr, \tgr$ have shape $\RW{\pgr}{\qgr}$, where $\pgr$ and $\qgr$ model reading and writing the memory, respectively. We write $\R{\pgr}$ and $\W{\pgr}$ for $\RW{\pgr}{\rzero}$ and 
+$\RW{\rzero}{\pgr}$, respectively, and $\rzero$ for $\RW{\rzero}{\rzero}$.
+
+\EZComm{operazioni sui gradi r/w: nella somma si sommano i gradi read tra loro e i gradi write tra loro, nell'ordine idem, il prodotto di un grado r/w per uno imperativo moltiplica entrabe le componenti, prodotto tra due composti moltiplico il read del primo per il secondo, sottrazione derivata}
+
+In \cref{fig:RW} we show the semantic and typing rules which need to be modified.
+\eez
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\bez
+\NamedRule{fields-access}{
+ \begin{array}{l}
+  \RedVal{\x}{\env}{\sgr_1\rsum\ldots\rsum\sgr_n}{\loc}{\env'}\\
+  \reduce{\Conf{\Subst{\e}{\y_i}{\x_i}}{\AddToEnv{\env'}{\y_i}{\sgr_i\rmul\rgr_i}{\val_i}}{\mem}}{\sgr}{\vconf}
+\end{array}
+}{ \reduce{\Conf{\FieldsMatch{\x_1\ldots\x_n}{\x}{\e}}{\env}{\mem}}{\sgr}{\vconf}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{m}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_m},\\ 
+  n\leq m\\
+   \sgr_i=\R{\pgr_i}, \pgr_i\neq\rzero\ \forall i\in 1..n\\
+\y_i\not\in\dom{\env'}\ \forall i\in 1..n
+}
+\eez
+\\[6ex]
+\bez
+\NamedRule{field-update}{
+  \begin{array}{l}
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}\\
+  \RedVal{\ve}{\env'}{\rgr\rmul\rgr_i}{\val}{\env''}
+  \end{array}
+}{ \reduce{\Conf{\FieldUpdate{\x}{\f_i}{\ve}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\sgr}{\Conf{\unit}{\env''}{\mem,\MemElem{\loc}{\Subst{\obj}{\val}{i}}}}}
+{ \obj=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n}\\
+  i\in 1..n\\ 
+    \rgr=\W{\pgr}, \pgr\neq\rzero\\
+}
+\eez
+\\[5ex]
+\end{array}
+\end{math}
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\bez
+\NamedRule{field-access}{
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}
+}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem}}{\sgr}{\Conf{\val_i}{\env'}{\mem}}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n}\\
+   i\in 1..n\\ 
+  \rgr=\R{\pgr}, \pgr\neq\rzero\\
+\sgr \rord \rgr\rmul\rgr_i
+}
+\eez
+\\[6ex]
+\end{array}
+\end{math}
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\bez
+\NamedRule{t-fields-access}{
+\begin{array}{l}
+\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\sgr_1\rsum\ldots\rsum\sgr_n}}\\
+\IsWFExp{\Gamma',\LocalGamma}{\e}{\T}
+\end{array}
+}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\FieldsMatch{\x_1\ldots\x_n}{\x}{\e}}{\T}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\sgr_i=\R{\pgr_i}, \pgr_i\neq\rzero\Space \forall i\in 1..n\\
+\LocalGamma\ctxord(\CtxElem{\x_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i}{\sgr_i\rmul\rgr_i}{\tau_i})^{i\in 1..n}
+}
+\eez
+\\[5ex]
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\T'_i}}{\IsWFExp{\Gamma\ctxsum\Rgr\rmul\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}}{
+\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}\\
+i\in 1..n\\
+\rgr=\W{\pgr},\pgr\neq\rzero\\
+\T'_i\leq\T_i
+}
+\end{array}
+\end{math}
+\\[1ex]
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}}{\IsWFExp{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\tau_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+\rgr=\R{\pgr}, \pgr\neq\rzero
+}
+\end{array}
+\end{math}
+\caption{Reduction and typing rules for r/w grades}
+\label{fig:RW} 
+\end{figure}

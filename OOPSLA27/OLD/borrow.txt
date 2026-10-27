@@ -1,0 +1,73 @@
+assume a countably infinite set of lifetimes a, b, c 
+
+lifetime contexts 
+Phi ::= a1,....,an 
+sequences of lifetimes. Given Phi = a1,...,an  define a_j < a_i iff j > i 
+
+Hence, given Phi, any subset of Phi  has a minimum. 
+
+Types 
+T ::= [a] C^{R,r}
+
+[a] C^{R,r} + [a] C^{S,s} = [a] C^{(R,r) + (S,s)}
+[a] C^{R,r} ; [a] C^{S,s} = [a] C^{(R,r) ; (S,s)} 
+
+(R,r) + (S,s) is the usual symmetric addition 
+(R,r) ; (S,s) = (S /\ (R-s), r+s) 
+
+(G1,G2) ++ G = 
+  - use + for variables in G1
+  - use ; for variables in G2 
+ - under the assumption that G1 and G2 are disjoint 
+
+We write G1 + G2 for (G1, -) ++ G2 (the second is empty. 
+
+Typing judgement 
+Phi | G |- e : T 
+assumption:  all lifetimes in G appear in Phi (consequence also the lifetime in T appears in Phi) 
+
+Phi,a | G1, [a] G2 |- e1 : [b] C^{R,r} 
+Phi |- G3, x :_{R,r} [b] C  |- e2 : T
+-----------------------------------
+Phi | (G1,G2) ++ G3 |- let x = e1 in e2 : T 
+  where 
+  - a != b 
+
+Phi | G |- v : [a] C^{R,r}
+------------------------
+Phi | G |- v.fi : [a] Ci^....
+
+Phi | G1 |- v1 : [a] C^{R,r}
+Phi | G2 |- v2 : [b] Ci^....
+-----------------------------------
+Phi | G1 + G2 |- v1.fi = v2 : Unit 
+  where Phi |- a < b 
+
+Phi |Gi |- vi : [ai] Ci^...  for all i in 1..n 
+-----------------------------------
+Phi | sum Gi |- new C(v1,...,vn) : [a] C^...
+  where Phi |- a = min{a1,...,an} 
+
+Phi | Gi |- vi : [ai] Ci^...  for all i in 0...n 
+------------------------------------
+Phi | sum Gi |- v0.m(v1,...,vn) : [sigma(b)] C^.... 
+  where 
+  - mtype(C0,m) = Psi, b0, T1,....,Tn -> [b] C^...
+  - sigma : Psi -> Phi  s.t. sigma(bi) = ai for all i in 0..n where bi is the lifetime of Ti
+    sigma preserves the ordering 
+
+Theorem 
+if Phi,a | G, x :_{R,r} [a] C |- e : [b] D^{R',r'}  with b != a 
+e|rho|mu =>_r' v|rho'|mu' 
+with rho and mu well typed and compatible with e, 
+rho(x) = (s,l) 
+mu(l) = (t,o) 
+then n
+rho'(x) = (s',l) 
+mu'(l) = (t',o') 
+with s' + r <= s  and  t' + r <= t 
+
+Nota: 
+- invece di liste di nomi potremmo usare semplicemente numeri naturali alla fine quelle liste di lifetime rappresentano solo numeri 
+
+

@@ -1,0 +1,243 @@
+\bez\section{Promotion}\label{sect:cyclic}\eez
+
+%We remove the constraint on the class table, so field update could possibly construct cyclic objects, as in $\FieldUpdate{\x}{\f}{\x}$. 
+\bez
+We enrich the type system by a  mechanism to detect from which variables the result of an expression could be possibly accessed.
+
+%cycles and only allow those which are \emph{contractive}, as detailed below.
+
+The typing judgment for expressions becomes $\IsWFExpDep{\Gamma}{\e}{\T}{\deps}$, meaning that the evaluation of the expression possibly introduces the set of \emph{dependencies} $\deps$, where
+a dependency $\dep$ is a tuple $\Dep{\x}{\Rgr}{\rgr}{\y}$ with $\x,\y$ variables, including the reserved variable $\res$ denoting the result of the expression.
+
+Given a set of dependencies $\deps$, the relation $\DepStar{\x}{\Rgr}{\rgr}{\deps}{\y}$ is inductively defined as follows:
+\begin{quote}
+$\DepStar{\x}{\Rgr}{\rgr}{\deps}{\y}$ if $\Dep{\x}{\Rgr}{\rgr}{\y}\in\deps$\\[1ex]
+$\DepStar{\x}{\Rgr\rmul\sgr\rsum\Sgr}{\rgr\rmul\sgr}{\deps}{\z}$ if $\DepStar{\x}{\Rgr}{\rgr}{\deps}{\y}$ and $\DepStar{\y}{\Sgr}{\sgr}{\deps}{\z}$.
+\end{quote}
+\eez
+ 
+%A set of dependencies $\deps$ is well-formed if the following condition holds:
+%\begin{quote}
+%if $\DepStar{\x}{}{\rgr}{\deps}{\x}$, then $\rgr$ is \emph{contractive}, that is, $\sgr\rmul\rgr\rord\sgr$ for any grade $\sgr$
+%\end{quote}
+%
+
+We assume that $\mtype{\C}{\m}$ gives now the tuple $\mTypeDep{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}{\deps}$ where $\deps$ is the set of dependencies possibly introduced among the parameters and $\res$.
+
+The definition is given in \cref{fig:cyclic}.  We use the following notation:
+\begin{quote}
+$\OptDeps{\x}{\Rgr}{\rgr}{\ve}=
+\begin{cases}
+\{\Dep{\x}{\Rgr}{\rgr}{\y}\}&\mbox{if}\ \ve=\y\\
+\emptyset&\mbox{otherwise}
+\end{cases}
+$
+\end{quote}
+Moreover, $\Subst{\deps}{\y}{\x}$ denotes the set of dependencies where $\x$ is replaced by $\y$, defined in the obvious way, whereas in $\Subst{\deps}{\pval}{\x}$ dependencies involving $\x$ are simply removed.
+Other notations are explained together with the rule where they are used.
+
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}}{\IsWFExpDep{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\tau_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}{\{\Dep{\x}{\Rgr_i}{\rgr_i}{\res}\}}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n}
+\\[5ex]
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\T}}{\IsWFExpDep{\Gamma\ctxsum\Rgr\rmul\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}
+{\OptDeps{\x}{\Rgr_i}{\rgr_i}{\ve}}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+\T\leq\GradedInd{\tau}{i}{\Rgr}{\rgr}\\
+}
+\\[4ex]
+\NamedRule{t-free}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\rgr}}}{\IsWFExpDep{\Gamma}{\Free{\x}}{\Unit}{\emptyset}}{}
+\\[4ex]
+\NamedRule{t-invk}{
+\begin{array}{l}
+\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr'}{\rgr'}}\\
+\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
+\end{array}
+}{\IsWFExpDep{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}{\Subst{\Subst{\deps}{\x}{\this}}{\ve_i}{\x_i}^{i\in 1..n}}}{
+\mtype{\C}{\m}=\mTypeDep{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}{\deps}\\
+\Rgr'\rord\Rgr\\
+\rgr\rord\rgr'\\
+\T'_i\leq\T_i\ \forall i\in 1..n
+}
+\\[6ex]
+\NamedRule{t-new}{\IsWFExp{\Gamma}{\ve_i}{\T_i}\Space \forall i\in 1..n}{\IsWFExpDep{\rgr\rmul\Gamma}{\New{\C}{\ve_1,\ldots,\ve_n}}{\Graded{\C}{\rzero}{\rgr}}{\deps}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\T_i\leq\GradedInd{\tau}{i}{\Rgr}{\rgr}\ \forall i\in 1..n\\
+\deps=\bigcup_{i\in 1..n} \OptDeps{\res}{\Rgr_i}{\rgr_i}{\ve_i}\\
+ }
+\\[4ex]
+\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExpDep{\Gamma}{\Return{\ve}}{\T}{\OptDeps{\res}{\rzero}{\rone}{\ve}\cup\OptDeps{\ve}{\rzero}{\rone}{\res}}}{}
+\\[4ex]
+\NamedRule{t-let}{
+\IsWFExpDep{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}{\deps}\BigSpace\IsWFExpDep{\Gamma',\LocalGamma}{\e'}{\T}{\deps'}
+}{\IsWFExpDep{\Gamma\ctxsum\Gamma'}{\Let{\x}{\e}{\e'}}{\T}{\Restrict{(\Subst{\deps}{\x}{\res}\cup\deps')}{\x}}}
+{\LocalGamma\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}
+}
+\\[4ex]
+
+%\NamedRule{t-mem}{
+%\IsWFObj{\Sigma_i}{\obj_i}{\Graded{\C_i}{\Rgr_i}{\rgr_i}}\Space \forall i \in 1..n}
+%{
+%\IsWFMem{\Sigma}{\mem}
+%}{\mem=\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}\\
+%\Sigma\ctxsum\Sigma_1\ctxsum\ldots\ctxsum\Sigma_n\ctxord\CtxElem{\iota_1}{\Rgr_1}{\rgr_1}{\C_1},\ldots,\CtxElem{\iota_n}{\Rgr_n}{\rgr_n}{\C_n}
+%}
+%
+%\\[4ex]
+%
+%\NamedRule{t-mem}{
+%\IsWFObj{\sigma_\mem}{\obj_i}\Space \forall i \in 1..n}
+%{
+%\IsWFMemDep{\Sigma}{\deps}{\mem}
+%}{\mem=\MemElem{\loc_1}{\obj_1},\ldots\MemElem{\loc_n}{\obj_n}\\
+%\sigma_\Sigma\ctxord\sigma_\mu
+%%\\\OK{\alpha_\Sigma}{\upsilon_\Sigma}{\mem}
+%%\\\OKDeps{\deps}{\deps_\mem} 
+%}
+%
+%\\[5ex]
+%
+%\NamedRule{t-conf}
+%{
+%\IsWFExpDep{\Delta}{\e}{\T}{\deps}\BigSpace
+%\IsWFEnv{\Gamma}{\Sigma}{\env'}\BigSpace
+%\IsWFMemDep{\Sigma}{\deps_{\env'} }{\mem'}
+%}
+%{
+%\IsWFConf{\Gamma}{\ResGamma}{\Conf{\e}{\env}{\mem}}{\T}
+%}
+%{
+%\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+%\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+%\mem'=\From{\mem}{\dom{\Sigma}}
+%}
+%
+%\\[5ex]
+%
+%\NamedRule{t-res}
+%{
+%\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+%\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+%\IsWFMemDep{\Sigma_1\ctxsum\Sigma_2}{\Subst{\deps_{\env'}}{\val}{\res}}{\mem'}
+%}
+%{
+%\IsWFConf{\Gamma}{\ResGamma}{\Conf{\val}{\env}{\mem}}{\T}
+%}
+%{
+%\ResGamma\ctxord\Gamma\\
+%\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+%\T'\subt\T\\
+%\mem'=\From{\mem}{\dom{\Sigma_1\ctxsum\Sigma_2}}
+%}
+%
+%\\[6ex]
+\bez
+\NamedRule{t-prom}
+{\IsWFExpDep{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}{\deps}}
+{\IsWFExpDep{\Gamma}{\e}{\Graded{\tau}{\Sgr}{\rgr}}{\deps}}
+{
+\Gamma=\CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\_}, \ldots, \CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\_}\\
+\DepStar{\x_i}{\Sgr_i}{\sgr_i}{\deps}{\res}\ \mbox{implies}\ \Rgr_i\rmul\sgr_i\rsum\Sgr_i\rord\Sgr}
+\eez
+\end{array}
+\end{math}
+\caption{\bez Type system with promotion\eez}
+\label{fig:cyclic} 
+\end{figure}
+
+We only comment the introduction of dependencies, since the other components of the judgment are as before. 
+In rule \refToRule{t-field-access}, a dependency is introduced from the receiver variable to the result. In rule \refToRule{t-field-update}, a dependency is introduced from the receiver variable to the second argument, if the latter is a variable, with the \bez grades \eez of the field.
+
+In rule \refToRule{t-free} no dependency is introduced.  In rule \refToRule{t-invk}, the set of dependencies introduced by the method invocation is obtained from that in the method declaration where parameters are replaced by arguments, if they are variables, or removed, if they are primitive values. 
+
+In rule \refToRule{t-new}. a dependency is introduced from the result to any argument which is a variable, with the \bez grades \eez of the field.
+
+ Rule \refToRule{t-ret} introduces a dependency \bez with assumption $\rzero$ and usage $\rone$ \eez from the argument to $\res$, and conversely, if the argument is a variable. 
+ \bez In this way, the variable argument and the result are in fact identified. \EZComm{spiegare meglio?} \eez Indeed, in $\Return{\x}$ the result of the expression exactly is the reference denoted by $\x$.
+
+In rule \refToRule{t-let}, the notation 
+$\Restrict{\deps}{\x}$ denotes the set of dependencies where variable $\x$ has been removed, however keeping the dependencies induced by those to  and from $\x$, as formalized below:
+\begin{quote}
+$\Dep{\y}{\Rgr}{\rgr}{\z}\in\deps$, $\y\neq\x$, $\z\neq\x$ imply $\Dep{\y}{\Rgr}{\rgr}{\z}\in\Restrict{\deps}{\x}$\\
+$\Dep{\y}{\Rgr}{\rgr}{\x}\in\deps$, $\Dep{\x}{\Sgr}{\sgr}{\z}\in\deps$ imply $\Dep{\y}{\Rgr\rmul\sgr\rsum\Sgr}{\rgr\rmul\sgr}{\z}\in\Restrict{\deps}{\x}$
+\end{quote}
+
+Finally, there is an additional rule at the bottom of \cref{fig:cyclic} which is called \emph{promotion} rule and is very important. Indeed, such rule allows to assign a more restrictive assumption to an expression, provided that any possible access from the outside to the variables in the expression satisfies such assumption. 
+
+\begin{example}[Promotion]\label{ex:ex2}
+Consider again extended natural numbers as grades\EZComm{mi pare funzioni uguale con la grade algebra affine}, and assume the following class table. 
+\begin{lstlisting}
+class D extends Object {}
+class C extends Object {D f;}
+\end{lstlisting}
+
+We can derive the following judgment:
+\begin{quote}
+\begin{small}
+\begin{math}
+\NamedRule{t-let}
+{
+\Rule{\ldots}{\IsWFExpDep{\CtxElem{\x}{1}{1}{\C},\CtxElem{\y}{}{}{\D}}{\FieldUpdate{\x}{\f}{\y}}{\Unit}{\{\Dep{\x}{\infty}{1}{\y}\}}}{}
+\BigSpace
+\Rule{\ldots}{\IsWFExpDep{\CtxElem{\x}{1}{1}{\C}}{\Return{\x}}{\Graded{\C}{1}{1}}{\{\Dep{\x}{0}{1}{\res},\Dep{\res}{0}{1}{\x}\}}}{}
+}
+{
+\IsWFExpDep{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{1}{1}}{\{\Dep{\x}{\infty}{1}{\y},\Dep{\x}{0}{1}{\res},\Dep{\res}{0}{1}{\x}\}}}{}
+\end{math}
+\end{small}
+\end{quote}
+\end{example}
+In both the subterms of $\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}$, the type of $\x$ needs to have assumption $1$, since $\x$ it is used once elsewhere (in the other subterm). 
+Formally, the side condition of rule \refToRule{t-let} holds, since $\CtxElem{\x}{0}{2}=\CtxElem{\x}{1}{1}{\C}\ctxsum\CtxElem{\x}{1}{1}{\C}$. 
+
+However, the type obtained for the whole expression is $\Graded{\C}{1}{1}$, whereas it is intuitively obvious that, since $\x$ is unique, the result is a unique reference. This can be obtained by promotion:
+\begin{quote}
+\begin{math}
+\NamedRule{t-prom}{
+\IsWFExpDep{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{1}{1}}{\{\Dep{\x}{\infty}{1}{\y},\Dep{\x}{0}{1}{\res},\Dep{\res}{0}{1}{\x}\}}}{
+\IsWFExpDep{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{0}{1}}{\{\Dep{\x}{\infty}{1}{\y},\Dep{\x}{0}{1}{\res},\Dep{\res}{0}{1}{\x}\}}}{}
+\end{math}
+\end{quote}
+Indeed, the only dependency to $\res$ is
+\begin{quote}
+$\DepStar{\x}{0}{1}{\deps}{\res}$
+\end{quote}
+and we have $0\cdot 1 \rsum 0 \rord 0$. 
+
+Other examples: \EZComm{presi da lavoro con Marco}
+\begin{lstlisting}
+class D { int f;} 
+class C {D f1; D f2}
+let D y = new D(0) in
+  let C$^{}$ z = let D x = new D(y.f); 
+\end{lstlisting}
+%mut D y=new D (0);%capsule C z={ mut D x=new D(y.f); new C(x,x)}
+\begin{quote}
+$\TypedLet{\y}{}{}{\D}{\New{\D}{}}{}$
+\end{quote}
+
+
+The dependencies $\deps_\mem$ determined by the structure of memory are defined by:
+\begin{quote}
+$\Dep{\loc}{\Rgr_i}{\rgr_i}{\locPrime}\in\deps_\mem$ iff  $\mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\sgr},\ldots,\GradedValInd{\val}{n}{\sgr}}$ and $\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$
+ and $\val_i=\locPrime$ for some $i\in 1..n$.
+\end{quote}
+
+%The added last side condition $\OKDeps{\deps}{\deps_\mem}$ in rule \refToRule{t-mem} checks that putting together the given dependencies with those determined by the structure of memory we get a well-formed set of dependencies. 
+
+The set of dependencies $\deps_{\env}$ among references obtained from $\deps$ through ${\env}$ is obtained by replacing each variable $\x$ with $\loc$ if  $\EnvElem{\x}{\_}{\loc}\in\env$. \EZComm{notare che $\res$ rimane inalterato e dare definizione in dettaglio}
+%\begin{quote}
+%$\Dep{\loc}{\rgr}{\locPrime}\in\deps_\env$ iff $\Dep{\x}{\rgr}{\y}\in\deps$ and $\EnvElem{\x}{\_}{\loc}, \EnvElem{\y}{\_}{\locPrime}\in\env$\\
+%$\Dep{\res}{\rgr}{\locPrime}\in\deps_\env$ iff 
+%\end{quote}
+
+%In rule \refToRule{t-res}, analogously, memory is typechecked with respect to a set of dependencies $\deps_{\env'}$ among references obtained from $\deps$ through ${\env'}$, that is, by replacing each variable $\x$ with $\loc$ if  $\EnvElem{\x}{\_}{\loc}\in\env'$. \EZComm{notare che $\res$ rimane inalterato}
+
+
+

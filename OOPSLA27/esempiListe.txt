@@ -1,0 +1,85 @@
+Class List {
+  Node n; // unique uso irrilevante 
+  Unit append(int i) { // assunzione qualunque no aliasing 
+    if this.n.isEmpty() // no aliasing 
+    then this.n = new NENode(i,this.n)
+    else let last = this.n.getLast() 
+         in last.next = new NEDoe(i,last.next); 
+    return unit; 
+  }
+  Unit removeFirst() {
+    let fst = n.getFirst() 
+    in this.n = fst.next; return unit
+  }
+}
+
+class Node; 
+class ENode extends Node {
+  bool isEmpty() { return true }
+  NENode getFirst() { //throw error } 
+}
+class NENode extends Node {
+  int info; 
+  Node next; 
+  bool isEmpty() { return false }
+  NENode getLast() {
+    if this.next.isEmpty() 
+    then return this
+    else return this.next.getLast()
+  }
+  NENode getFirst() { return this } 
+}
+
+Questo è il modo imperativo in cui l'append ritorna unit
+vorremmo che in append this sia borrowed ma non ne sono dicuro 
+
+
+class List 
+class EList extends List  {
+  NEList append(int i) { return new NEList(i,this) }
+}
+class NEList extends List {
+  int i; List next; 
+  NEList append(int i) {
+    let newNext = this.next.append(i)
+    in this.next = newNex; return this 
+  }
+
+qui vorremmo che this entra unique e il risultato è ancora unique 
+
+
+in entrambi i casi anche avendo la grade algebra con read e write non so se riusciamo a tiparli correttamente 
+
+class Stack {
+  NEStack push(int i) {
+    return new NEStack(i,this)
+  }
+}
+class EStack extends Stack 
+class NEStack {
+  int i; Stack next; 
+}
+}
+
+qui riesco a dare tipi unique 
+ci sono problemi ad implementare correttamente top e pop (soprattutto se pop vuole deallocare) 
+
+controesempio per promozione shallow
+
+sia x unique
+
+let y = x.f 
+
+let y = x.f in (new C(y, x.f); free x)   non posso dire che x è borrowed ma vorrei poter dire che la seconda occorrenza di x è unique 
+
+il problema è che se x è unique 
+
+y =f=> x
+
+res =f1=> y, res =f2=> x.f
+
+nella prima parte della seconda introduco alias per x.f e y
+
+nella seconda parte non introduco nulla
+
+quando faccio la somma devo confrontare i cammini con alias con quelli acceduti 

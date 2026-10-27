@@ -1,0 +1,224 @@
+\section{Promotion}\label{sect:promotion}
+
+
+We 
+enrich the type system by keeping trace of \bez the aliases introduced for paths. \eez In this way, typechecking a sequential composition can incorporate  a \emph{promotion} \EZComm{recovery?} mechanism, allowing to assign more restrictive assumptions to variables in the second subterm. \EZComm{spiegare idea e relazione con borrowing}
+
+\bez A \emph{path} $\pi$ has shape $\FieldAccess{\x}{\fs}$, with $\x$ variable, including the reserved variable $\res$ denoting the result of the expression, and $\fs$ (possibly empty) sequence of field names.  Note that, for the restricted calculus of \cref{sect:flat}, such sequence is always empty, that is, paths are just variables. 
+
+An \emph{aliasing relation} $\Alias{}{}$ is a relation on paths which is reflexive, transitive and closed by field access, that is, $\Alias{\pi}{\pi'}$ implies $\Alias{\FieldAccess{\pi}{\f}}{\FieldAccess{\pi'}{\f}}$. \EZComm{forse considerare solo i path sensati rispetto alla class table?}
+\eez
+
+The typing judgment for expressions becomes $\IsWFExpEq{\Gamma}{\e}{\T}{\aliasing}$, meaning that the evaluation of the expression possibly introduces the aliasing $\aliasing$.
+In the following, aliasing is represented by a set of pairs $\Alias{\pi}{\pi'}$. \EZComm{spiegare meglio}
+
+We assume that $\mtype{\C}{\m}$ gives now the tuple $\mTypeDep{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}{\aliasing}$ where $\aliasing$ is the aliasing possibly introduced among paths starting from the parameters, including the implicit parameter $\this$, and $\res$. 
+
+The definition is given in \cref{fig:promotion}.  We use the following notation:
+\begin{quote}
+$\OptEqs{\pi}{\ve}=
+\begin{cases}
+\{\Alias{\pi}{\y}\}&\mbox{if}\ \ve=\y\\
+\emptyset&\mbox{otherwise}
+\end{cases}
+$
+\end{quote}
+Moreover, $\Subst{\aliasing}{\y}{\x}$ denotes the aliasing where $\x$ is replaced by $\y$, defined in the obvious way, whereas in $\Subst{\aliasing}{\pval}{\x}$ $\x$ is simply removed.
+Other notations are explained together with the rule where they are used.
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}}{\IsWFExpEq{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\tau_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}{\{\bez\Alias{\res}{\FieldAccess{\x}{\f_i}}\eez\}}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n}
+\\[5ex]
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\T}}{\IsWFExpEq{\Gamma\ctxsum\Rgr\rmul\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}
+{\OptEqs{\FieldAccess{\x}{\f_i}}{\ve}}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+\T\leq\GradedInd{\tau}{i}{\Rgr}{\rgr}\\
+}
+\\[4ex]
+\NamedRule{t-free}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\rgr}}}{\IsWFExpEq{\Gamma}{\Free{\x}}{\Unit}{\emptyset}}{}
+\\[4ex]
+\NamedRule{t-invk}{
+\begin{array}{l}
+\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr'}{\rgr'}}\\
+\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
+\end{array}
+}{\IsWFExpEq{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}{\Subst{\Subst{\aliasing}{\x}{\this}}{\ve_i}{\x_i}^{i\in 1..n}}}{
+\mtype{\C}{\m}=\mTypeDep{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}{\aliasing}\\
+\Rgr'\rord\Rgr\\
+\rgr\rord\rgr'\\
+\T'_i\leq\T_i\ \forall i\in 1..n
+}
+\\[6ex]
+\NamedRule{t-new}{\IsWFExp{\Gamma}{\ve_i}{\T_i}\Space \forall i\in 1..n}{\IsWFExpEq{\rgr\rmul\Gamma}{\New{\C}{\ve_1,\ldots,\ve_n}}{\Graded{\C}{\rzero}{\rgr}}{\aliasing}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\T_i\leq\GradedInd{\tau}{i}{\Rgr}{\rgr}\ \forall i\in 1..n\\
+\aliasing=\bigcup_{i\in 1..n} \OptEqs{\FieldAccess{\res}{\f_i}}{\ve_i}\\
+ }
+\\[4ex]
+\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExpEq{\Gamma}{\Return{\ve}}{\T}{\OptEqs{\res}{\ve}}}{}
+\\[4ex]
+\NamedRule{t-let-prom}{
+\IsWFExpEq{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}{\aliasing}\BigSpace\IsWFExpEq{\Gamma',\Gamma_\x}{\e'}{\T}{\aliasing'}
+}{\IsWFExpEq{\CtxSum{\Gamma}{\Borrowed}{\Gamma'}}{\Let{\x}{\e}{\e'}}{\T}{\Restrict{(\Subst{\aliasing}{\x}{\res}\cup\aliasing')}{\x}}}
+{
+\Gamma_\x\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}\\
+\Borrowed=\{\x\in\dom{\Gamma}\mid \Alias{\pi}{\FieldAccess{\x}{\fs}}\implies \pi=\FieldAccess{\x}{\fs}\}
+}
+\end{array}
+\end{math}
+\caption{ Type system with promotion}
+\label{fig:promotion} 
+\end{figure}
+
+We only comment the introduction of aliasing, since the other components of the judgment are as before. 
+In rule \refToRule{t-field-access}, \bez the result becomes an alias for the field of the receiver variable. \eez 
+In rule \refToRule{t-field-update}, the field of the receiver variable \bez becomes an alias for the second argument, \eez if the latter is a variable.
+
+In rule \refToRule{t-free} no \bez alias \eez is introduced.  In rule \refToRule{t-invk}, the aliasing introduced by the method invocation is obtained from that in the method declaration where parameters are replaced by arguments, if they are variables, or removed, if they are primitive values. 
+
+In rule \refToRule{t-new}, the field of the result \bez becomes an alias for \eez the argument, for any argument which is a variable.
+ Rule \refToRule{t-ret} \bez introduces $\res$ as an alias for the argument \eez and $\res$, if the argument is a variable. 
+
+In rule \refToRule{t-let-prom} the notation 
+$\Restrict{\aliasing}{\x}$ denotes the aliasing relation where variable $\x$ has been removed. This rule incorporates a \emph{promotion} mechanism allowing to assign more restrictive assumptions to the variables in the second subterm. 
+Notably, in the context used to typecheck the first subterm we distinguish the variables which are \emph{borrowed}, that is, \bez whose reachable object graph \eez cannot be accessed through an alias in the second subterm.
+
+The asymmetric sum of grades is defined as follows:
+\begin{quote}
+$\Pair{\Rgr}{\rgr}\rseq\Pair{\Sgr}{\sgr}=\Pair{(\Rgr \rsub \sgr) \rmeet \Sgr}{\rgr\rsum\sgr}$
+\end{quote}
+Then, the context $\CtxSum{\Gamma_1}{\Borrowed}{\Gamma_2}$ is defined by:
+\begin{quote}
+$\CtxSum{\emptyset}{\Borrowed}{\Gamma}=\Gamma$\\
+ $\CtxSum{(\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}),\Gamma_1}{\Borrowed}{\CtxElem{\x}{\Rgr_2}{\rgr_2},\Gamma_2} = \CtxElem{\x}{\Rgr}{\rgr}{\tau},(\CtxSum{\Gamma_1}{\Borrowed}{\Gamma_2})$ 
+ where $\Pair{\Rgr}{\rgr}=
+ \begin{cases}
+\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}&\mbox{if}\  \x\not\in\Borrowed,   \\  
+\Pair{\Rgr_1}{\rgr_1}\rseq\Pair{\Rgr_2}{\rgr_2}&\mbox{if}\  \x\in\Borrowed
+\end{cases}$  \\  
+$\CtxSum{(\CtxElem{\x}{\Rgr}{\rgr}{\tau}),\Gamma_1}{\Borrowed}{\Gamma_2}=(\CtxElem{\x}{\Rgr}{\rgr}{\tau}),\CtxSum{\Gamma_1}{\Borrowed}{\Gamma_2}$ if $\x\not\in\dom{\Gamma_2}$
+\end{quote}
+
+\begin{example}[Promotion]\label{ex:ex2}
+Consider again extended natural numbers as grades, and assume the following class table. 
+\begin{lstlisting}
+class D extends Object {int f;}
+class C extends Object {D f;}
+\end{lstlisting}
+
+Assume to typecheck $\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}$ in a context where $\x$ is assumed unique. Intuitively, the returned $\x$ should be still unique.
+Formally, we can derive the following judgment:
+\begin{quote}
+\begin{small}
+\begin{math}
+\NamedRule{t-let-prom}
+{
+\Rule{\ldots}{\IsWFExpEq{\CtxElem{\x}{1}{1}{\C},\CtxElem{\y}{\Rgr}{1}{\D}}{\FieldUpdate{\x}{\f}{\y}}{\Unit}{\{\Alias{\FieldAccess{\x}{\f}}{\y}\}}}{}
+\BigSpace
+\Rule{\ldots}{\IsWFExpEq{\CtxElem{\x}{0}{1}{\C}}{\Return{\x}}{\Graded{\C}{1}{1}}{\{\Alias{\x}{\res}\}}}{}
+}
+{
+\IsWFExpEq{\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{\Rgr}{1}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\x}}}{\Graded{\C}{0}{1}}{\{\Alias{\FieldAccess{\x}{\f}}{\y}},\Alias{\x}{\res}\}}{}
+\end{math}
+\end{small}
+\end{quote}
+Indeed, we have $\Borrowed=\{\x\}$, that is, $\x$ is borrowed. As a consequence, the first subterm needs to assume that $\x$ will be used once in the second subterm; however, the converse does not hold. Formally we have:
+\begin{quote}
+$\CtxSum{\CtxElem{\x}{1}{1}{\C},\CtxElem{\y}{}{}{\D}}{\{\x\}}{\CtxElem{\x}{0}{1}{\C}}=\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}$, since ${\Pair{1}{1}\rseq\Pair{0}{1}=\Pair{(1 \rsub 1) \rmeet 0}{1\rsum1}=\Pair{0}{2}}$
+\end{quote}
+Assume, instead, to typecheck $\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\y}}$ in a context where $\y$ is assumed unique. The returned $\y$ is no longer unique, since it can now be accessed through $\FieldAccess{\x}{\f}$ as well. Formally, we derive:
+
+\begin{quote}
+\begin{small}
+\begin{math}
+\NamedRule{t-let-prom}
+{
+\Rule{\ldots}{\IsWFExpEq{\CtxElem{\x}{\Rgr}{1}{\C},\CtxElem{\y}{1}{1}{\D}}{\FieldUpdate{\x}{\f}{\y}}{\Unit}{\{\Alias{\FieldAccess{\x}{\f}}{\y}\}}}{}
+\BigSpace
+\Rule{\ldots}{\IsWFExpEq{\CtxElem{\y}{1}{1}{\D}}{\Return{\y}}{\Graded{\C}{1}{1}}{\{\Alias{\y}{\res}\}}}{}
+}
+{
+\IsWFExpEq{\CtxElem{\x}{\Rgr}{1}{\C},\CtxElem{\y}{0}{2}{\D}}{\Seq{\FieldUpdate{\x}{\f}{\y}}{\Return{\y}}}{\Graded{\C}{0}{1}}{\{\Alias{\FieldAccess{\x}{\f}}{\y}},\Alias{\y}{\res}\}}{}
+\end{math}
+\end{small}
+\end{quote}
+We have:
+\begin{quote}
+$\CtxSum{\CtxElem{\x}{1}{1}{\C},\CtxElem{\y}{}{}{\D}}{\{\x\}}{\CtxElem{\x}{0}{1}{\C}}=\CtxElem{\x}{0}{2}{\C},\CtxElem{\y}{}{}{\D}$, since ${\Pair{1}{1}\rseq\Pair{0}{1}=\Pair{(1 \rsub 1) \rmeet 0}{1\rsum1}=\Pair{0}{2}}$
+\end{quote}
+
+
+\end{example}
+
+An analogous judgment can be derived considering the affinity algebra (the only difference is that we get usage $\infty$ rather than $2$). 
+
+Extend now the above classes as follows.
+
+\begin{lstlisting}
+class D extends Object { int f;
+  D$^0$ copy() {
+    let n = this.f in return new D(n)
+    }
+  }
+class C extends Object {
+  D f;
+  C$^0$ shallow_copy() {
+    let d = this.f in return new C(d)
+    }
+  C$^0$ deep_copy() {
+    let d = this.f in
+      let d1 = d.copy() in return new C(d1)
+    }
+}    
+ let d2 = d1.clone() in 
+\end{lstlisting}
+
+Methods returning a copy (clone) of an object are clearly expected to return a unique reference. 
+In shallow copy, however, the field of the copy is not unique, whereas  first of all note that, since the $\this$ implicit parameter has $\infty$ assumption (no restrictions), the method would be ill-typed. Indeed, 
+
+For instance, consider the following class table with the grade algebra of extended natural numbers. 
+\begin{lstlisting}
+class D extends Object {}
+class C extends Object {$\Graded{\D}{1}{1}$ f1; $\Graded{\D}{1}{1}$ f2}
+\end{lstlisting} 
+and the judgment 
+\begin{quote}
+$\IsWFExp{\CtxElem{\x}{1}{2}{\C},\CtxElem{\y}{1}{1}{\D}}{\Seq{\FieldUpdate{\x}{\f1}{\y}}{\Return{\FieldAccess{\x}{\f1}}}}{\Graded{\D}{2}{1}}$
+\end{quote}
+In the expression, $\x$ is used twice and $\y$ is used once. Moreover, the references denoted by $\x$ and $\y$ are assumed to  be used elsewhere (at most) once.
+Then, the result of the expression can be used once and is assumed to be used elsewhere  (at most) once through $\y$, and (at most) once through $\FieldAccess{\x}{\f1}$. 
+
+
+%shallow copy: this non ha vincoli, il campo deve essere infinito 
+%il risultato è unique, res.f no
+%this è unique faccio copia e lo perdo 
+%
+%in x.shallowcopy()  x non è borrowed 
+%
+%x.deepcopy posso farla anche con il campo unique ok 
+%
+%quello che ottengo è unique, il campo, e anche se era unique
+%
+%alla fine sono unique sia lui che la copia 
+
+Other examples: \EZComm{presi da lavoro con Marco}
+\begin{lstlisting}
+class D { int f;} 
+class C {D f1; D f2}
+let D y = new D(0) in
+  let C$^{}$ z = let D x = new D(y.f); 
+\end{lstlisting}
+%mut D y=new D (0);
+%capsule C z={ mut D x=new D(y.f); new C(x,x)}
+%\begin{quote}
+%$\TypedLet{\y}{}{}{\D}{\New{\D}{}}{}$
+%\end{quote}
+
+
+

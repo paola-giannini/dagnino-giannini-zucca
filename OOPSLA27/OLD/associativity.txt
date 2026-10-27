@@ -1,0 +1,51 @@
+
+
+
+
+we set 
+(r1,r2) • (s1,s2) = (r1+s1, (r2-s1)/\(s2-r1))
+
+consider 
+((r1,r2) • (s1,s2)) • (t1,t2) 
+and focus on the second component 
+(((r2  - s1) /\ (s2 - r1)) - t1) /\ (t2 - (r1 + s1))
+this should be equal to the second component of 
+(r1,r2) • ((s1,s2) • (t1,t2)) 
+which is equal to 
+(r2 - (s1 + t1)) /\ (((t2 - s1) /\ (s2 - t1)) - r1)
+
+we have 
+(((r2  - s1) /\ (s2 - r1)) - t1) /\ (t2 - (r1 + s1))
+  = ((r2 - s1) - t1) /\ ((s2 - r1) - t1) /\ (t2 - (r1 + s1)) 
+    // - t1 distributes over meet
+  = ((r2 - s1) - t1) /\ ((s2 - r1) - t1) /\ ((t2 - s1) - r1) 
+    // a - (b+c) = (a - c) - b
+  = (r2 - (s1 + t1)) /\ ((s2 - r1) - t1) /\ ((t2 - s1) - r1) 
+    // (a - b) - c = a - (b + c) 
+  = (r2 - (s1 + t1)) /\ ((s2 - t1) - r1)  /\ ((t2 - s1) - r1) 
+    // (a - b) - c = (a - c) - b 
+  = (r2 - (s1 + t1)) /\ (((t2 - s1) /\ (s2 - t1)) - r1)
+    // - r1 distributes over meets 
+
+This proves the needed equality! 
+
+Let's check the needed properties
+
+(a /\ b) - c <= (a - c) /\ (b - c) 
+iff 
+(a /\ b) - c <= a - c  and  (a /\ b) - c <= b - c 
+both of these follow by monotonicity of - in the first argument 
+
+(a - c) /\ (b - c) <= (a /\ b) - c 
+iff 
+((a - c) /\ (b - c)) + c <= a /\ b 
+  // by definition of subtractive trade algebr 
+we have 
+((a - c) /\ (b - c)) + c 
+  <= (a - c) + c  // by monotonicity 
+  <= a  // by def. of subtractive grade algebra 
+
+the same works for be and this proves the thesis
+
+
+

@@ -1,0 +1,208 @@
+% !TEX root = main.tex
+
+\section{Results}\label{sect:soundness}
+
+In this section, our aim is to state and prove soundness of the type system. Soundness should mean, as customary for a graded type system, that, in addition to prevent standard typing errors:
+\begin{quote}
+(1) The resource-aware semantics cannot get stuck due to resource exhaustion.
+\end{quote}
+ In addition, thanks to the fact that assumption grades are checked as well:
+\begin{quote}
+(2) There can be no attempt at accessing a dangling reference, since the type system allows to deallocate a reference only if it is unique.  \\
+(3) An expression with a given assumption grade reduces to a reference satisfying the assumption; for instance, an expression with a unique type reduces to a reference which is actually unique in the final environment and memory.
+\end{quote}
+
+We first state a preliminary result for pure configurations: a well-typed pure configuration cannot get stuck, that is, always reduces to a pure result. The result turns out to be well-typed, with the same type and with respect to the same residual context. 
+
+\begin{theorem}[Soundness for pure reduction]\label{theo:sound-vexp}
+If $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\Graded{\tau}{\Rgr}{\rgr}}$,  then $\RedVal{\ve}{\env}{\rgr}{\val}{\env'}$ with $\IsWFConfPure{\Gamma'}{\bpa\Sigma'\epa}{\ResGamma}{\VConf{\val}{\env'}}{\Graded{\tau}{\Rgr}{\rgr}}$. \end{theorem}
+
+Then, the soundness theorem for expressions states that, if a configuration is well-typed, and reduces to a result in the standard semantics (that is, ignoring grades), then  it reduces, in the resource-aware semantics, to a well-typed result. 
+To formally express the theorem, we denote by $\erase{\conf}$ the configuration obtained from $\conf$ by erasing grades, by $\reduceE{}{}$ the reduction defined by the metarules in \cref{fig:semantics} where we remove side conditions involving grades, and by $\vconfE$ a result in which environment and memory do not have grades.
+\begin{theorem}[Soundness]
+\label{theo:sound-exp}
+If $\IsWFConf{\Gamma}{\ResGamma}{\conf}{\Graded{\tau}{\Rgr}{\rgr}}$, and
+$\reduceE{\erase{\conf}}{\vconfE}$, then $\reduce{\conf}{\rgr}{\vconf}$ such that $\erase{\vconf}=\vconfE$, and $\IsWFConf{\Gamma'}{\ResGamma}{\vconf}{\Graded{\tau}{\Rgr}{\rgr}}$.
+\end{theorem}
+The hypothesis that we get a result in the standard semantics is necessary since, being the semantics big-step, in case of non-termination we get no result in both the resource-aware and the standard one. 
+This is not a problem, since it is possible to canonically extend big-step semantics \cite{Dagnino22,BianchiniDGZ23oopsla} to get a special result $\rtop$ instead.  We do not consider here such extended semantics since the issue is orthogonal to the focus of the paper. 
+
+Note that \cref{theo:sound-exp} formalizes all the above mentioned properties.
+In particular, \bez properties (1) and (2) hold since reduction of a well-typed configuration is non-stuck; property (3) holds thanks to \cref{theo:sound-exp}, combined with the following proposition.
+\eez
+%\cref{prop:usage}, expressing that, given environment, memory and assumptions  which are altogether well-typed, each possibie access to the memory starting from the environment (entry point) satisfies the assumptions. \EZComm{spiegare meglio e mettere esempio}
+%
+%To formally express this result, we define the notation $\FinalUsage{\env}{\mem}{\gamma}$, meaning that $\gamma$ is a graded access to $\mem$ starting from the environment (entry point) $\env$.
+%To this end, we use the auxiliary notation $\Usage{\env}{\gamma}{\mem}{\env'}{\gamma'}$, meaning that, given a graded access from an entry point, we can obtain another graded access and a new entry point. \begin{quote}
+%$\DUsage{\env,\EnvElem{\x}{\rgr}{\loc}}{\gamma}{\mem}{\env}{\gamma\ctxsum\VarGrade{\loc}{\rgr}}$\\
+%$\DUsage{\env,\EnvElem{\x}{\rgr}{\loc}}{\gamma}{\mem}{\env,\EnvElem{\x}{\rgr\rmul\rgr_i}{\loc'}}{\gamma}$ if $\mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}$ and $\loc'=\val_i$ for some $i\in 1..n$\\
+%\\
+%$\Usage{\env}{\gamma}{\mem}{\env}{\gamma}$ \\
+%$\Usage{\env}{\gamma}{\mem}{\env'}{\gamma'}$ and $\DUsage{\env'}{\gamma'}{\mem}{\env''}{\gamma''}$ imply $\Usage{\env}{\gamma}{\mem}{\env''}{\gamma''}$\\
+%\\
+%$\FinalUsage{\env}{\mem}{\gamma}$ holds if $\Usage{\env}{\emptyset}{\mem}{\env'}{\gamma}$ for some $\env'$
+%\end{quote}
+%%Set $\env=\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}$, and $\UGrCtxRef{\env}$ the (usage) grade context defined by $\UGrCtxRef{\env}(\loc)=\sum_{\val_i=\loc}\rgr_i$
+%%where, set $\env=\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}$, $\UGrCtxRef{\env}(\loc)=\sum_{\val_i=\loc}\rgr_i$
+%
+%\EZComm{per ogni variabile si sceglie un possibile cammino a una locazione e si sommano}
+%
+%\newcommand{\SigmaEnv}{\Sigma_\env}
+%\newcommand{\SigmaEnvPrime}{\Sigma_{\env'}}
+%\newcommand{\SigmaEnvSecond}{\Sigma_{\env''}}
+\newcommand{\SigmaTest}{\hat{\Sigma}}
+%\newcommand{\SigmaUsed}{\overline{\Sigma}}
+%\newcommand{\SigmaRef}{\Sigma_{\loc}}
+%\newcommand{\SigmaRefPrime}{\Sigma_{\loc'}}
+%\newcommand{\envTilde}{\tilde{\env}}
+%\newcommand{\memTilde}{\tilde{\mem}}
+%\newcommand{\SigmaTilde}{\tilde{\Sigma}}
+%\newcommand{\SigmaMemTilde}{\Sigma_{\memTilde}}
+%
+%\EZComm{spiegare lo statement}
+%\begin{proposition}\label{prop:usage}
+%\EZComm{so che devono valere delle premesse $\IsWFVal{\Gamma_1}{\loc}{\T'}$ con $\T'\subt\Graded{\C}{\Rgr}{\rgr}$ e $\IsWFEnv{\_}{\Sigma_2}{\env'}$, in particolare so che vale $\IsWFVal{\CtxElem{\loc}{\Rgr}{\rzero}{\C}}{\loc}{\Graded{\C}{\Rgr}{\rzero}}$ e $\IsWFEnv{\_}{\Sigma_\env'}{\env'}$ dove $\Sigma_\env'$ ha gradi assunzione $\infty$, quindi posso ridurmi alla formulazione sotto}
+%
+%Let $\SigmaEnv$ and $\SigmaTest$ be contexts where assumption grades are $\rtop$ and usage grades are $\rzero$, hence are omitted.\EZComm{da verificare ruolo assunzioni in regola ambiente, potrebbero essere sempre $\rtop$}
+%If $\IsWFEnv{\_}{\SigmaEnv}{\env}$ and $\IsWFMemOut{\SigmaEnv\ctxsum\SigmaTest}{\SigmaUsed}{\mem}$, then $\FinalUsage{\env}{\mem}{\gamma}$ implies, for each $\loc\in\dom{\mem}$, $\gamma(\loc)\rord\AGrCtx{\SigmaTest}(\loc)$.
+%\end{proposition}
+%\begin{proof}
+%%Let us write $\IsWFMemOut{\Sigma}{\SigmaUsed}{\mem}$ if $\IsWFMem{\Sigma}{\mem}$ is derived by rule \refToRule{t-mem} with premises $\IsWFField{\Sigma_i}{\mem}{\loc_i}{\_}$, for $i \in 1..n$, and $\SigmaUsed=\Sigma_1\ctxsum\ldots\ctxsum\Sigma_n$.  
+%We prove the following extended thesis:
+%\begin{quote}
+%Set $\IsWFVal{\CtxElem{\loc}{\Rgr}{\rgr}{\C}}{\loc}{\Graded{\C}{\Rgr}{\rgr}}$ and $\IsWFEnv{\_}{\SigmaEnv}{\env}$ and 
+%$\IsWFMemOut{\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxsum\SigmaEnv}{\SigmaUsed}{\mem}$.\\
+%Then
+%%If $\IsWFEnv{\_}{\SigmaEnv}{\env}$ and $\IsWFMemOut{\SigmaEnv\ctxsum\SigmaTest}{\SigmaUsed}{\mem}$ and 
+%${\Usage{\env}{\emptyset}{\mem}{\env'}{\gamma}}$ implies $\IsWFEnv{\_}{\SigmaEnvPrime}{\env'}$ for some $\SigmaEnvPrime$, and $\IsWFMemOut{\SigmaEnvPrime\ctxsum\SigmaTest}{\SigmaUsed'}{\mem}$ for some $\SigmaUsed'$, with $\gamma\ctxsum\UGrCtx{\SigmaUsed'}\rord\AGrCtx{\SigmaTest}$. 
+%\end{quote}
+%To the aim of the proof, we make explicit the number of steps in the definition of $\Usage{\env}{\emptyset}{\mem}{\env'}{\gamma}$, that is, we write $\NUsage{\env}{\emptyset}{\mem}{k}{\env'}{\gamma}$ for $k\geq 0$, and reason by induction on $k$. 
+%%Moreover, to simplify the notation, we omit assumption grades in $\SigmaEnv$, that is, assume they are $\rtop$, and usage grades in $\SigmaTest$, that is, assume they are $\rzero$. This is safe, since assumption grades can be arbitrarily assigned in rule \refToRule{t-env} and are not relevant in the statement. 
+%
+%\begin{itemize}
+%\item $k=0$. This means that $\NUsage{\env}{\emptyset}{\mem}{0}{\env}{\emptyset}$. We have to show that $\UGrCtx{\SigmaUsed}\rord\AGrCtx{\SigmaTest}$. 
+%
+%Since $\SigmaEnv\ctxsum\SigmaTest$ is defined we have $\UGrCtx{\SigmaEnv\ctxsum\SigmaTest}=\UGrCtx{\SigmaEnv}\ctxord\AGrCtx{\SigmaTest}$ and $\AGrCtx{\SigmaEnv\ctxsum\SigmaTest}=\AGrCtx{\SigmaTest}\rsub\UGrCtx{\SigmaEnv}$.\EZComm{notazione da definire}
+%Assume $\SigmaEnv\ctxsum\SigmaTest={\CtxElem{\loc_1}{\Rgr_1}{\rgr_1}{\tau_1},\ldots,\CtxElem{\loc_n}{\Rgr_n}{\rgr_n}{\tau_n}}$, and $\SigmaUsed=\Sigma_1\ctxsum\ldots\ctxsum\Sigma_n$.
+%By inverting rules \refToRule{t-mem} and \refToRule{t-ref-in-mem} we have, for all $i\in 1..n$,  $\CtxElem{\loc_i}{\Rgr_i}{\rgr_i}{\_}\ctxord\Sigma_i$, hence 
+%$\SigmaEnv\ctxsum\SigmaTest\ctxord\SigmaUsed$,
+%hence $\UGrCtx{\SigmaUsed}=\UGrCtx{\SigmaEnv}\ctxsum\UGrCtx{\Sigma'}$ and $\UGrCtx{\SigmaUsed}\ctxord\AGrCtx{\SigmaTest}$.
+%
+%\item $k+1$. This means that 
+%\begin{itemize}
+%\item[(a)] $\NUsage{\env}{\emptyset}{\mem}{k}{\env'}{\gamma}$ 
+%\item[(b)] $\DUsage{\env'}{\gamma}{\mem}{\env''}{\gamma'}$
+%\end{itemize}
+%By inductive hypothesis from (a), we have 
+%\begin{itemize}
+%\item[(i1)] $\IsWFEnv{\_}{\SigmaEnvPrime}{\env'}$ for some $\SigmaEnvPrime$
+%\item[(i2)] $\IsWFMemOut{\SigmaEnvPrime\ctxsum\SigmaTest}{\SigmaUsed'}{\mem}$ for some $\SigmaUsed'$
+%\item[(i3)] $\gamma\rsum\UGrCtx{\SigmaUsed'}\rord\AGrCtx{\SigmaTest}$
+%\end{itemize}
+%From (b) we have two cases. 
+%\begin{itemize}
+%\item[(b1)] We have $\env'=\envTilde,\EnvElem{\x}{\rgr}{\loc}$ and $\env''=\envTilde$ and $\gamma'=\gamma\ctxsum\VarGrade{\loc}{\rgr}$. 
+%From (i1), by inverting rules \refToRule{t-env} and \refToRule{t-ref}, we have $\SigmaEnvPrime=\SigmaTilde,\CtxElem{\loc}{}{\rgr'\rsum\sgr}{\C}$, and $\IsWFVal{\CtxElem{\loc}{}{\rgr'}{\C}}{\loc}{\Graded{\C}{}{\rgr'}}$ with $\rgr\rord\rgr'$,  and $\IsWFEnv{\_}{\SigmaTilde,\CtxElem{\loc}{}{\sgr}{\C}}{\envTilde}$.\\
+%Set $\Rgr=\AGrCtx{\SigmaTest}(\loc)$. From (i2), by inverting rule \refToRule{t-mem}, we have $\SigmaUsed'=\SigmaUsed\ctxsum\SigmaRef$ where ${\IsWFField{\SigmaRef}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr'\rsum\sgr}}}$, with $\rgr\rord\rgr'$, and $\UGrCtx{\SigmaUsed'}\rord\UGrCtx{\mem}$. From \cref{prop:split-ty}, $\IsWFField{\SigmaRef'}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\rgr'}{\sgr}}$ and 
+%$\IsWFField{\SigmaRef''}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\sgr}{\rgr'}}$ for some $\SigmaRef',\SigmaRef''$ such that $\SigmaRef'\ctxsum\SigmaRef''\ctxord\SigmaRef$.\\
+%Then, take $\SigmaEnvSecond=\SigmaTilde,\CtxElem{\loc}{}{\sgr}{\C}$ and $\SigmaUsed''=\SigmaUsed\ctxsum\SigmaRef'$.\\
+%%It is easy to see that $\IsWFMemOut{\SigmaEnvSecond\ctxsum\SigmaTest}{\SigmaUsed''}$, since 
+%%$\UGrCtx{\SigmaUsed''}\ctxsum\UGrCtx{\SigmaRef''}\ctxord\UGrCtx{\SigmaUsed'}$, hence 
+%%$\UGrCtx{\SigmaUsed''}\rord\UGrCtx{\SigmaUsed'}$.
+%We have to show that:
+%\begin{itemize}
+%\item[(1)] $\IsWFEnv{\_}{\SigmaEnvSecond}{\envTilde}$\\
+%Immediate.  
+%
+%\item[(2)] $\IsWFMemOut{\SigmaEnvSecond\ctxsum\SigmaTest}{\SigmaUsed''}{\mem}$\\
+%We can apply rule \refToRule{t-mem} with the following modified premise:
+%\begin{quote}
+%$\IsWFField{\SigmaRef'}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\rgr'}{\sgr}}$
+%\end{quote}
+%The side condition holds since $\UGrCtx{\SigmaUsed''}\rord\UGrCtx{\SigmaUsed'}$. \EZComm{rivisto fin qui}
+%
+%\item[(3)] $\gamma'\rsum\UGrCtx{\SigmaUsed''}\rord\AGrCtx{\SigmaTest}$\\
+%That is, $\gamma\ctxsum\VarGrade{\loc}{\rgr}\rsum\UGrCtx{\SigmaUsed''}\rord\AGrCtx{\SigmaTest}$. From (i3) we have ${\gamma\rsum\UGrCtx{\SigmaUsed'}\rord\AGrCtx{\SigmaTest}}$, hence it is enough to show that $\VarGrade{\loc}{\rgr}\ctxsum\UGrCtx{\SigmaUsed''}\rord\UGrCtx{\SigmaUsed'}$. Indeed, 
+%by inverting rule \refToRule{t-ref-in-mem}, we have $\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\ctxord\SigmaRef''$, hence $\SigmaRef'\ctxsum\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\ctxord\SigmaRef$.\\
+%Then, ${\VarGrade{\loc}{\rgr}}\rsum\UGrCtx{\SigmaUsed\ctxsum\SigmaRef'}\ctxord\UGrCtx{\SigmaRef'}\ctxsum{\VarGrade{\loc}{\rgr'}}\ctxsum\UGrCtx{\SigmaUsed}\ctxord\UGrCtx{\SigmaRef}\ctxsum\UGrCtx{\SigmaUsed}$,   hence we get the thesis.
+%\end{itemize}
+%
+%\item[(b2)] We have
+%\begin{itemize}
+%\item[(b1)] $\env'=\envTilde,\EnvElem{\x}{\rgr}{\loc}$
+%\item[(b2)]  $\mem=\memTilde,\MemElem{\loc}{\obj},\MemElem{\loc'}{\obj'}$ with $\obj=\Obj{\_}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}$ and $\loc'=\val_i$
+%\item[(b3)]  $\env''=\envTilde,\EnvElem{\x}{\rgr\rmul\rgr_i}{\loc'}$
+%\item[(b4)]  $\gamma'=\gamma\ctxsum\VarGrade{\loc}{\rgr}$
+%\end{itemize}
+%
+%From (i1), by inverting rules \refToRule{t-env} and \refToRule{t-ref}, we have\footnote{If there is no $\x'$ such that $\EnvElem{\x'}{\_}{\loc'}\in\envTilde$, we take $\tgr=\rzero$ and $\D$ the class of the object in $\mem(\loc')$.} $\SigmaEnvPrime=\SigmaTilde,\CtxElem{\loc}{}{\rgr'\ctxsum\sgr}{\C},\CtxElem{\loc'}{}{\tgr}{\D}$ and $\IsWFVal{\CtxElem{\loc}{}{\rgr'}{\C}}{\loc}{\Graded{\_}{}{\rgr'}}$ with $\rgr\rord\rgr'$,  and $\IsWFEnv{\_}{\SigmaTilde,\CtxElem{\loc}{}{\sgr}{\C},\CtxElem{\loc'}{}{\tgr}{\D}}{\envTilde}$.
+%
+%\newcommand{\SigmaAsField}{\SigmaRefPrime^{\aux{field}}}
+%
+%From (i2), by inverting rule \refToRule{t-mem}, we have $\SigmaUsed'=\SigmaUsed\ctxsum\SigmaRef\ctxsum\SigmaRefPrime$ where ${\IsWFField{\SigmaRef}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr'\rsum\sgr}}}$, with $\rgr\rord\rgr'$, and $\IsWFField{\SigmaRefPrime}{\mu}{\loc'}{\Graded{\D}{\Tgr}{\tgr}}$, and $\UGrCtx{\SigmaUsed'}\ctxord\UGrCtx{\mem}$. 
+%From \cref{prop:split-ty}, $\IsWFField{\SigmaRef'}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\rgr'}{\sgr}}$ and 
+%$\IsWFField{\SigmaRef''}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\sgr}{\rgr'}}$ for some $\SigmaRef',\SigmaRef''$ such that $\SigmaRef'\ctxsum\SigmaRef''\ctxord\SigmaRef$. 
+%
+%Moreover, by inverting rule \refToRule{t-ref-in-mem} we have:
+%\begin{quote}
+%$\SigmaRef'=\CtxElem{\loc}{\Rgr\rsum\rgr'}{\sgr}{\C}\ctxsum\sgr\rmul\Sigma^\obj$\\
+%$\SigmaRef''=\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\ctxsum\rgr'\rmul\Sigma^\obj$\\
+%\bez $\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}$ \eez\\
+%and, for some $\SigmaAsField$:
+%\begin{quote}
+%$\IsWFField{\SigmaAsField}{\mu}{\loc'}{\Graded{\D}{\Tgr'}{\tgr'}}$ with $\Graded{\D}{\Tgr}{\tgr'}\rord\Graded{\tau_i}{\Rgr_i\ctxsum\Rgr\ctxmul\rgr_i}{\rgr_i}$\\
+%$\SigmaAsField\ctxord\Sigma_\obj$
+%\end{quote}
+%\end{quote}
+%Note that this implies $\IsWFField{\rgr\rmul\SigmaAsField}{\mu}{\loc'}{\Graded{\D}{\Tgr'}{\rgr\rmul\tgr'}}$ and $\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\rsum\rgr'\rmul\SigmaAsField\rord\SigmaRef''$.
+%
+%Then, take  $\SigmaEnvSecond=\SigmaTilde,\CtxElem{\loc}{}{\sgr}{\C},\CtxElem{\loc'}{}{\tgr\rsum\rgr\rmul\rgr_i}{\D}$ and $\SigmaUsed''=\SigmaUsed\ctxsum\SigmaRef'\ctxsum\SigmaRefPrime\ctxsum\rgr'\rmul\SigmaAsField$. The latter is well-defined, 
+%since $\SigmaUsed\ctxsum\SigmaRefPrime\ctxsum\SigmaRef$ is well-defined, and $\SigmaRefPrime\ctxsum\rgr'\rmul\SigmaAsField\rord\SigmaRef$.\\
+%We have to show that 
+%\begin{itemize}
+%\item[(1)] $\IsWFEnv{\_}{\SigmaEnvSecond}{\env''}$\\
+%We can apply rule \refToRule{t-env} with the following modified premise:
+%\begin{quote}
+%$\IsWFField{\rgr\rmul\SigmaAsField}{\mu}{\loc'}{\Graded{\D}{\Tgr'}{\rgr\rmul\tgr'}}$ 
+%\end{quote}
+%since $\Graded{\D}{\Tgr'}{\rgr\rmul\tgr'}\rord\Graded{\D}{}{\rgr_i}$.
+%
+%\item[(2)] $\IsWFMemOut{\SigmaEnvSecond\ctxsum\SigmaTest}{\SigmaUsed''}{\mem}$\\
+%Set $\Rgr=\AGrCtx{\SigmaTest}(\loc)$ and $\Tgr=\AGrCtx{\SigmaTest}(\loc')$.\\
+%We can apply rule \refToRule{t-mem} with the following modified premises:
+%\begin{quote}
+%${\IsWFField{\SigmaRef'}{\mem}{\loc}{\Graded{\C}{\Rgr\rsum\rgr'}{\sgr}}}$\\
+%$\IsWFField{\SigmaRefPrime\ctxsum\rgr\rmul\SigmaAsField}{\mu}{\loc'}{\Graded{\D}{\Tgr''}{\tgr\rsum\rgr\rmul\\t'}}$ with $\Tgr''=\Tgr'\rsub\tgr\rmeet\Tgr\rsub\rgr\rmul\tgr'$
+%\end{quote}
+%To show that the side condition holds, we prove that $\UGrCtx{\SigmaUsed''}\rord\UGrCtx{\SigmaUsed'}$. Indeed, $\SigmaUsed''=\SigmaUsed\ctxsum\SigmaRef'\ctxsum\SigmaRefPrime\ctxsum\rgr'\rmul\SigmaAsField$ and $\SigmaUsed'=\SigmaUsed\ctxsum\SigmaRef\ctxsum\SigmaRefPrime$. Since $\SigmaAsField\rord\SigmaRef''$ and $\SigmaRef'\ctxsum\SigmaRef''\ctxord\SigmaRef$, we get the thesis. 
+%
+% 
+%\item[(3)] $\gamma'\rsum\UGrCtx{\SigmaUsed''}\rord\AGrCtx{\SigmaTest}$\\
+%That is, $\gamma\ctxsum\VarGrade{\loc}{\rgr}\rsum\UGrCtx{\SigmaUsed''}\rord\AGrCtx{\SigmaTest}$. From (i3) we have ${\gamma\rsum\UGrCtx{\SigmaUsed'}\rord\AGrCtx{\SigmaTest}}$, hence we have to prove that $\VarGrade{\loc}{\rgr}\rsum\UGrCtx{\SigmaUsed''}\ctxord\UGrCtx{\SigmaUsed'}$.  Indeed, $\SigmaUsed''=\SigmaUsed\ctxsum\SigmaRef'\ctxsum\SigmaRefPrime\ctxsum\rgr'\rmul\SigmaAsField$ and $\SigmaUsed'=\SigmaUsed\ctxsum\SigmaRef\ctxsum\SigmaRefPrime$. 
+%From $\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\rsum\rgr'\rmul\SigmaAsField\rord\SigmaRef''$, we have that $\SigmaRef'\ctxsum\CtxElem{\loc}{\Rgr\rsum\sgr}{\rgr'}{\C}\rsum\rgr'\rmul\SigmaAsField\ctxord\SigmaRef$.
+%Hence, since $\rgr\rord\rgr'$, we get the thesis.
+%\end{itemize}
+%\end{itemize}
+%\end{itemize}
+%\end{proof}
+
+\begin{proposition}
+\EZComm{ancora da capire come esprimerlo}
+Set $\IsWFConf{\Gamma}{\ResGamma}{\Conf{\loc}{\env}{\mem}}{\Graded{\C}{\Rgr}{\rgr}}$, and $\env'=\Restrict{\env}{\dom{\ResGamma}}$, and $\IsWFEnv{\Gamma}{\Sigma}{\env'}$ and $\mem'=\From{\mem}{\dom{\CtxElem{\loc}{\Rgr}{\C}{\rgr}\ctxsum\Sigma}}$.
+Then
+\begin{quote}
+for all $\loc_i\neq\locSec$ for $i\in 1..n$, \\
+$\GrReach{\locSec}{\alpha}{}{\Rgr}{}{\loc}$ and $\GrReach{\iota_1,\ldots,\iota_n}{}{\upsilon}{}{\rgr}{\iota}$ imply $\rgr\rord\Rgr$
+\end{quote}
+ \end{proposition}
+\begin{proof}
+%By inverting rule \refToRule{t-res} and \refToRule{t-ref} we have $\IsWFVal{\CtxElem{\loc}{\Sgr}{\sgr}{\D}}{\loc}{\Graded{\D}{\Sgr}{\sgr}}$, with $\Graded{\D}{\Sgr}{\sgr}\subt\Graded{\C}{\Rgr}{\rgr}$, and $\IsWFEnv{\_}{\Sigma}{\env'}$, with $\env'=\Restrict{\env}{\dom{\ResGamma}}$, and ${\IsWFMem{\CtxElem{\loc}{\Sgr}{\sgr}{\D}\ctxsum\Sigma}{\mem'}}$, with $\mem'=\From{\mem}{\dom{\CtxElem{\loc}{\Sgr}{\sgr}{\D}\ctxsum\Sigma}}$. Set $\SplitCtx{\Sigma}{\sigma}{\alpha}{\upsilon}$, hence, since $\SplitCtx{\CtxElem{\loc}{\Sgr}{\sgr}{\D}}{\VarType{\loc}{\D}}{\VarGrade{\loc}{\Sgr}}{\VarGrade{\loc}{\sgr}}$, By inverting rule \refToRule{t-mem} we have $\OK{\alpha}{\upsilon}{\mem'}$, hence, considering $\loc$ and the null path $\loc$,
+%\begin{quote}
+%for all $\loc\in\dom{\mem}$, $\pi_1,\ldots,\pi_n$ such that $\pi_i$ is a path from $\loc_i$ into $\loc$,\\
+%for all $j\in 1..n$, $\sum_{k \neq j} \UGr{\upsilon}{\pi_k} \rord \AGr{\alpha}{\pi_j}$
+%\end{quote}
+
+%Hence, \EZComm{giustificare} we can apply \cref{prop:usage} above, with $\SigmaTest=\CtxElem{\loc}{\Rgr}{}{\tau}$, and we get, for each $\gamma$ such that $\FinalUsage{\env'}{\mem}{\gamma}$, $\gamma(\loc)\rord\Rgr$.
+\end{proof}
+
+

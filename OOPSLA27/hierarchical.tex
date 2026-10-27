@@ -1,0 +1,236 @@
+% !TEX root = main.tex
+
+\section{Hierarchical memory}\label{sect:hierarchical}
+
+We extend the calculus allowing field values to be references in turn. 
+%However, we statically prevent cyclic objects, by forbidding the type of a field of class $\C$ to be a supertype of $\C$. 
+Definitions which need to be extended are the following:
+
+\begin{itemize}
+\item the production for object states becomes $\produzioneinline{\obj}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}$
+\item $\fields{\C}$ gives now, for each class $\C$, a sequence $\Field{\T_1}{\f_1}\ldots\Field{\T_n}{\f_n}$
+\item the reduction rules are the same, apart those which are  trivially extended to handle references as field values, reported for completeness in \cref{fig:semantics-hierarchical}.
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+ \NamedRule{field-access}{
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}
+}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem}}{\sgr}{\Conf{\val_i}{\env'}{\mem}}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fnames{\C}=\f_1\ldots\f_n\\
+   i\in 1..n\\ 
+\sgr \rord \rgr\rmul\rgr_i
+}
+\\[5ex]
+\NamedRule{field-update}{
+  \begin{array}{l}
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}\\
+  \RedVal{\ve}{\env'}{\tgr}{\val}{\env''}
+  \end{array}
+}{ \reduce{\Conf{\FieldUpdate{\x}{\f_i}{\ve}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\sgr}{\Conf{\unit}{\env''}{\mem,\MemElem{\loc}{\Subst{\obj}{\val}{i}}}}}
+{ \obj=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fnames{\C}=\f_1\ldots\f_n\\
+  i\in 1..n\\
+\bpa\tgr \rord \rgr'\rmul\rgr_i\epa
+}
+\\[3ex]
+\NamedRule{new}{
+\begin{array}{l}
+\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\val_n}{\env'}\\
+\end{array}}
+{ \reduce{\Conf{\New{\C}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\Conf{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{\env'}{\mem,\MemElem{\loc}{\obj}}}}
+{
+  \fnames{\C}=\f_1\ldots\f_n\\
+\loc\not\in\dom{\mem}
+}
+\end{array}
+\end{math}
+\caption{Reduction rules for hierarchical memory}
+\label{fig:semantics-hierarchical} 
+\end{figure}
+\item the type system is extended in a non-trivial way, as detailed below.
+%Non-trivial extensions are those in field-access, object state, and memory, as detailed in the following.
+\end{itemize}
+
+
+First of all, note that the type of a field, say, $\f$, can now be of shape $\Graded{\C}{\Rgr}{\rgr}$. The usage grade $\rgr$ means, as before, that the field contains (at least) $\rgr$ copies of a reference of class $\C$. 
+The novelty is the assumption grade $\Rgr$, meaning that the reference contained in the field is used elsewhere (at most) $\Rgr$ times. For instance, if the assumption grade is $\rzero$, then the reference contained in the field is \emph{unique}, that is, can be only used through an access to the $\f$ field of the receiver. 
+The extended typing rules are shown in \cref{fig:typing-hierarchical}.
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}}{\IsWFExp{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\tau_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}}
+{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n
+}
+\\[4ex]
+\bez
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\T}}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}}{
+\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+%\rgr=\W{\pgr},\pgr\neq\rzero\\
+\bpa\T\leq\Graded{\tau}{\Rgr_i}{\Rgr\rmul\rgr_i}\epa
+}
+\eez
+\\[4ex]
+
+\NamedRule{t-new}{\IsWFExp{\Gamma_i}{\ve_i}{\Graded{\tau_i}{\Rgr_i}{\rgr\rmul\rgr_i}}\Space \forall i\in 1..n}{\IsWFExp{\Gamma_1\rsum\ldots\rsum\Gamma_n}{\New{\C}{\ve_1,\ldots,\ve_n}}{{\Graded{\C}{\rzero}{\rgr}}}}{
+\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}\\
+\GradedInd{\tau}{i}{\Rgr}{\rgr}\leq\T_i\ \forall i\in 1..n
+ }
+
+\\[2ex]
+\end{array}
+\end{math}
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\bez
+\NamedRule{t-obj}{\IsWFVal{\Sigma_i}{\val_i}{\Graded{\tau'_i}{(\Rgr_i\rsum\Rgr\rmul\rgr_i)}{\rgr\rmul\rgr_i}}\Space \forall i\in 1..n }
+{
+\IsWFObj{\Sigma_1\rsum\ldots\rsum\Sigma_n}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{\Graded{\C}{\Rgr}{\rgr}}
+}
+{ \fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}\\
+\tau'_i\leq\tau_i\
+% \wedge\ \rgr_i\rord\sgr_i\  
+\forall i\in 1..n
+}
+\eez
+\\[4ex]
+
+
+\NamedRule{t-mem}{
+\IsWFObj{\Sigma_i}{\obj_i}{\Graded{\C_i}{\Rgr_i}{\rgr_i}}\Space \forall i \in 1..n}
+{
+\IsWFMem{\Sigma}{\mem}
+}{\mem=\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}\\
+\Sigma\ctxsum\Sigma_1\ctxsum\ldots\ctxsum\Sigma_n\ctxord\CtxElem{\iota_1}{\Rgr_1}{\rgr_1}{\C_1},\ldots,\CtxElem{\iota_n}{\Rgr_n}{\rgr_n}{\C_n}
+}
+\\[3ex]
+
+\NamedRule{t-conf}
+{
+\IsWFExp{\Delta}{\e}{\T}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma}{\env'}\BigSpace
+\IsWFMem{\Sigma}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\e}{\env}{\mem}}{\T}
+}
+{
+\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+\mem'=\From{\mem}{\dom{\Sigma}}
+}
+
+\\[5ex]
+
+\NamedRule{t-res}
+{
+\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+\IsWFMem{\Sigma_1\ctxsum\Sigma_2}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\val}{\env}{\mem}}{\T}
+}
+{
+\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+\T'\subt\T\\
+\mem'=\From{\mem}{\dom{\Sigma_1\ctxsum\Sigma_2}}
+}
+
+\end{array}
+\end{math}
+\caption{Typing rules for hierarchical memory}
+\label{fig:typing-hierarchical} 
+\end{figure}
+
+The rule most significantly extended is \refToRule{t-field-access}. Indeed, the field value can now be a reference, hence the assumption decoration on its type becomes significant. Notably, the assumption grade is a sum, expressing the fact that the reference can be used elsewhere as it was assumed before ($\Rgr_i$), and, now, also through  the given field of the receiver, hence with its assumption multiplied by the field usage grade ($\Rgr\rmul\rgr_i$), see \cref{ex:field-access} below.
+
+Rules \refToRule{t-field-update} and \refToRule{t-new} are the straightforward extension of the previous ones to handle references as field values, and are reported for completeness in \cref{fig:typing-hierarchical}.
+However, these rules are much more significant now; in particular, rule \refToRule{t-new} imposes constraints on the sharing allowed among fields of the same object, \bez
+as illustrated by the following example.
+
+\begin{example}[Sharing among fields]
+Consider the following class table:
+\begin{lstlisting}
+class D extends Object {}
+class C extends Object {$\Graded{\D}{1}{1}$ f1; $\Graded{\D}{1}{1}$ f2}
+\end{lstlisting} 
+The judgment
+\begin{quote}
+$\IsWFExp{\CtxElem{\y}{0}{2}{\D}}{\New{\C}{\y,\y}}{{\Graded{\C}{0}{1}}}$
+\end{quote}
+is intuitively valid, meaning that the reference denoted by $\y$ is used two times to construct the new object, and is assumed to be unique, that is, never used elsewhere. 
+ This is formalized by the following type derivation:
+\begin{quote}
+$
+\NamedRule{t-new}{\IsWFExp{\CtxElem{\y}{1}{1}{\D}}{\y}{\Graded{\D}{1}{1}}\Space\IsWFExp{\CtxElem{\y}{1}{1}{\D}}{\y}{\Graded{\D}{1}{1}}}{\IsWFExp{\CtxElem{\y}{0}{2}{\D}}{\New{\C}{\y,\y}}{{\Graded{\C}{0}{1}}}}{
+ }
+ $
+\end{quote}
+In both the constructor arguments, $\y$ is used with grade $1$ and assumption grade $1$, which is exactly the use in the other argument. 
+
+On the other hand, the judgment $\IsWFExp{\CtxElem{\y}{0}{2}{\D}}{\New{\C}{\y,\y}}{{\Graded{\C}{0}{2}}}$ is intuitively not valid. Indeed, to construct two copies of the object, we need, for each field, two copies of $\y$. However, the field declaration requires the argument to have assumption $1$, that is, to be used (at most) once elsewhere, and this is false, since $\y$ is used two times in the other field.
+Formally, rule \refToRule{t-new} should be instantiated with premises $\IsWFExp{\CtxElem{\y}{1}{2}{\D}}{\y}{\Graded{\D}{1}{2}}$ and $\IsWFExp{\CtxElem{\y}{1}{2}{\D}}{\y}{\Graded{\D}{1}{2}}$, but the sum of 
+$\CtxElem{\y}{1}{2}$ and $\CtxElem{\y}{1}{2}$ is undefined. Clearly, a judgment as, e.g., $\IsWFExp{\CtxElem{\y1}{0}{2}{\D},\CtxElem{\y2}{0}{2}{\D}}{\New{\C}{\y,\y}}{{\Graded{\C}{0}{2}}}$, is valid and can be derived. 
+\end{example}
+
+\begin{example}[Field access]\label{ex:field-access}
+%In other words, the reference denoted by $\y$ is assumed to be used, in an enclosing program context, only (at most) once through an access to the \texttt{f1} and (at most) once through the \texttt{f2} field of the receiver. 
+In the following type derivation
+\begin{quote}
+$\NamedRule{t-let}{
+\NamedRule{t-new}{\ldots}{\IsWFExp{\CtxElem{\y}{0}{2}{\D}}{\New{\C}{\y,\y}}{{\Graded{\C}{0}{1}}}}{}
+\BigSpace
+\NamedRule{t-field-access}{}{\IsWFExp{\CtxElem{\x}{0}{1}{\C}}{\FieldAccess{\x}{\fone}}{\Graded{\D}{1}{1}}}{}
+}{\IsWFExp{\CtxElem{\y}{0}{2}{\D}}{\Let{\x}{\New{\C}{\y,\y}}{\FieldAccess{\x}{\fone}}}{\Graded{\D}{1}{1}}}{}$
+\end{quote}
+the type derived for the expression means that the reference denoted by $\FieldAccess{\x}{\fone}$ is produced in one copy,  and is used (at most) once elsewhere, through an access to the other field. 
+\end{example}
+\EZComm{non si vede la somma}
+\eez
+
+\bez
+The typing judgment for object states is now $\IsWFObj{\Sigma}{\obj}{\T}$. Indeed, since field values can be references, their graded types are needed. The rule is the straightforward extension of the previous one to handle references as field values. \EZComm{da migliorare} The rule turns out to be analogous to rule \refToRule{t-new}, apart that the (reference denoting the) object, rather than being fresh, has an arbitrary assumption grade.
+\EZComm{spiegare come mai deve essere invariante}
+%, extends that for is analogous to that of constructor invocation,  
+\eez
+ 
+The typing judgment for memories has shape, as before, $\IsWFMem{\Sigma}{\mem}$, where $\Sigma$ models the types required for references  by an external user.
+In rule \refToRule{t-mem}, for each reference in memory its associated object state should be well-typed. The sum of $\Sigma$ with 
+all those required to typecheck object states should be covered by those obtained from typechecking the memory (side condition). 
+
+
+Finally, rules \refToRule{t-conf} and \refToRule{t-res} are as before, except that the portion of memory we need to consider is now that \emph{reachable} from the observable references. Formally, the restriction of $\mem$ to its portion \emph{reachable} from a set $\RefSet$ of references, denoted  $\From{\mem}{\RefSet}$, is defined as follows. 
+\begin{quote}
+$\Reach{\loc}{\mem}{\loc}$ if $\loc\in\dom{\mem}$\\
+$\Reach{\loc}{\mem}{\loc'}$ if $\mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}$ and $\loc'=\val_i$ for some $i\in 1..n$\\
+$\Reach{\loc}{\mem}{\loc'}$ and $\Reach{\loc'}{\mem}{\loc''}$ imply $\Reach{\loc}{\mem}{\loc''}$
+\end{quote}
+Then, $\From{\mem}{\RefSet}=\{\loc'\mid\Reach{\loc}{\mem}{\loc'}\ \mbox{for some}\ \loc\in\RefSet\}$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

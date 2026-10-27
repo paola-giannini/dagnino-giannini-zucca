@@ -1,0 +1,134 @@
+xCclass OptNode {}
+class Dummy extends OptNode {}
+class Node extends OptNode {
+  Int val; OptNode next; 
+}
+
+class List {
+  OptNode head; 
+}
+
+
+tutto è unique nelle classi sopra 
+
+## metodo append (aggiunge in fondo) 
+
+in List 
+
+List append(Int i) {
+  let hd = this.head; //this borrowed, hence hd borrowed
+  let b = hd.isDummy(); //hd reborrowed 
+  if (b) 
+  then let d = new Dummy(); //unique 
+       let newhd = new Node(i, d); // unique 
+       this.head = newhd; //ok
+       free(hd); //questo forse non tipa, non so se hd è unique (anche se dovrebbe...) 
+       return this; 
+  else hd.append(i); 
+       return this; 
+}
+
+in OptNode 
+
+//this borrowed
+Unit append(Int i) { return unit; }
+
+in Node 
+
+//this borrowed 
+Unit append(Int i) {
+  let next = this.next; 
+  let b = next.isDummy(); 
+  if (b) 
+  then let d = new Dummy(); 
+       let newNode = new Node(i, d); 
+       this.next = newNode; 
+       free(next); //non so se ufnzione perché next è unique? 
+       return unit; 
+  else next.append(i); 
+       return unit; 
+}
+
+
+########## Rust versione ricorsiva 
+
+type Link = Option<Box<Node>>;
+
+struct Node {
+    value: i32,
+    next: Link,
+}
+
+pub struct LinkedList {
+    head: Link,
+}
+
+impl LinkedList {
+    pub fn new() -> Self {
+        LinkedList { head: None }
+    }
+
+    pub fn append(&mut self, val: i32) {
+        Self::recursive_append(&mut self.head, val);
+    }
+
+    fn recursive_append(link: &mut Link, val: i32) {
+        match link {
+            // Base case: we found the end of the list
+            None => {
+                *link = Some(Box::new(Node {
+                    value: val,
+                    next: None,
+                }));
+            }
+            // Recursive step: move to the next node
+            Some(node) => {
+                Self::recursive_append(&mut node.next, val);
+            }
+
+
+#######   Inserimento in una posizione
+
+fn insert_rec(link: &mut Option<Box<Node<T>>>, index: usize, value: T) {
+        if index == 0 {
+            let new_node = Box::new(Node {
+                value,
+                next: link.take(), // 
+            });
+            *link = Some(new_node);
+        } else {
+            match link {
+                Some(node) => Self::insert_rec(&mut node.next, index - 1, value),
+                None => panic!("Index out of bounds"),
+            }
+        }
+    }
+
+
+## Implementazione con swap 
+
+void append(Int i) {
+  let d = new Dumy();  //d is unique 
+  let next = (this.next = d); // next è unique  this no 
+  let b = next.isDummy(); //next è borrowed 
+  if (b) 
+  then let newNode = new Node(i, next); //qui next è unique e newNode è unique 
+       let d = (this.next = newNode); //d è unique 
+       free(d); //ok ! 
+  else next.append(i); 
+}
+
+Nota: continua a servire borrowing per mantenere assunzioni basse 
+
+## versione con assunzioni read/write 
+
+void append(Int i) {
+  let next = this.next; //this è read-unique ma non write unique, next è unique 
+  let b = next.isDummy(); //next qui è borrowed 
+  if (b) 
+  then let newNode = new Node(i,next); //next è unique newNode è unique 
+       this.next = newNode; //ok
+  else next.append(i); 
+}
+
+Nota: anche qui serve borrowing 

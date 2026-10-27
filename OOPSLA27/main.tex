@@ -1,0 +1,157 @@
+\documentclass[acmsmall,screen,review,anonymous,nonacm]{acmart}
+%%% For double-blind review submission, w/ CCS and ACM Reference
+%% For final camera-ready submission, w/ required CCS and ACM Reference
+%\documentclass[acmsmall]{acmart}\settopmatter{}
+
+
+%% Journal information
+%% Supplied to authors by publisher for camera-ready submission;
+%% use defaults for review submission.
+\acmJournal{PACMPL}
+\acmVolume{1}
+\acmNumber{CONF} % CONF = POPL
+\acmArticle{1}
+\acmYear{2018}
+\acmMonth{1}
+\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
+\startPage{1}
+
+%% Copyright information
+%% Supplied to authors (based on authors' rights management selection;
+%% see authors.acm.org) by publisher for camera-ready submission;
+%% use 'none' for review submission.
+\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\copyrightyear{2018}           %% If different from \a+cmYear
+
+%% Bibliography style
+\bibliographystyle{ACM-Reference-Format}
+%% Citation style
+%% Note: author/year citations are required for papers published as an
+%% issue of PACMPL.
+\citestyle{acmauthoryear}   %% For author/year citations
+
+%\usepackage{tikz}
+%\use-package{stmaryrd}
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage[capitalize]{cleveref}
+%\usepackage{proof}
+\usepackage{lineno}
+\usepackage{mathtools}
+\usepackage{tensor}
+%\usepackage{prooftree}
+\usepackage{turnstile}
+
+\definecolor{armygreen}{rgb}{0.29, 0.33, 0.13}
+
+\linenumbers
+\input{macros}
+
+\AtBeginDocument{
+\theoremstyle{acmdefinition}
+\newtheorem{remark}[theorem]{Remark}  
+}
+
+\begin{document}
+
+%% Title information
+\title{Graded uniqueness}         %% [Short Title] is optional;
+
+
+%% Author information
+%% Contents and number of authors suppressed with 'anonymous'.
+
+%% Author with single affiliation.
+\author{Francesco Dagnino}
+%\authornote{with author1 note}          %% \authornote is optional;
+\email{francesco.dagnino@dibris.unige.it} 
+\orcid{0000-0003-3599-3535} 
+\affiliation{
+ % \position{Position1}
+  \department{DIBRIS}              %% \department is recommended
+  \institution{Universit\`a di Genova}            %% \institution is required
+ % \streetaddress{Street1 Address1}
+ % \city{City1}
+ % \state{State1}
+  %\postcode{Post-Code1}
+  \country{Italy}
+}
+
+%% Author with single affiliation.
+\author{Elena Zucca}
+%\authornote{with author1 note}          %% \authornote is optional;
+                                        %% can be repeated if necessary
+%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
+\affiliation{
+ % \position{Position1}
+  \department{DIBRIS}              %% \department is recommended
+  \institution{Universit\`a di Genova}            %% \institution is required
+ % \streetaddress{Street1 Address1}
+ % \city{City1}
+ % \state{State1}
+ % \postcode{Post-Code1}   
+  \country{Italy}
+}
+\email{elena.zucca@unige.it}          %% \email is recommended
+
+%% Paper note
+%% The \thanks command may be used to create a "paper note" ---
+%% similar to a title note or an author note, but not explicitly
+%% associated with a particular element.  It will appear immediately
+%% above the permission/copyright statement.
+%\thanks{with paper note}                %% \thanks is optional
+                                        %% can be repeated if necesary
+                                        %% contents suppressed with 'anonymous'
+
+
+%% Abstract
+%% Note: \begin{abstract}...\end{abstract} environment must come
+%% before \maketitle command
+\begin{abstract}
+\EZComm{DA FARE}
+\end{abstract}
+
+%% 2012 ACM Computing Classification System (CSS) concepts
+%% Generate at 'http://dl.acm.org/ccs/ccs.cfm'.
+ 
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10003752.10010124.10010138.10010143</concept_id>
+<concept_desc>Theory of computation~Program analysis</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10003752.10010124.10010125.10010130</concept_id>
+<concept_desc>Theory of computation~Type structures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Theory of computation~Program analysis}
+\ccsdesc[500]{Theory of computation~Type structures} 
+
+\keywords{Graded types, uniqueness} %TODO mandatory; please add comma-separated list of keywords
+
+\maketitle
+%\EZComm{deadline 9 luglio, limite 25 pagine esclusa bib e appendici}
+\input{intro}
+\input{algebraic}
+\input{flat}
+\input{hierarchical}
+\input{promotion}
+\input{soundness}
+%\input{related}
+%\input{conclu}
+
+%% Bibliography
+
+\bibliography{main}
+\appendix
+\input{appendix}
+
+\end{document}

@@ -1,0 +1,69 @@
+
+effetti = grafi puntati con archi etichettati con nomi di campi  e operazione (r,u) 
+
+operaizone G[H/u] 
+dove G e H sono grafi puntati e u è un nodo di G 
+si fa unione disgiunta e poi si fondono nodi 
+si parte dal punto v di H e il nodo u in G che vengono identificati. 
+per ogni arco 
+v -f1-> v' in G 
+u -f2-> u' in H 
+con nome di f1 == nome di f2
+
+1. se f2 è update si butta l'arco f1 e si tiene solo f2
+2. altrimenti si tiene f1, e si fonde ricorsivamente v' e u' 
+
+Nota: questo funziona anche con archi multipli con lo stesso nome 
+
+
+## Variante  (forse melgio) 
+
+- i nodi dei grafi sono Vars + Refs 
+- il punto è un nodo in Refs 
+- i valori hanno un grafo bipartito da variabili a un ref che è  il punto 
+- i ref hanno questi archi uscenti con campi etc 
+
+forse così i nodi in ars sono "sorgenti" 
+
+
+## Syntax for graphs 
+
+G ::= X | fix X.G  | x 
+    | [f1:G1,...,fn:Gn] 
+    | G.f | G1.f = G2 
+    | G1 \/ G2 
+
+se G1 è il grafo di e1 e G2 è il grafo di e2 allora 
+il grafo id let x = e1 in e2 è 
+G2[G1/x]
+
+Riscrittura 
+
+[f1:G1,...,fn:Gn].fi --> Gi 
+[f1:G1,...,fn:Gn].fi = G ---> [f1:G1,...,fi:G,....,fn:Gn] 
+G1 --> G2  if G1 == G1' and G1' --> G2 
+
+structural congruence 
+fix X.G == G[(fix X.G)/X] 
+C[G1 \/ G2] == C[G1] \/ C[G2]
+
+where C[-] is a context defined as expected
+(fix X.G is not è context
+
+Questions: 
+1. quali condizioni di buona formatezza: 
+   ad esempio fix X.[f:X].f può ridurre a 
+   fix X.X ma anche a se stesso 
+2. così non è strogly normalizing.  come imponiamo che lo sia? 
+3. come  definiamo un <=? sarebbe più semplice farlo con le forme normali 
+4. così mi sembra tracciare troppa roba: 
+   ad esempio il metodo m()  = new C(m()) 
+   avregge come grafo fix X.[f:X] di cui però non ci interessa minimamente
+   forse si potrebbe introdurre una regola che dica che un grafo senza variabili libere è == al grafo vuoto 
+
+
+
+
+
+
+

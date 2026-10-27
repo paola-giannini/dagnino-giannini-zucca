@@ -1,0 +1,37 @@
+Grado assunzione scritto nella class table = tutti gli usi non attraverso quel campo
+
+Regola new: ogni argomento deve avere assunzione = quella scritta, uso = quello scritto per uso oggetto
+
+inoltre si fa la somma dei contesti 
+
+
+Regola field access: l'assunzione del risultato è quella scritta più assunzione receiver per uso campo (come ora)
+
+
+________________________ortogonale
+
+accesso multiplo consente maggiore espressività ed è più coerente con somma 
+
+------------------------
+
+12 ottobre
+
+tutto l'aliasing semantico era previsto 
+
+cambiare primo esempio e spostarlo in promozione
+
+accesso multiplo 
+]
+higher order memory 
+
+contrario di piatto 
+
+segno il tipo della variabile iniziale 
+
+let y = x.f in new C(y,x.f)
+
+
+
+
+
+

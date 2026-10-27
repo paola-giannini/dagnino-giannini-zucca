@@ -1,0 +1,24 @@
+
+
+Esempio immutabile (con lifetimes) tipo pag.7 del lavoro "From Linearity to Borrowing"
+
+
+il loro "close" corrisponde al fatto che l'assunzione e' che sia "unique"
+
+###### withborrow #############
+
+e1::  let z=(u.f;w) in z   borrow di u
+
+e2::  let x=e1.f;v in x    borrow di u  w
+ 
+e3::  let y=e2.f;0 in y    borrow di u  w  v
+
+###### withload #############
+
+e1::  y.f;0   borrow y
+
+e2::  z.f;0   borrow z
+
+let z=e1 in (let w=e2  in w )    (reborrow di y)
+
+###### withswap #############

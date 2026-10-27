@@ -1,0 +1,22 @@
+\section{Borrowing}
+
+Assume a countably infinite set of lifetimes $\alpha$, $\beta$, $\gamma$, $\ldots$.
+A lifetime context is a sequence $\produzioneinline{\Phi}{\alpha_1\ldots\alpha_n}$, with $n\geq 1$.
+
+Given $\Phi=\alpha_1\ldots\alpha_n$, we define $\alpha_j < \alpha_i$ iff $j > i$. 
+
+Types are annotated with lifetimes, as shown in \cref{fig:types-lt}
+
+\begin{figure}
+\begin{grammatica}
+\produzione{\T}{\GradedLT{\alpha}{\tau}{\Rgr}{\rgr}}{(graded) type with lifetime}
+\end{grammatica}
+\caption{Types with lifetimes}\label{fig:types-lt}
+\end{figure}
+
+We define an asymmetric variant of the sum of grade annotations:
+
+\begin{quote}
+$\Pair{\Rgr_1}{\rgr_1}\rseq\Pair{\Rgr_2}{\rgr_2}=\Pair{\Rgr_1 \rsub \rgr_2) \rmeet \Rgr_2}{(\rgr_1\rsum\rgr_2)}$
+\end{quote}
+

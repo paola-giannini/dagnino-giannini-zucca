@@ -1,0 +1,23 @@
+%!TEX root=main.tex
+
+\section{Introduction}\label{sect:intro}
+\EZComm{DA FARE, intanto ho messo questo pezzettino con lo schema dei tre step}
+We illustrate our approach on a tiny imperative Java-like language, in the spirit of the seminal calculus Featherweight Java (FJ) \cite{IgarashiPW99}. 
+Besides the FJ constructs, the language includes some imperative ones, notably field update and deallocation, and evaluation takes place in a memory, a map from references (unique object identifiers) into object states. 
+\EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}
+
+To modularly present the key features of our approach, we consider three  versions sof increasing complexity. 
+
+In \cref{sect:flat}, field types can only be primitive, hence, in the object state associated to a reference, field values cannot be references in turn.
+In other words, the memory is \emph{flat}, and references can only be accessed directly through variables. 
+
+
+In \cref{sect:hierarchical}, we remove the restriction on field types, hence references can be accessed through \emph{paths}, e.g., $\FieldAccess{\FieldAccess{\x}{\f_1}\ldots}{\f_n}$. 
+Hence the memory is \emph{hierarchical}. 
+
+\bez
+Finally, in \cref{sect:promotion} we 
+enrich the type system by keeping trace of the aliasing introduced among paths. In this way, typechecking a sequential composition can incorporate  a \emph{promotion} \EZComm{recovery?} mechanism, allowing to assign more restrictive assumptions to variables in the second subterm. 
+Notably, in the context used to typecheck the first subterm we distinguish the variables which are \emph{borrowed}, that is, cannot be accessed through an alias in the second subterm.
+\eez
+

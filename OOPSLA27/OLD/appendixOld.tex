@@ -1,0 +1,557 @@
+% !TEX root = main.tex
+
+\section{ Proofs of Soundness Theorems}
+
+{\em The sum of types} is defined by:
+\begin{quote}
+$\Graded{\tau}{\Rgr_1}{\rgr_1}\rsum\Graded{\tau}{\Rgr_2}{\rgr_2}=\Graded{\tau}{(\Rgr_1 \rsub \rgr_2) \rmeet (\Rgr_2 \rsub \rgr_1)}{(\rgr_1\rsum\rgr_2)}$ 
+\end{quote}
+Note that sum of types is undefined if they have different base type ($\tau$) or if the needed subtractions of grades are undefined. Sum is associative and commutative. 
+
+\begin{proposition}\label[proposition]{prop:sum}\ 
+\begin{enumerate}
+\item  \label{prop:sum:assoc}  $(\T_1\rsum\T_2)\rsum\T_3=\T_1\rsum(\T_2\rsum\T_3)$
+\item \label{prop:sum:comm}  $\T_1\rsum\T_2=\T_2\rsum\T_1$
+\item \label{prop:sum:zero}  If $\T=\Graded{\tau}{\Rgr}{\rgr}$, then $\T_{\rzero}=\Graded{\tau}{\Rgr\rsum\rgr}{\rzero}$ is such that $\T\rsum\T_{\rzero}=\T_{\rzero}\rsum\T=\T$. 
+\end{enumerate}
+\end{proposition} 
+\begin{proof}\hfill
+\begin{enumerate}
+\item
+Let $\Graded{\tau}{\Tgr}{\tgr}=(\Graded{\tau}{\Rgr_1}{\rgr_1}\rsum\Graded{\tau}{\Rgr_2}{\rgr_2})\rsum\Graded{\tau}{\Rgr_3}{\rgr_3}$ and
+$\Graded{\tau}{\Sgr}{\sgr}=\Graded{\tau}{\Rgr_1}{\rgr_1}\rsum(\Graded{\tau}{\Rgr_2}{\rgr_2}\rsum\Graded{\tau}{\Rgr_3}{\rgr_3})$. By associativity of $\rsum$,
+\begin{center}
+$\tgr=(\rgr_1\rsum\rgr_2)\rsum\rgr_3=\rgr_1\rsum(\rgr_2\rsum\rgr_3)=\sgr$.
+\end{center}
+Consider now the assumption grades:
+\begin{center}
+$
+\begin{array}{lcl}
+\Tgr&=& (((\Rgr_1 \rsub \rgr_2) \rmeet (\Rgr_2 \rsub \rgr_1))\rsub\rgr_3)\rmeet(\Rgr_3 \rsub (\rgr_1\rsum\rgr_2))\\
+&=& (((\Rgr_1 \rsub \rgr_2)\rsub\rgr_3) \rmeet ((\Rgr_2 \rsub \rgr_1)\rsub\rgr_3))\rmeet(\Rgr_3 \rsub (\rgr_1\rsum\rgr_2))\text{ by \refItem{prop:unique-alg}{3}}\\
+&=& (((\Rgr_1 \rsub \rgr_2)\rsub\rgr_3) \rmeet ((\Rgr_2 \rsub \rgr_1)\rsub\rgr_3))\rmeet((\Rgr_3 \rsub\rgr_2)\rsub\rgr_1)\text{ by \refItem{prop:subtractive-alg}{4}}\\
+&=&((\Rgr_1 \rsub( \rgr_2\rsum\rgr_3)) \rmeet ((\Rgr_2 \rsub \rgr_1)\rsub\rgr_3))\rmeet((\Rgr_3 \rsub\rgr_2)\rsub\rgr_1)\text{ by \refItem{prop:subtractive-alg}{4}}\\
+&=& ((\Rgr_1 \rsub( \rgr_2\rsum\rgr_3)) \rmeet ((\Rgr_2 \rsub \rgr_3)\rsub\rgr_1))\rmeet((\Rgr_3 \rsub\rgr_2)\rsub\rgr_1)\text{ by \refItem{prop:subtractive-alg}{5}}\\
+&=& (\Rgr_1 \rsub( \rgr_2\rsum\rgr_3)) \rmeet (((\Rgr_2 \rsub \rgr_3)\rsub\rgr_1)\rmeet((\Rgr_3 \rsub\rgr_2)\rsub\rgr_1))\text{ by associativity of $\rmeet$}\\
+&=& (\Rgr_1 \rsub( \rgr_2\rsum\rgr_3)) \rmeet (((\Rgr_2 \rsub \rgr_3)\rmeet(\Rgr_3 \rsub\rgr_2)) \rsub\rgr_1)\text{ by \refItem{prop:unique-alg}{3}}\\
+&=&\Sgr
+\end{array}
+$
+\end{center}
+\item Immediate from commutativity of $\rsum$ and $\rmeet$.
+\item From \refItem{prop:subtractive-alg}{1} $\Rgr\rsub\rzero=\Rgr$ and $\Rgr\rord(\Rgr\rsum\rgr)\rsub\rgr$ from \refItem{prop:subtractive-alg}{3}. Therefore
+$(\Rgr\rsub\rzero)\rmeet((\Rgr\rsum\rgr)\rsub\rgr)=\Rgr$ and $\T\rsum\T_{\rzero}=\T$. From \cref{prop:sum:comm}  we get $\T_{\rzero}\rsum\T=\T$.0
+\end{enumerate}
+\end{proof}
+Associativity and commutativity of sum between contexts of variables and references follows from \cref{prop:sum}.
+
+\begin{lemma}\label[lemma]{lem:typeSumCtx}\ 
+\begin{enumerate}
+\item \label{lem:typeSumCtx:comp}
+Let $\CtxElem{\x}{\Rgr}{\rgr}{\tau}\in\Gamma$ and $\Gamma_1\ctxsum\Gamma_2\ctxord\Gamma$. If $\CtxElem{\x}{\Sgr_i}{\sgr_i}{\tau_i}\in\Gamma_i$, then $\tau_i=\tau$ and $\Rgr\ctxord(\Sgr_1\rsub\sgr_2)\rmeet(\Sgr_2\rsub\sgr_1)$  and $\sgr_1\rsum\sgr_2\rord\rgr$,
+i.e. $\Graded{\tau}{\Rgr}{\rgr}\subt \Graded{\tau}{\Sgr_1}{\sgr_1}\rsum\Graded{\tau}{\Sgr_2}{\sgr_2}$.
+\item \label{lem:typeSumCtx:decomp} Let $\T=\Graded{\tau}{\Rgr}{\rgr}$ and $\rgr_1$ and $\rgr_2$ be such that $\rgr_1\rsum\rgr_2\rord\rgr$,
+$\T'=\Graded{\tau}{\Rgr\rsum\sgr}{\sgr}=\Graded{\tau}{\Rgr\rsum\rgr_2}{\rgr_1}\rsum\Graded{\tau}{\Rgr\rsum\rgr_1}{\rgr_2}$ is defined and $\T\subt\T'$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\begin{enumerate}
+\item By definition of sum and preorder of contexts. 
+\item From \refItem{prop:subtractive-alg}{3},  $\Rgr\rord(\Rgr\rsum\rgr_2)\rsub\rgr_2$ and $\Rgr\rord(\Rgr\rsum\rgr_1)\rsub\rgr_1$.
+Let $\Sgr=((\Rgr\rsum\rgr_2)\rsub\rgr_2)\rmeet((\Rgr\rsum\rgr_1)\rsub\rgr_1)$, we have that 
+$\T'= \Graded{\tau}{\Sgr}{\rgr_1\rsum\rgr_2}$. From $\Rgr\rord\Sgr$ and $\rgr_1\rsum\rgr_2\rord\rgr$ we derive $\T\subt\T'$.
+\end{enumerate}
+\end{proof}
+
+% From \refItem{prop:unique-alg}{3}, \refItem{prop:subtractive-alg}{3} and property of
+%the meet operator, 
+%$((\Sgr\rsub\sgr')\rmeet(\Sgr'\rsub\sgr))\rsum\sgr'=((\Sgr\rsub\sgr')\rsum\sgr')\rmeet((\Sgr'\rsub\sgr)\rsum\sgr')\rord\Sgr$. Since
+%$\Sgr\rord\Rgr$ by transitivity of $\rord$ we get $\Sgr_1\rsum\sgr'\rord\Rgr$ and by transitivity of $\subt$ we have $\tau\subt\tau'_1$.
+
+
+\begin{lemma}\label{lem:restrictEnv}
+Let $\IsWFEnv{\Gamma}{\Sigma}{\env}$ and $X\subseteq\dom{\env}$. Then $\IsWFEnv{\Restrict\Gamma{X}}{\Sigma}{\Restrict\env{X}}$
+\end{lemma}
+
+\begin{lemma}[Variable renaming]\label{lem:renaming}
+If  $\IsWFExp{\Gamma,\CtxElem{\x}{\Rgr}{\rgr}{\tau}}{\e}{\T}$ and $\x'$ is fresh, then  $\IsWFExp{\Gamma,\CtxElem{\x'}{\Rgr}{\rgr}{\tau}}{\Subst\e{\x'}{\x}}{\T}$.
+\end{lemma}
+
+
+%\subsection{Inversion}
+
+
+
+%The  relation $\subtpromOp$ between types is defined by $\subtprom{\Graded{\tau_1}{\Rgr_1}{\rgr_2}}{\Graded{\tau_2}{\Rgr_2}{\rgr_2}}$ iff  $\tau_1\subt\tau_2$  and $\rgr_2\rord\rgr_1$. 
+
+\begin{lemma}[Inversion for value expressions]\label[lemma]{lem:inversionV}\ 
+\begin{enumerate}
+\item \label{lem:inversionV:x}
+If $\IsWFExp{\Gamma}{\x}{\T}$, then $\T=\Graded{\tau}{\Sgr}{\sgr}$ and $\Gamma=\CtxElem{\x}{\Sgr}{\sgr}{\tau}$. 
+%
+%
+\item \label{lem:inversionV:unit} If $\IsWFExp{\Gamma}{\unit}{\T}$, then $\Gamma=\emptyset$ and $\T=\Graded{\Unit}{\Rgr}{\rgr}$.
+%
+%
+\end{enumerate}
+\end{lemma}
+
+\begin{lemma}[Inversion for values]\label[lemma]{lem:inversionVal}\ 
+\begin{enumerate}
+\item \label{lem:inversionVal:ref}
+If $\IsWFVal{\Sigma}{\loc}{\T}$, then $\Sigma=\CtxElem{\loc}{\Sgr}{\sgr}{\tau}$ and  $\T=\Graded{\tau}{\Sgr}{\sgr}$. 
+%
+%
+\item \label{lem:inversionVal:unit} If $\IsWFVal{\Sigma}{\unit}{\T}$, then $\Sigma=\emptyset$ and $\T=\Graded{\Unit}{\Rgr}{\rgr}$.
+%
+%
+\end{enumerate}
+\end{lemma}
+
+%
+%\NamedRule{t-ref}{}
+%{ \IsWFVal{\Sigma,\CtxElem{\loc}{\Rgr}{\rgr}{\tau}}{\loc}{\T}}
+%{\Graded{\tau}{\Rgr}{\rgr}\subt\T} 
+%\BigSpace
+%\NamedRule{t-unit}{}
+%{\IsWFVal{\Sigma}{\unit}{\Graded{\Unit}{\Rgr}{\rgr}}} 
+%{}
+
+
+
+\begin{lemma}[Inversion for expressions]\label[lemma]{lem:inversionE}\ 
+If $\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Sgr}{\sgr}}$, then 
+\begin{enumerate}
+%\item \label{lem:inversionE:fld-acc} if $\e=\FieldAccess{\x}{\f_i}$ then  $\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}$ and $\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$ 
+%and $\tau=\tau_i$ and  $\Sgr=\Rgr_i\rsum\Rgr\rmul\rgr_i$ and $\sgr=\rgr\rmul\sgr_i$ and $\rgr=\R{\pgr}$ with $\pgr\neq\rzero$
+%
+% 
+\item \label{lem:inversionE:fld-acc} if $\e=\FieldAccess{\x}{\f_i}$ then  $\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}$ and $\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$ 
+and $\Sgr=\Rgr_i\rsum\Rgr\rmul\rgr_i$ and $\sgr=\rgr\rmul\rgr_i$
+%
+%
+%\item \label{lem:inversionE:lfld-upd}  if $\e=\FieldUpdate{\x}{\f_i}{\ve}$ then  $\IsWFExp{\Gamma_1}{\x}{\Graded{\C}{\Rgr}{\rgr}}$ and $\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}$  and 
+%$\IsWFExp{\Gamma_2}{\ve}{\T_i}$ and  $\Gamma=\Gamma_1\ctxsum\Rgr\rmul\Gamma_2$  and $\tau=\Unit$  and  $\rgr=\W{\pgr}$ with $\pgr\neq\rzero$ 
+%%
+%%
+\item \label{lem:inversionE:lfld-upd} if $\e=\FieldUpdate{\x}{\f_i}{\ve}$ then  $\IsWFExp{\Gamma_1}{\x}{\Graded{\C}{\Rgr}{\rgr}}$ and $\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}$ and $\IsWFExp{\Gamma_2}{\ve}{\T'_i}$ and  $\Gamma=\Gamma_1\ctxsum\Rgr\rmul\Gamma_2$ and $\tau=\Unit$ and $\T'_i\leq\T_i$
+%
+%
+\item \label{lem:inversionE:free} 
+if $\e=\Free{\x}$ then $\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\sgr}}$ and $\tau=\Unit$ and $\rgr\neq\rzero$
+%
+%
+\item \label{lem:inversionE:invk} if $\e={\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}$ then 
+$\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr}{\rgr}}$  and $\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\Graded{\tau}{\Sgr}{\Sgr}}$ and $\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n$ and 
+ $\Gamma=\Gamma_0\ctxsum\ldots\Gamma_n$ and  $\T'_i\leq\T_i\Space \forall i\in 1..n$
+%
+%
+\item \label{lem:inversionE:new} if $\e=\New{\C}{\ve_1,\ldots,\ve_n}$ then $\fields{\C}=\Field{\T_1}{\f_1} \ldots \Field{\T_n}{\f_n}$ and $\IsWFExp{\Gamma'}{\ve_i}{\T'_i}\Space \forall i\in 1..n$ and   $\Gamma=\sgr\rmul\Gamma'$
+and  $\T'_i\leq\T_i\Space \forall i\in 1..n$.
+%
+%
+\item \label{lem:inversion:ret} if $\e=\Return{\ve}$ then $\IsWFExp{\Gamma}{\ve}{\Graded{\tau}{\Sgr}{\sgr}}$
+%
+%
+\item\label{lem:inversionE:let}  if $\e=\Let{\x}{\e_1}{\e_2}$ then $\IsWFExp{\Gamma_1}{\e_1}{\Graded{\tau}{\Rgr}{\rgr}}$ and $\IsWFExp{\Gamma_2,\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}}{\e_2}{\Graded{\tau}{\Sgr}{\sgr}}$ and
+$\Graded{\tau}{\Rgr}{\rgr}\subt\Graded{\tau}{\Rgr_1}{\rgr_1}$  and $\Gamma=\Gamma_1\ctxsum\Gamma_2$ 
+%
+%
+\end{enumerate}
+\end{lemma}
+
+
+
+\begin{lemma}[Inversion for configurations]\label{lem:inversionConf}\ 
+\begin{enumerate}
+\item\label{lem:inversionConf:pure:ve} If $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\T}$ then, for some $\Delta$,
+$\IsWFExp{\Delta}{\ve}{\T}$ and $\IsWFEnv{\Gamma}{\Sigma}{\env'}$ with $\Delta\ctxsum\ResGamma\ctxord\Gamma$ and $\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}$.
+%
+%
+\item\label{lem:inversionConf:pure:res} If $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\val}{\env}}{\T}$ then, for some $\Sigma_1$ and $\Sigma_2$, $\Sigma=\Sigma_1\ctxsum\Sigma_2$ and
+$\IsWFExp{\Sigma_1}{\val}{\T'}$ and $\IsWFEnv{\Gamma}{\Sigma_2}{\env'}$ with $\ResGamma\ctxord\Gamma$ and $\T'\leq\T$ and $\env'=\Restrict{\env}{\dom{\ResGamma}}$.
+%
+%
+\item\label{lem:inversionConf:exp:e} If $\IsWFConf{\Gamma}{\ResGamma}{\Conf{\e}{\env}{\mem}}{\T}$ then, for some $\Sigma$ and $\Delta$, we have $\IsWFExp{\Delta}{\e}{\T}$ and 
+$\IsWFEnv{\Gamma}{\Sigma}{\env'}$ and $\IsWFMem{\Sigma}{\mem'}$ with $\Delta\ctxsum\ResGamma\ctxord\Gamma$ and
+ $\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}$  and  $\mem'=\From{\mem}{\dom{\Sigma}}$.
+%
+%
+\item\label{lem:inversionConf:exp:res} If $\IsWFConf{\Gamma}{\ResGamma}{\Conf{\val}{\env}{\mem}}{\T}$ then, for some $\Sigma_1$ and $\Sigma_2$, we have $\IsWFVal{\Sigma_1}{\val}{\T'}$ and 
+$\IsWFEnv{\Gamma}{\Sigma_2}{\env'}$ and $\IsWFMem{\Sigma_1\ctxsum\Sigma_2}{\mem'}$ with $\ResGamma\ctxord\Gamma$
+and $\env'=\Restrict{\env}{\dom{\ResGamma}}$ and $\T'\leq\T$ and $\mem'=\From{\mem}{\dom{\Sigma_1\ctxsum\Sigma_2}}$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+By trivially inverting rules \refToRule{t-pure-conf},\refToRule{t-pure-res},\refToRule{t-conf} and \refToRule{t-res}.
+\end{proof}
+
+
+\begin{lemma}[Canonical form]\label{lem:canonical}
+\begin{enumerate}
+\item \label{lem:canonical:ve:x} If $\IsWFExp{\Gamma}{\ve}{\Graded{\C}{\Rgr}{\rgr}}$, then $\ve=\x$ for some $\x$.
+\item \label{lem:canonical:val:loc} If  $\IsWFVal{\Sigma}{\val}{\Graded{\C}{\Rgr}{\rgr}}$, then $\val=\loc$.
+\end{enumerate}
+\end{lemma}
+
+
+\begin{lemma}\label{lem:dividiEnv}
+If $ \IsWFEnv{\Gamma, \CtxElem{\x}{\Rgr}{\rgr}{\tau}}{\Sigma}{\env,\EnvElem{\x}{\rgr}{\val}}$ then $\Sigma=\Sigma_1\ctxsum\Sigma_2$ and 
+$ \IsWFEnv{\Gamma}{\Sigma_2}{\env}$ and $\IsWFVal{\Sigma_1}{\val}{\T}$ with $\T\subt\Graded{\tau}{\Rgr}{\rgr}$.
+\end{lemma}
+%
+%\begin{lemma}\label{lem:memChange}
+%%\begin{enumerate}
+%%\item \label{lem:refMem:ext} 
+%Let $ \IsWFField{\Sigma}{\mem}{\loc}{\T}$. If $\mem'$ is such that for all $\loc'$ there are $\sgr$ and $\rgr$ such that $\mem(\loc')=\Pair{\sgr}{\obj}$ iff $\mem(\loc')=\Pair{\rgr}{\obj}$,
+% then $ \IsWFField{\Sigma}{\mem}{\loc}{\T}$.
+%% \item \label{lem:refMem:grade} If $\IsWFField{\CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxsum\rgr\rmul\Sigma}{\mem}{\loc}{\Graded{\C}{\Rgr}{\rgr}}$ and $\sgr\rord\rgr$ and $\Rgr\rord\Sgr$ then
+%% $\IsWFField{\CtxElem{\loc}{\Sgr}{\sgr}{\C}\ctxsum\sgr\rmul\Sigma}{\mem}{\loc}{\Graded{\C}{\Sgr}{\sgr}}$.
+%% \end{enumerate}
+%\end{lemma}
+
+\bpa
+\begin{lemma}\label{lem:lessSigma}
+If $\OK{\alpha_\Sigma}{\upsilon_\Sigma}{\mem}$ and $\Sigma'\ctxord\Sigma$, then  $\OK{\alpha_{\Sigma'}}{\upsilon_{\Sigma'}}{\mem}$.
+\end{lemma}
+\begin{proof}  
+Without loss of generality we can assume that $\dom{\Sigma}=\dom{\Sigma'}=\dom{\mem}$.\\
+From $\Sigma'\ctxord\Sigma$ we get that: if $\VarGrade{\loc}{\Rgr}\in\alpha_{\Sigma'}$  and $\VarGrade{\loc}{\rgr}\in\upsilon_{\Sigma'}$, then 
+$\VarGrade{\loc}{\Sgr}\in\alpha_{\Sigma}$  and $\VarGrade{\loc}{\sgr}\in\upsilon_{\Sigma}$ and $\rgr\rord\sgr$ and $\Sgr\rord\Rgr$.
+Therefore for all $\loc, \locPrime\in\dom{\Sigma}$ if $\GrReach{\loc}{\alpha_{\Sigma'}}{}{\Rgr}{}{\locPrime}$, then 
+$\GrReach{\loc}{\alpha_{\Sigma}}{}{\Sgr}{}{\locPrime}$ with $\Sgr\rord\Rgr$. Moroever, if $\locPrime_i\in\dom{\Sigma}$, for $i\in 1..n$,
+and $\GrReach{\locPrime_1,\ldots,\locPrime_n}{}{\upsilon_{\Sigma'}}{}{\sgr}{\iota}$,
+then $\GrReach{\locPrime_1,\ldots,\locPrime_n}{}{\upsilon_{\Sigma}}{}{\rgr}{\iota}$ with $\rgr\rord\sgr$. Therefore, for all $\loc\in\dom{\mem}$
+if the predicate holds for $\Pair{\alpha_{\Sigma}}{\upsilon_{\Sigma}}$ is also holds for $\Pair{\alpha_{\Sigma'}}{\upsilon_{\Sigma'}}$
+\end{proof}
+\epa
+
+\begin{proofOf}{theo:sound-vexp} [Soundness for value expressions]
+{\em If $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\Graded{\tau}{\Rgr}{\rgr}}$,  then $\RedVal{\ve}{\env}{\rgr}{\val}{\env'}$ with $\IsWFConfPure{\Gamma'}{\Sigma'}{\ResGamma}{\VConf{\val}{\env'}}{\Graded{\tau}{\Rgr}{\rgr}}$
+\bpa where  $\Sigma'\ctxord\Sigma$. \epa
+ }
+
+\smallskip\noindent
+By induction on the syntax of $\ve$.
+\begin{description}
+\item [Case $\ve=\x$]
+
+From $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\x}{\env}}{\Graded{\tau}{\Rgr}{\rgr}}$ and \refItem{lem:inversionConf}{pure:ve} we have that
+$\IsWFExp{\Delta}{\x}{\Graded{\tau}{\Rgr}{\rgr}}$ and $\IsWFEnv{\Gamma}{\Sigma}{\env_1}$ with $\Delta\ctxsum\ResGamma\ctxord\Gamma$ and $\env_1=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}$ so $\env=\env_1,\env''$ for some $\env''$.
+%
+From  \refItem{lem:inversionV}{x} $\Delta=\CtxElem{\x}{\Rgr}{\rgr}{\tau}$. 
+Since $\Delta\ctxsum\ResGamma$ is defined and $\Delta\ctxsum\ResGamma\ctxord\Gamma$ we get that, 
+ $\Gamma=\CtxElem{\x}{\Tgr}{\tgr}{\tau},\Gamma_1$ for some $\Tgr$ and $\tgr$.
+ If $\x\in\dom{\ResGamma}$,  then $\ResGamma=\CtxElem{\x}{\Sgr}{\sgr}{\tau},\ResGamma_1$ for some $\Sgr$ and $\sgr$
+ and from \refItem{lem:typeSumCtx}{comp} $\Graded{\tau}{\Tgr}{\tgr}\subt\Graded{\tau}{\Sgr}{\sgr}\rsum\Graded{\tau}{\Rgr}{\rgr}$.
+ If $\x\not\in\dom{\ResGamma}$, from \refItem{prop:sum}{zero} we can assume that $\ResGamma=\CtxElem{\x}{\Sgr}{\sgr}{\tau},\ResGamma_1$ where
+ $\sgr=\rzero$ e $\Sgr=\Rgr\ctxsum\rgr$ since $\Delta\ctxsum(\CtxElem{\x}{\Rgr\ctxsum\rgr}{\rzero}{\tau},\ResGamma_1)=\Delta\ctxsum\ResGamma_1$.\\
+From \refItem{lem:typeSumCtx}{comp}, we have that $\rgr+\sgr\rord\tgr$ and    $\Tgr\rord(\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr)$.
+From \refToRuleP{t-env} of \cref{fig:typing-aux} we get  that $\env_1=\AddToEnv{\env_2}{\x}{\tgr}{\val}$ and $\Sigma=\Sigma_0\ctxsum\Sigma_1$ and 
+ $\IsWFVal{\Sigma_1}{\val}{\Graded{{\tau_1}}{\Tgr_1}{\tgr_1}}$ and 
+ $\Graded{{\tau_1}}{\Tgr_1}{\tgr_1}\subt\Graded{\tau}{\Tgr}{\tgr}$ 
+and $\IsWFEnv{\Gamma_1}{\Sigma_0}{\env_2}$. \\
+%
+Since $\rgr+\sgr\rord\tgr$, applying  \refToRuleP{var} of \cref{fig:semantics} we have
+\begin{quote}
+$\RedVal{\x}{\env}{\rgr}{\val}{\env'}$  
+\end{quote}
+where $\env'=\AddToEnv{\env_2}{\x}{\sgr}{\val},\env''$.\\
+%
+Assume that $\val=\loc$.
+From \refItem{lem:typeSumCtx}{decomp} and $\rgr\rsum\sgr\rord\tgr$ we can decompose $\Sigma_1$ defining the reference
+environment
+$\Sigma'_1=\CtxElem{\loc}{\Tgr_1\rsum\rgr}{\sgr}{\tau_1},\Sigma_2$ and $\Sigma''=\CtxElem{\loc}{\Tgr_1\rsum\sgr}{\rgr}{\tau_1}$
+with $\Sigma'_1\ctxsum\Sigma''\ctxord\Sigma_1$.\\
+From  $\Tgr_1\rord\Tgr$ we get $\Tgr_1\rsum\sgr\rord\Tgr\rsum\sgr$ , and from $\Tgr\rord(\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr)$ we get  $\Tgr\rsum\sgr\rord(\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr)\rsum\sgr$.
+Therefore  from 
+\refItem{prop:unique-alg}{3}, \refItem{prop:subtractive-alg}{3} and property of
+the meet operator, $\Tgr_1\rsum\sgr\rord((\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr))\rsum\sgr\rord((\Sgr\rsub\rgr)\rsum\sgr)\rmeet((\Rgr\rsub\sgr)\rsum\sgr)\rord\Rgr$.
+Therefore 
+\begin{quote}
+($\ast$)\quad $\Graded{{\tau_1}}{\Tgr_1\rsum\sgr}{\rgr}\subt\Graded{\tau}{\Rgr}{\rgr}$.
+\end{quote}
+Let  $\Gamma'=\CtxElem{\x}{\Sgr}{\sgr}{\tau},\Gamma_1$. Again from  $\Tgr\rord(\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr)$ we get  $\Tgr\rsum\sgr\rord(\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr)\rsum\rgr$ and from 
+\refItem{prop:unique-alg}{3}, \refItem{prop:subtractive-alg}{3} and property of
+the meet operator, $\Tgr_1\rsum\rgr\rord((\Sgr\rsub\rgr)\rmeet(\Rgr\rsub\sgr))\rsum\rgr\rord((\Sgr\rsub\rgr)\rsum\rgr)\rmeet((\Rgr\rsub\sgr)\rsum\rgr)\rord\Sgr$. Therefore
+%\begin{quote}
+ $\Graded{{\tau}}{\Tgr_1\rsum\rgr}{\sgr}\subt\Graded{\tau}{\Sgr}{\sgr}$. \\
+%\end{quote}
+From $\IsWFEnv{\Gamma_1}{\Sigma_0}{\env_2}$ and $\Sigma'_1=\CtxElem{\loc}{\Tgr_1\rsum\rgr}{\sgr}{\tau_1},\Sigma_2$  by \refToRuleP{t-env}, we have 
+ $\IsWFEnv{\Gamma'}{\Sigma_0\ctxsum\Sigma'_1}{(\AddToEnv{\env_2}{\x}{\sgr}{\loc})}$. \\
+ %
+From $\Delta\ctxsum\ResGamma\ctxord\Gamma$ we get $\ResGamma\ctxord\Gamma$, from which we derive $\ResGamma_1\ctxord\Gamma_1$.
+Therefore $\ResGamma=\CtxElem{\x}{\Sgr}{\sgr}{\tau},\ResGamma_1\ctxord\CtxElem{\x}{\Sgr}{\sgr}{\tau},\Gamma_1=\Gamma'$.\\
+ %
+  Let $\Sigma'=\Sigma_0\ctxsum\Sigma'_1$. From $\IsWFVal{\Sigma''}{\loc}{\Graded{{\tau_1}}{(\Tgr_1\rsum\sgr)}{\rgr}}$ and 
+ $\IsWFEnv{\Gamma'}{\Sigma_0\ctxsum\Sigma'_1}{(\AddToEnv{\env_2}{\x}{\sgr}{\loc})}$ and   $\ResGamma\ctxord\Gamma'$,
+ and ($\ast$) by \refToRuleP{t-pure-res} 
+   we have $\IsWFConfPure{\Gamma'}{\Sigma'}{\ResGamma}{\VConf{\loc}{\env'}}{\Graded{\tau}{\Rgr}{\rgr}}$.
+ % Moreover, from  $\Sigma'_1\ctxsum\Sigma''\ctxord\Sigma_1$ we get  $\Sigma'\ctxord\Sigma=\Sigma_0\ctxsum\Sigma_1$. 
+  This concludes the proof for  $\val=\loc$.\\
+  If $\val=\pval$, then $\RedVal{\pval}{\env}{\rgr}{\pval}{\env}$ applying  \refToRuleP{var} of \cref{fig:semantics}, which does not have side conditions, and  
+  $\IsWFConfPure{\Gamma'}{\Sigma'}{\ResGamma}{\VConf{\pval}{\env}}{\Graded{\tau}{\Rgr}{\rgr}}$ 
+  with $\Gamma'=\Gamma$ and $\Sigma'=\Sigma$ from the assumptions of the theorem.
+
+ %
+%
+
+  \item [Case $\ve=\pval$] the result derives with a proof like the one for $\unit$ of the previous case.
+\end{description}
+\end{proofOf}
+
+With $\envE$ we denote environments without grades.
+
+\begin{proofOf}{theo:sound-exp} [Sondness for Expressions] {\em If $\IsWFConf{\Gamma}{\ResGamma}{\conf}{\Graded{\tau}{\Rgr}{\rgr}}$, and
+$\reduceE{\erase{\conf}}{\vconfE}$, then $\reduce{\conf}{\rgr}{\vconf}$ such that $\erase{\vconf}=\vconfE$, and $\IsWFConf{\Gamma'}{\ResGamma}{\vconf}{\Graded{\tau}{\Rgr}{\rgr}}$ for some $\Gamma'$ and $\Sigma'$.
+}
+
+\smallskip\noindent
+Let $\conf=\Conf{\e}{\env}{\mem}$. From \refItem{lem:inversionConf}{exp:e}, $\IsWFExp{\Delta}{\e}{\Graded{\tau}{\Rgr}{\rgr}}$ and 
+$\IsWFEnv{\Gamma}{\Sigma}{\env_0}$ and $\IsWFMem{\Sigma}{\mem_0}$ with $\Delta\ctxsum\ResGamma\ctxord\Gamma$ and
+ $\env_0=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}$ and $\mem_0=\From{\mem}{\dom{\Sigma}}$.\\
+By induction on the syntax of $\e$. 
+\begin{description}
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+\item [Case $\e=\Let{\x}{\e_1}{\e_2}$]
+From $\IsWFExp{\Delta}{\e}{\Graded{\tau}{\Rgr}{\rgr}}$ and  \refItem{lem:inversionE}{let}
+ there are $\Delta_1$ and $\Delta_2$  such that  
+%$\IsWFExp{\Delta}{\e}{\Graded{\tau}{\Sgr}{\rgr}}$ with $\Delta\ctxord\Delta_0$ and $\Rgr\rord\Sgr$ and 
+$\Delta=\Delta_1\ctxsum\Delta_2$ and $\IsWFExp{\Delta_1}{\e_1}{\T_1}$ and $\IsWFExp{\Delta_2,\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau_1}}{\e_2}{\Graded{\tau}{\Rgr}{\rgr}}$ and
+$\T_1\subt\Graded{\tau_1}{\Rgr_1}{\rgr_1}$.\\
+From $\reduceE{\erase{\Conf{\Let{\x}{\e_1}{\e_2}}{\env}{\mem}}}{{\Conf{\val}{\envE'}{\memE'}}}$ we get that 
+$\reduceE{\erase{\Conf{\e_1}{\env}{\mem}}}{\Conf{\val_1}{\envE_1}{\memE_1}}$ and 
+$\reduceE{{\Conf{\Subst{\e_2}{\x'}{\x}}{{\envE_1},\x'\mapsto\val_1}{\memE_1}}}{{\Conf{\val}{\envE'}{\memE'}}}$.\\
+%
+Let $\ResGamma_1=\Delta_2\ctxsum\ResGamma$.  From $\Delta_1\ctxsum\Delta_2=\Delta_0$ and $\Delta\ctxsum\ResGamma\ctxord\Gamma$
+we get $\Delta_1\ctxsum\ResGamma_1\ctxord\Gamma$ and $\dom{\Delta_1\ctxsum\ResGamma_1}=\dom{\Delta\ctxsum\ResGamma}$.
+%Since $\dom{\Delta}\subseteq\dom{\Delta_0}$,
+From  $\IsWFEnv{\Gamma}{\Sigma}{\env_0}$ and \cref{lem:restrictEnv} we get that   $\IsWFEnv{\Restrict\Gamma{\dom{\Delta_1\ctxsum\ResGamma_1}}}{\Sigma}{\Restrict{\env}{\dom{\Delta_1\ctxsum\ResGamma_1}}}$. Therefore,
+applying \refToRuleP{t-conf} we have $\IsWFConfOld{\Gamma}{\Sigma}{\ResGamma_1}{\Conf{\e_1}{\env}{\mem}}{\T_1}$. By induction hypothesis
+we get:
+\begin{enumerate}
+\item \label{it1} $\reduce{\Conf{\e_1}{\env}{\mem}}{\rgr_1}{\Conf{\val_1}{\env_1}{\mem_1}}$ such that $\erase{\Conf{\val_1}{\envE_1}{\memE_1}}=\Conf{\val_1}{\env_1}{\mem_1}$, and 
+\item \label{it2} $\IsWFConfOld{\Gamma_1}{\Sigma_1}{\ResGamma_1}{\Conf{\val_1}{\env_1}{\mem_1}}{\T_1}$. % where $\ResGamma_1\ctxord\Gamma_1$.
+\end{enumerate}
+%
+From (\ref{it2}), by \refItem{lem:inversionConf}{exp:res} we get  $\IsWFVal{\Sigma'_1}{\val_1}{\T_1}$ and
+$\IsWFEnv{\Restrict{{\Gamma_1}}{\dom{\ResGamma_1}}}{\Sigma_2}{\Restrict{{\env_1}}{\dom{\ResGamma_1}}}$ and 
+$\IsWFMemOld{\Sigma_1}{\Sigma'_1\ctxsum\Sigma_2}{\mem_2}$ with $\mem_2=\From{{\mem_1}}{\dom{\Sigma'_1\ctxsum\Sigma_2}}$
+and $\ResGamma_1\ctxord\Gamma_1$.\\
+%
+From  $\IsWFExp{\Delta_2,\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau_1}}{\e_2}{\Graded{\tau}{\Rgr}{\rgr}}$ and \cref{lem:renaming}, we get  $\IsWFExp{\Delta'_2}{\Subst{\e_2}{\x'}{\x}}{\Graded{\tau}{\Rgr}{\rgr}}$ where 
+$\Delta'_2=\Delta_2,\CtxElem{\x'}{\Rgr_1}{\rgr_1}{\tau_1}$ and $\x'$ is fresh.\\
+%
+%Since $\IsWFVal{\Sigma'_1}{\val_1}{\T_1}$ and $\T_1\subt\Graded{\tau_1}{\Rgr_1}{\rgr_1}$, from \refToRuleP{t-ref} transitivity of $\subt$, 
+%$\IsWFVal{\Sigma'_1}{\val_1}{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}$.\\
+%
+Let $\Gamma_2=\Gamma_1,\CtxElem{\x'}{\Rgr_1}{\rgr_1}{\tau_1}$ and $\env_2=\env_1,\EnvElem{\x'}{\rgr_1}{\val_1}$. From $\IsWFEnv{\Restrict{{\Gamma_1}}{\dom{\Delta_2\ctxsum\ResGamma}}}{\Sigma_2}{\Restrict{{\env_1}}{\dom{\Delta_2\ctxsum\ResGamma}}}$ and $\T_1\subt\Graded{\tau_1}{\Rgr_1}{\rgr_1}$ we get  $\IsWFEnv{\Restrict{{\Gamma_2}}{\dom{\Delta'_2\ctxsum\ResGamma}}}{\Sigma'_1\ctxsum\Sigma_2}{\Restrict{{\env_2}}{\dom{\Delta'_2\ctxsum\ResGamma}}}$ and $\Delta'_2\ctxsum\ResGamma\ctxord\Gamma_2$.\\
+%
+Therefore, applying \refToRuleP{t-conf}, $\IsWFConfOld{\Gamma_2}{\Sigma_1}{\ResGamma}{\Conf{\Subst{\e_2}{\x'}{\x}}{\env_2}{\mem_1}}{\Graded{\tau}{\Rgr}{\rgr}}$. \\
+%
+From (\ref{it1}) and $\reduceE{{\Conf{\Subst{\e_2}{\x'}{\x}}{{\envE_1},\x'\mapsto\val_1}{\memE_1}}}{{\Conf{\val}{\envE'}{\memE'}}}$, by inductive hypothesis, we derive:
+\begin{itemize}
+\item \label{it1} $\reduce{\Conf{\e_2}{\env_2}{\mem_1}}{\rgr}{\Conf{\val}{\env'}{\mem}}$ such that $\erase{\Conf{\val}{\envE'}{\memE'}}=\Conf{\val}{\env'}{\mem}$, and 
+\item \label{it2} $\IsWFConfOld{\Gamma'}{\Sigma'}{\ResGamma}{\Conf{\val}{\env'}{\mem}}{\Graded{\tau}{\Rgr}{\rgr}}$. % where $\ResGamma\ctxord\Gamma'$.
+\end{itemize}
+which  proves the result.
+
+\bigskip
+\PGComm{IN LAVORAZIONE}
+
+
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+\item [Case $\e={\FieldAccess{\x}{\f_k}}$]\ 
+
+\bigskip
+\bpa
+From $\IsWFExp{\Delta}{\FieldAccess{\x}{\f_k}}{\Graded{\tau}{\Rgr}{\rgr}}$ and  \refItem{lem:inversionE}{fld-acc}
+we have $\IsWFExp{\Delta}{\FieldAccess{\ve}{\f_k}}{\Graded{\tau}{\Rgr}{\rgr}}$ and $\fields{\C}=\Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$ and
+$\Rgr=\Rgr_k\rsum\Tgr\rmul\rgr_k$ and $\rgr=\tgr\rmul\rgr_k$ and
+% \bpa$\tgr=\R{\pgr}$ with $\pgr\neq\rzero$ \epa 
+and
+$\IsWFExp{\Delta}{\x}{\Graded{\C}{\Tgr}{\tgr}}$. From
+ \refItem{lem:inversionV}{x} we have $\Delta=\CtxElem{\x}{\Tgr}{\tgr}{\C},\Delta'$.
+\\
+%
+From  
+$\Delta\ctxsum\ResGamma\ctxord\Gamma$ we get $\Gamma=\Gamma'',\CtxElem{\x}{\Sgr_0}{\sgr_0}{\C}$ and 
+$\Graded{\C}{\Sgr_0}{\sgr_0}\subt\Graded{\C}{\Tgr}{\tgr}\rsum\Graded{\C}{\Sgr'}{\sgr'}$ where $\ResGamma=\CtxElem{\x}{\Sgr'}{\sgr'}{\C},\ResGamma'$.
+\\
+From 
+$\IsWFExp{\Delta}{\x}{\Graded{\C}{\Tgr}{\tgr}}$ and $\Delta\ctxsum\ResGamma\ctxord\Gamma$ and $\IsWFEnv{\Gamma}{\Sigma}{\env_0}$ we have
+$\IsWFConfOld{\Gamma}{\Sigma}{\ResGamma}{\VConf{\x}{\env}}{\Graded{\C}{\Tgr}{\tgr}}$. 
+\\
+Let $\env=\AddToEnv{\env''}{\x}{\sgr_0}{\val}$,  by  \cref{theo:sound-vexp} and \refToRuleP{var},
+ \begin{quote}
+$\RedVal{\x}{\env}{\tgr}{\val}{\AddToEnv{\env''}{\x}{\sgr'}{\val}}$
+\end{quote}
+with $\tgr\rsum\sgr'\rord\sgr_0$ and 
+$\IsWFConfOld{\Gamma'}{\Sigma'}{\ResGamma}{\VConf{\val}{\env'}}{\Graded{\C}{\Tgr}{\tgr}}$ where $\Gamma'=\Gamma'',\CtxElem{\x}{\Sgr'}{\sgr'}{\C}$
+and $\env'=\AddToEnv{\env''}{\x}{\sgr'}{\val}$. \\
+From  \refItem{lem:inversionConf}{pure:res} there are $\Sigma_1$ and $\Sigma_2$ such that $\Sigma'=\Sigma_1\ctxsum\Sigma_2$ and $\IsWFVal{\Sigma_1}{\val}{\Graded{\C'}{\Tgr'}{\tgr'}}$, $\IsWFEnv{\Gamma'}{\Sigma_2}{\Restrict{\env'}{\dom{\ResGamma}}}$ and $\Graded{\C'}{\Tgr'}{\tgr'}\leq\Graded{\C}{\Tgr}{\tgr}$
+and $\ResGamma\ctxord\Gamma'$. From \refItem{lem:canonical}{val:loc}, $\val=\loc$ and from \refItem{lem:inversionVal}{ref} $\Sigma_1=\CtxElem{\loc}{\Tgr'}{\tgr'}{\C'}$.\\
+%
+Let
+ $\Sigma=\Sigma'', \CtxElem{\loc}{\Sgr}{\sgr}{\C'}$,
+from  $\IsWFMem{\Sigma}{\mem_0}$  we have that  
+$\mem=\mem'',\MemElem{\loc}{}{\Obj{{\C_0}}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{m}{\rgr}}}$ and $\C_0\subt\C'\subt\C$ implies  $m\geq n$.
+Moreover, 
+$\rgr=\tgr\rmul\rgr_k$.
+Therefore we can apply \refToRuleP{field-access} and
+\begin{quote}
+$ \reduce{\Conf{\FieldAccess{\loc}{\f_k}}{\env}{\mem}}{\rgr}{\Conf{\val_k}{\AddToEnv{\env''}{\x}{\sgr'}{\loc}}{\mem}}$ 
+\end{quote}
+
+We consider two cases $\val_k=\pval$ and $\val_k=\loc'$ for some $\loc'$.\\ 
+If $\val_k=\pval$, we have $\IsWFExp{\emptyset}{\pval}{\Graded{\PT}{\Rgr}{\rgr}}$ from \refToRule{t-pval}.
+From  $\IsWFMem{\Sigma}{\mem_0}$ and $\emptyset\ctxsum\Sigma_2=\Sigma_2\ctxord\Sigma$ and  \cref{lem:lessSigma} we derive  $\IsWFMem{\Sigma_2}{\mem_0}$.
+Therefore from  \refToRule{t-res} we get $\IsWFConfOld{\Gamma'}{\Sigma_2}{\ResGamma}{\Conf{\val}{\env'}{\mem}}{\Graded{\PT}{\Rgr}{\rgr}}$. \\
+If $\val_k=\loc'$ for some $\loc'$, let  $\Sigma=\Sigma_1'', \CtxElem{\loc}{\Sgr}{\sgr}{\C'},\CtxElem{\loc'}{\Rgr'}{\rgr'}{\D}$. 
+
+From 
+$\IsWFMem{\Sigma}{\mem_0}$ we get  $\OK{\alpha_\Sigma}{\upsilon_\Sigma}{\mem_0}$.
+
+
+
+$\Sigma'\ctxord\Sigma$ we get that: if $\VarGrade{\loc}{\Rgr}\in\alpha_{\Sigma'}$  and $\VarGrade{\loc}{\rgr}\in\upsilon_{\Sigma'}$, then 
+$\VarGrade{\loc}{\Sgr}\in\alpha_{\Sigma}$  and $\VarGrade{\loc}{\sgr}\in\upsilon_{\Sigma}$ and $\rgr\rord\sgr$ and $\Sgr\rord\Rgr$.
+Therefore for all $\loc, \locPrime\in\dom{\Sigma}$ if $\GrReach{\loc}{\alpha_{\Sigma'}}{}{\Rgr}{}{\locPrime}$, then 
+
+from  $\IsWFMem{\Sigma}{\mem_0}$ 
+
+
+\bigskip
+
+\epa
+
+\bigskip
+\PGComm{FIN QUI}
+
+
+\PGComm{Qua inizia la nuova dimostrazione}
+
+Let
+ $\Sigma=\Sigma'', \CtxElem{\loc}{\Sgr_\loc}{\sgr_\loc}{\C'}$,
+from  $\IsWFMem{\Sigma}{\mem_0}$  we have that  
+$\mem=\mem'',\MemElem{\loc}{}{\Obj{{\C'}}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{m}{\rgr}}}$ and $\C'\subt\C$ implies  $m\geq n$.
+Moreover, 
+$\rgr=\tgr\rmul\rgr_k$.
+Therefore we can apply \refToRuleP{field-access} and
+\begin{quote}
+$ \reduce{\Conf{\FieldAccess{\loc}{\f_k}}{\env}{\mem}}{\rgr}{\Conf{\val_k}{\AddToEnv{\env''}{\x}{\sgr'}{\loc}}{\mem}}$ 
+\end{quote}
+From  $\IsWFMem{\Sigma}{\mem_0}$ %$\IsWFMemOut{\Sigma}{\tilde{\Sigma}}{\mem}$ 
+%where  $\mem=\mem'',\MemElem{\loc}{\sgr_{\loc}}{\Obj{{\C_0}}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}$ 
+ and $\Sigma=\Sigma'', \CtxElem{\loc}{\Sgr}{\sgr}{\C'}$
+ 
+\begin{enumerate}%[(1)]
+\item \label{it1}
+for all $\CtxElem{{\tilde{\loc}}}{\Tgr_{\tilde{\loc}}}{\tgr_{\tilde{\loc}}}{\C_{\tilde{\loc}}}\in\Sigma''$ there
+is a $\Sigma_{\tilde\loc}$ such that $\IsWFField{\Sigma_{\tilde\loc}}{\mem}{{\tilde\loc}}{\Graded{\C_{\tilde\loc}}{\tgr_{\tilde\loc}}{\Tgr_{\tilde\loc}}}$ 
+\item \label{it2} $\IsWFField{\Sigma_{\loc}}{\mem}{\loc}{\Graded{\C_0}{\Sgr_{\loc}}{\sgr_{\loc}}}$ and 
+%\item \label{it3} $\UGrCtx{\tilde\Sigma\ctxsum\Sigma_{\loc}}\ctxord\UGrCtx{\mem}$ where $\tilde\Sigma=\sum_{\tilde{\loc}\in\Sigma''}\Sigma_{\tilde\loc}$.
+\item \label{it3} $\tilde{\Sigma}=\sum_{\tilde\iota\in\Sigma''}\Sigma_{\tilde\iota}\ctxsum\Sigma_\iota$.
+\end{enumerate}
+%From \cref{lem:memChange} and (\ref{it1}) and (\ref{it2}) we get
+%\begin{enumerate}%[(a)]
+%\item \label{ait1}
+%for all $\CtxElem{{\tilde{\loc}}}{\Tgr_{\tilde{\loc}}}{\tgr_{\tilde{\loc}}}{\C_{\tilde{\loc}}}\in\Sigma''$ there
+%is a $\Sigma_{\tilde\loc}$ such that $\IsWFField{\Sigma_{\tilde\loc}}{\mem}{{\tilde\loc}}{\Graded{\C_{\tilde\loc}}{\tgr_{\tilde\loc}}{\Tgr_{\tilde\loc}}}$  and
+%\item \label{ait2} $\IsWFField{\Sigma_{\loc}}{\mem}{\loc}{\Graded{\C_0}{\Sgr_{\loc}}{\sgr_{\loc}}}$ 
+%\end{enumerate}
+
+\bigskip
+\PGComm{Qui ci va il risultato}
+ we have that $\Sigma'_0= \Sigma'',\CtxElem{\loc}{\Sgr_2}{\sgr_2}{\C_0}$ and  ${\Graded{\C_0}{\Sgr_\loc}{\sgr_\loc}}={\Graded{\C_0}{\Sgr_1}{\sgr_1}}\rsum{\Graded{\C_0}{\Sgr_2}{\sgr_2}}$. Moreover, from $\env(\y)=\env'(\y)$ for all $\y\neq\x$ and $\IsWFEnv{\Gamma'}{\Sigma_2}{\Restrict{\env'}{\dom{\ResGamma}}}$ we get 
+ \begin{quote}
+ $(\ast)\quad\Sigma_2= \Sigma'',\CtxElem{\loc}{\Sgr_0}{\tgr'}{\C_0}+\CtxElem{\loc}{\Sgr_2}{\sgr_2}{\C_0}$.
+ \end{quote}
+From $\sgr_1\rsum\sgr_2\rord\sgr_\loc$ and $\tgr\rsum\tgr'\rord\sgr_1$ we get $\tgr\rsum(\tgr'\rsum\sgr_2)\rord\sgr_\loc$. 
+Therefore, from 
+(\ref{it2}) and \cref{prop:split-ty} there are $\Sigma_{\loc}^1$ and $\Sigma_{\loc}^2$ such that 
+\begin{enumerate}%[(a)]\addtocounter{enumi}{2}
+\item \label{ait3}
+$\IsWFField{\Sigma_{\loc}^1}{\mem}{\loc}{\Graded\tau{\Sgr_\loc\rsum(\tgr'\rsum\sgr_2)}{\tgr}}$
+\item \label{ait4}$\IsWFField{\Sigma_{\loc}^2}{\mem}{\loc}{\Graded\tau{\Sgr_\loc\rsum\tgr}{\tgr'\rsum\sgr_2}}$ and
+\item \label{ait5} $\Sigma_{\loc}^1\ctxsum\Sigma_{\loc}^2\ctxord\Sigma_{\loc}$.
+\end{enumerate}
+From (\ref{ait4}) we know that %$\mem'(\loc)=\Pair{\_}{\Obj{{\C_0}}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}$,
+$\Sigma_{\loc}^2 = \CtxElem{\loc}{\Sgr_\loc\rsum\tgr}{\tgr'\rsum\sgr_2}{\C_0}\ctxsum (\tgr'\rsum\sgr_2)\rmul\Sigma'_\loc$ for some  $\Sigma'_\loc$ and,
+for all $i \in 1..n$, 
+$\IsWFField{\hat\Sigma_i}{\mem}{\val_i}{\T_i}$ with 
+$\T_i\subt\Graded{\tau_i}{\Rgr_i\ctxsum(\Sgr_\loc\rsum\tgr)\rmul\rgr_i}{\rgr_i}$, 
+$\fields{\C_0} = \Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$, 
+and $\hat\Sigma_i \ctxord \Sigma'_\loc$. 
+\\
+%
+We consider two cases $\val_k=\unit$ and $\val_k=\loc'$ for some $\loc'$.\\ 
+If $\val_k=\unit$, 
+from (\ref{ait1}), (\ref{ait4}), (\ref{it3}) and ($\ast$) we have $\UGrCtx{(\SommaS{\tilde{\loc}\in\Sigma''}{\Sigma_{\tilde\loc}})\ctxsum\Sigma^2_{\loc}}\ctxord\UGrCtx{\mem}$. Therefore 
+ $\IsWFMem{\Sigma_2}{\mem}$ and, since 
+$\IsWFField{}{\mem}{\unit}{\Graded{\tau}{\Rgr}{\rgr}}$, with \refToRule{t-res} we get  
+$\IsWFConf{\Gamma'}{\ResGamma}{{\Conf{\unit}{\AddToEnv{\env''}{\x}{\tgr'}{\loc}}{\mem'',\MemElem{\loc}{\tgr'\rsum\sgr_2}{\obj} }}}{\Graded{\tau}{\Rgr}{\rgr}}$.
+\\
+%
+If $\val_k=\loc'$ for some $\loc'$, we will show that for some $\Sigma'_1$ we have that 
+$\IsWFVal{\Sigma'_1}{\loc'}{\T'}$ and $\T'\subt\Graded{\tau_k}{\Rgr_k\ctxsum\Tgr\rmul\rgr_k}{\tgr\rmul\rgr_k}$ and 
+$\IsWFMem{\Sigma'_1\ctxsum\Sigma_2}{\mem}$. So that applying \refToRule{t-res} we derive
+$\IsWFConf{\Gamma'}{\ResGamma}{{\Conf{\loc'}{\AddToEnv{\env''}{\x}{\tgr'}{\loc}}{\mem'',\MemElem{\loc}{\tgr'\rsum\sgr_2}{\obj} }}}{\Graded{\tau}{\Rgr}{\rgr}}$.\\
+%
+From (\ref{ait3}) we know that 
+$\Sigma_{\loc}^1 = \CtxElem{\loc}{\Sgr_\loc\rsum(\tgr'\rsum\sgr_2)}{\tgr}{\C_0}\ctxsum \tgr\rmul\Sigma''_\loc$ for some  $\Sigma''_\loc$  and,
+for all $i \in 1..n$, 
+$\IsWFField{\tilde\Sigma_i}{\mem}{\val_i}{\T_i}$ with 
+$\T_i\subt\Graded{\tau_i}{\Rgr_i\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_i}{\rgr_i}$, 
+$\fields{\C_0} = \Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$, 
+and $\tilde\Sigma_i \ctxord \Sigma''_\loc$. Therefore 
+$\IsWFField{\tilde\Sigma_k}{\mem}{\loc'}{\T}$ with 
+$\T\subt\Graded{\tau_k}{\Rgr_k\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_k}{\rgr_k}$. From 
+$\tgr\rmul \tilde\Sigma_k \ctxord \tgr\rmul\Sigma''_\loc\ctxord\Sigma_{\loc}^1 $ we have  
+$\IsWFField{ \tgr\rmul\tilde\Sigma_k}{\mem}{\loc'}{\tgr\rmul\T}$ and 
+$\tgr\rmul\T\subt\Graded{\tau_k}{\Rgr_k\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_k}{\tgr\rmul\rgr_k}$.\\
+%
+From ${\Graded{\C_0}{\Sgr_\loc}{\sgr_\loc}}={\Graded{\C_0}{\Sgr_1}{\sgr_1}}\rsum{\Graded{\C_0}{\Sgr_2}{\sgr_2}}$ the properties of
+the meet operator and \refItem{prop:subtractive-alg}{3} we have 
+$\Sgr_\loc\rsum\sgr_2=((\Sgr_1\rsub\sgr_2)\rmeet(\Sgr_2\rsub\sgr_1))\rsum\sgr_2\rord\Sgr_1$ and similarly from 
+$\Graded{\C'}{\Sgr_0}{\sgr_0}\subt\Graded{\C'}{\Sgr}{\sgr}\rsum\Graded{\C}{\Sgr'}{\tgr'}$ we have
+$\Sgr_0\rsum\tgr'=((\Sgr\rsub\tgr')\rmeet(\Sgr'\rsub\sgr))\rsum\tgr'\rord\Sgr$. From
+$\Sgr_1\rord\Sgr_0$ and $\Sgr\rord\Tgr$ and transitivity of $\rord$ we derive $\Sgr_\loc\rsum(\tgr'\rsum\sgr_2)\rord\Tgr$.
+Therefore $\Graded{\tau_k}{\Rgr_k\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_k}{\tgr\rmul\rgr_k}\subt\Graded{\tau_k}{\Rgr_k\ctxsum\Tgr\rmul\rgr_k}{\tgr\rmul\rgr_k}$.
+Let  $\Sigma'_1=\CtxElem{\loc'}{\Rgr_k\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_k}{\tgr\rmul\rgr_k}{\tau_k}$,
+$\IsWFVal{\Sigma'_1}{\loc'}{\T'}$  with $\T'=\Graded{\tau_k}{\Rgr_k\ctxsum(\Sgr_\loc\rsum(\tgr'\rsum\sgr_2))\rmul\rgr_k}{\tgr\rmul\rgr_k}$ and
+$\T'\subt\Graded{\tau_k}{\Rgr_k\ctxsum\Tgr\rmul\rgr_k}{\tgr\rmul\rgr_k}$.\\
+%
+To complete the proof we have to show that  $\IsWFMem{\Sigma'_1\ctxsum\Sigma_2}{\mem}$.
+
+\bigskip 
+
+
+
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+\item [Case $\e=\FieldUpdate{\ve}{\f_i}{\ve'}$ ]
+%
+%\item \label{lem:inversionE:invk} if $\e={\MethCall{\ve_0}{\m}{\ve_1,\ldots,\ve_n}}$ then 
+%$\IsWFExp{\Gamma_0}{\ve_0}{\Graded{\C}{\Rgr}{\rgr}}$  and $\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\Graded{\tau}{\Sgr}{\Sgr}}$ and $\IsWFExp{\Gamma_i}{\ve_i}{\T_i}\Space \forall i\in 1..n$ and 
+% $\Gamma=\Gamma_0\ctxsum\ldots\Gamma_n$
+
+
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+\item [Case $\e=\Free{\ve}$]
+%
+%\item \label{lem:inversionE:free} 
+%if $\e=\Free{\ve}$ then $\IsWFExp{\Gamma}{\ve}{\Graded{\C}{\rzero}{\sgr}}$ and $\tau=\Unit$
+
+\end{description}
+
+
+\end{proofOf}
+
+%\input{shiftOld}
+
+
+

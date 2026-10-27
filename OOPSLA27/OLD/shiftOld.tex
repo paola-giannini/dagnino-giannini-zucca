@@ -1,0 +1,80 @@
+
+% !TEX root = main.tex
+
+\subparagraph*{Shifting}
+
+Given a grade $\sgr$ and a pair of grades $\ple{\Rgr,\rgr}$, where the first one is regarded as an assumption grade, we define the \emph{shif} of $\ple{\Rgr,\rgr}$ by $\sgr$ as the operation 
+\begin{quote}
+$\sgr\rsh\ple{\Rgr,\rgr} = \ple{\Rgr\rsum\sgr\rmul\rgr,\rgr}$. 
+\end{quote}
+This operation extends to types and contexts in the obvious way. 
+
+\begin{proposition}\label{prop:rshift}
+If $\IsWFField\Sigma\mem\val\T$, then, for every grade $\sgr$ we have 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\val}{\sgr\rsh\T}$. 
+\end{proposition}
+\begin{proof}
+The proof is by coinduction. 
+The only non-trivial case is when $\val = \loc$. 
+Consider a judgement 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\loc}{\Graded\C{\Rgr\rsum\sgr\rmul\rgr}{\rgr}}$ such that $\IsWFField\Sigma\mem\loc{\Graded\C\Rgr\rgr}$ is derivable. 
+We have to show that this is the consequence of an instance of the rule \refToRule{t-ref-in-mem} where the premises are appropriately shifted. 
+Consider a judgement 
+$\IsWFField{\sgr\rsh\Sigma}{\mem}{\loc}{\Graded\C{\Rgr\rsum\sgr\rmul\rgr}{\rgr}}$ such that $\IsWFField\Sigma\mem\loc{\Graded\C\Rgr\rgr}$ is derivable. 
+We have to show that this is the consequence of an instance of the rule \refToRule{t-ref-in-mem} where the premises are appropriately shifted. 
+By hypothesis we know that 
+$\mem(\loc) = \Pair{\_}
+{\Obj\C{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd\val{n}{\rgr}}} $, 
+$\Sigma = \CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxsum \rgr\rmul\Sigma'$ and, for all $i \in 1..n$, 
+$\IsWFField{\Sigma_i}{\mem}{\val_i}{\T_i}$ with 
+$\T_i\subt\Graded{\tau_i}{\Rgr_i\ctxsum\Rgr\rmul\rgr_i}{\rgr_i}$, 
+$\fields{\C} = \Field{\Graded{\tau_1}{\Rgr_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Rgr_n}{\rgr_n}}{\f_n}$, 
+and $\Sigma_i \ctxord \Sigma'$. 
+We consider as premises the judgements 
+$\IsWFField{(\sgr\rmul\rgr)\rsh\Sigma_i}{\mem}{\val_i}{(\sgr\rmul\rgr)\rsh\T_i}$  and we notice that 
+$(\sgr\rmul\rgr)\rsh\Sigma_i \ctxord (\sgr\rmul\rgr)\rsh \Sigma$ and 
+$(\sgr\rmul\rgr)\rsh\T_i 
+  \subt (\sgr\rmul\rgr) \rsh \Graded{\tau_i}{\Rgr_i\rsum\Rgr\rmul\rgr_i}{\rgr_i} 
+  = \Graded{\tau_i}{\Rgr_i \rsum \Rgr\rmul\rgr_i \rsum \sgr\rmul\rgr\rmul\rgr_i}{\rgr_i} 
+  = \Graded{\tau_i}{\Rgr_i\rsum (\Rgr\rsum\sgr\rmul\rgr)\rmul\rgr_i}{\rgr_i}$, 
+by monotonicity of the shifting operation. 
+Notice also that 
+$\sgr \rsh (\rgr\rmul\Sigma) = \rgr\rmul ((\sgr\rmul\rgr)\rsh\Sigma)$ and 
+$\CtxElem{\loc}{\Rgr\rsum\sgr\rmul\rgr}{\rgr}{\C} = \sgr \rsh (\CtxElem\loc\Rgr\rgr\C)$. 
+Then we get the thesis$\sgr\rsh -$ laxly distributes over addition of contexts. 
+\FDComm{servirebbe ancora un po' di subsumption sui contesti per far quest'ultimo passaggio} 
+\end{proof}
+
+\PGComm{Prima: If\ $\IsWFField\Sigma\mem\val{\Graded\tau\Rgr{\rgr_1\rsum\rgr_2}}$}
+\begin{proposition}\label{prop:split-ty} 
+If $\IsWFField\Sigma\mem\val{\Graded\tau\Rgr{\bpa\rgr\epa}}$  \bpa and  $\rgr_1\rsum\rgr_2\rord\rgr$ \epa then 
+there are $\Sigma_1$ and $\Sigma_2$ such that 
+$\Sigma_1\ctxsum\Sigma_2\ctxord\Sigma$, 
+$\IsWFField{\Sigma_1}{\mem}{\val}{\Graded\tau{\Rgr\rsum\rgr_2}{\rgr_1}}$ and 
+$\IsWFField{\Sigma_2}{\mem}{\val}{\Graded\tau{\Rgr\rsum\rgr_1}{\rgr_2}}$. 
+\end{proposition} 
+\begin{proof}
+The only non-trivial case is when $\val = \loc$. 
+By \refToRule{t-ref-in-mem} we know that 
+$\tau = \C$, 
+$\mem(\loc) = \Pair{\_}
+{\Obj\C{\GradedValInd{\val}{1}{\sgr},\ldots,\GradedValInd\val{n}{\sgr}}} $, 
+$\Sigma = \CtxElem{\loc}{\Rgr}{\rgr}{\C}\ctxsum \rgr\rmul\Sigma'$ and, for all $i \in 1..n$, 
+$\IsWFField{\Sigma'_i}{\mem}{\val_i}{\T_i}$ with 
+$\T_i\subt\Graded{\tau_i}{\Sgr_i\rsum \Rgr\rmul\sgr_i}{\sgr_i}$, 
+$\fields{\C} = \Field{\Graded{\tau_1}{\Sgr_1}{\sgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\Sgr_n}{\sgr_n}}{\f_n}$, 
+and $\Sigma'_i \ctxord \Sigma'$. 
+Now, by \cref{prop:rshift}, we obtain 
+$\IsWFField{\rgr_2\rsh\Sigma'_i}{\mem}{\val_i}{\rgr_2\rsh\T_i}$ with 
+$\rgr_2\rsh\Sigma'_i \ctxord \rgr_2\rsh\Sigma'$ and 
+$\rgr_2\rsh\T_i \subt \Graded\C{\Sgr_i\rsum(\Rgr\rsum\rgr_2)\rmul\sgr_i}{\sgr_i}$, 
+for all $i\in 1..n$. 
+Let us set 
+$\Sigma_1 = \CtxElem\loc{\Rgr\rsum\rgr_2}{\rgr_1}\C \ctxsum \rgr_1\rmul (\rgr_2\rsh\Sigma')$, then, by rule \refToRule{t-ref-in-mem}, we obtain 
+$\IsWFField{\Sigma_1}{\mem}{\loc}{\Graded\C{\Rgr\rsum\rgr_2}{\rgr_1}}$. 
+In a similar way we derive $\IsWFField{\Sigma_2}{\mem}{\loc}{\Graded\C{\Rgr\rsum\rgr_1}{\rgr_2}}$ where $\Sigma_2  = \CtxElem\loc{\Rgr\rsum\rgr_1}{\rgr_2}\C \ctxsum \rgr_2\rmul(\rgr_1\rsh\Sigma')$. 
+Therefore, to conclude, we just have to prove that $\Sigma_1\ctxsum\Sigma_2 \ctxord \Sigma$, but this is immediate by construction, as in each side we have increased the assumption grade of each reference exactly by its usage in the other side \bpa and  $\rgr_1\rsum\rgr_2\rord\rgr$. \epa
+
+\end{proof}
+
+

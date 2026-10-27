@@ -1,0 +1,55 @@
+riNB: ho usato let con dichiarazioni multiple 
+
+let x1 = e1, …, xn = en
+
+per non impazzire
+
+let 	a1 = ...,
+	outer = (
+		let a2 = ..., nested = (
+			let a3 = ..., res = ***
+			in res.f = a3; return a3)
+		in nested.f = a2; return a2 ) in e 
+
+vogliamo che outer abbia assunzione 0 in e 
+
+cosa possiamo mettere al posto dei ***?
+(1) a3  SI (NO perchè conto anche quel cammino)
+(2) a1, a2 NO
+(3) a1.clone()  SI [mi pare sia come dire a1; new(...)]
+(3) a2.clone()	 SI [mi pare sia come dire a2; new(...)]
+(4) a2.f = a1; new(...)	SI
+
+invece se metto al posto di ***:
+
+(5) a1.f = a2; new(...) non è ben tipato 
+
+infatti posso ricavare assunzione 0 per nested
+
+però NON posso ricavare assunzione 0 per outer perché ho assegnato a2 come campo di a1 che è visibile in e 
+
+se res = a3; new(...)
+** a3 borowed per derivare nested unique 
+
+se res = a2.f = a1; new ...
+** nested sempre unique, a2  borrowed per derivare outer unique 
+
+se res = a2.f = a1; a3; new(...)
+** sia a2 che a3 borrowed con lifetime diversi 
+
+se res = a3.f = a2; new(...)
+** tentativo 
+** nested borrowed con lifetime l1 
+** a2 borrowed con lifetime l2 > l1 (non so dove vengano creati) 
+** a3 viene inizializzato con reference con lifetime l1 (credo serva subsumption per farlo) 
+** internamente a3 viene reborrowed con lifetime l3 < l2  (per derivare nested unique 
+** Nota: forse bisogna rendere più flessibile il modo con cui vengono introdotti i lifetime (e.g., introducendone più di uno alla volta ) 
+** questo esempio è un po' complicato ma mi pare illustri tutti i punti delicati (e.g., perché serve sia il lifetime reference he quello variabile). 
+
+
+
+esempio
+
+[z] (let x = [y] new(z) in x); e3    sia y borrowed in e1, z borrowed in let x = e1 in e2
+
+allora il risultato di e1 non può essere accessibile da y, ma può essere accessibile da z 

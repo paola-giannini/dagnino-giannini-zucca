@@ -1,0 +1,260 @@
+% !TEX root = main.tex
+
+\section{Calculus}\label{sect:calculus}
+
+\subsection{Syntax} 
+The calculus is an imperative variant of Featherweight Java \cite{IgarashiPW99}. The syntax is given in \cref{fig:syntax} in fine-grain style \cite{LevyPT03}. Dots stand for additional, unspecified, constructs, e.g., we could add primitive types and their operators. 
+We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. 
+We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. 
+\begin{figure}
+\begin{grammatica}
+\produzione{\ve}{\x\mid\unit\mid\ldots}{value expression}\\
+\produzione{\bez\ke\eez}{\KE{\C}{\vs}}{\bez constructor call\eez}\\
+\produzione{\e}{\bez\
+%FieldAccess{\x}{\f}\mid
+\FieldsMatch{\xs}{\x}{\e}\eez}{expression}\\
+\seguitoproduzione{\FieldUpdate{\bez\x\eez}{\f}{\ve}\mid\Free{\bez\x\eez}\mid\MethCall{\bez\x\eez}{\m}{\vs}}{}\\
+\seguitoproduzione{\bez
+%\New{\C}{\vs}\mid
+\RecNew{\xs}{\ks}\eez}{}\\
+\seguitoproduzione{\Return{\ve}\mid\Let{\x}{\e}{\e'}\mid\ldots}{}\\
+\produzione{\tau}{\C\mid\Unit\mid\ldots}{non-graded type}\\
+\produzione{\T}{\bez\Graded{\tau}{\Rgr}{\rgr}\eez}{(graded) type}
+\end{grammatica}
+\caption{Syntax}\label{fig:syntax}
+\end{figure}
+
+Value expressions include variables and $\unit$. \bez The latter provides a concrete example of primitive type, and plays the role of result in field assignment and deallocation. \eez Expressions include the following constructs: fields access, field update, deallocation, method invocation, and object creation.  Deallocation is explicit to show  that it is guaranteed to be safe by the type system.  
+\bez
+Fields access and object creation are a generalization of the standard constructs, as described below.
+
+In the expression $\FieldsMatch{\xs}{\x}{\e}$, $\xs$ is assumed to have distinct elements and non-zero length. Then, $\FieldsMatch{\x_1\ldots\x_n}{\x}{\e}$ models simultaneous access to the first $n$ fields of the receiver $\x$; then, their values can be used in $\e$ through the corresponding variables In examples, we will use a syntactic sugar where each variable occuring in $\e$ is associated to the corresponding field. For $i\in 1..n$, the standard single field access $\FieldAccess{\x}{\f_i}$ is a shortcut for
+$\FieldsMatch{\x_1\ldots\x_n}{\x}{\x_i}$. \EZComm{motivazione per la generalizzazione, magari un esempio}
+
+In the expression $\RecNew{\xs}{\ks}$, $\xs$ and $\ks$ are assumed to have distinct elements and the same (non-zero) length. Then, $\RecNew{\x_1\ldots\x_n}{\ke_1\ldots\ke_n}$ models the simultaneous creation of $n$ mutually recursive objects. The result of the expresssion, for simplicity, is assumed to be the first one. In examples, we will use a syntactic sugar where each variable is associated to the corresponding object creation.
+The standard single object creation $\New{\C}{\vs}$ is a shortcut for $\RecNew{\x}{\KE{\C}{\vs}}$.
+\eez
+
+Finally, we consider the standard constructs of fine-grain style, $\terminale{return}$ embedding value expressions into expressions, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+
+Non-graded types include class names and the $\Unit$ type. Types are \emph{graded}, that is, decorated with a \emph{usage} grade, expressing how many times/in which way a value of the type can be used, and an \emph{assumption} grade. 
+
+An assumption grade $\Rgr$ expresses assumptions on how many times/in which way a value of the type (notably, a reference) is used elsewhere. 
+An assumption grade $0$ means that the reference is \emph{unique}.
+As a help for the reader, we will use the metavariables $\rgr$ for usage grades, and $\Rgr$ for assumption grades. 
+
+ To have a uniform treatment, the $\Unit$ type is graded as well; however, in the following we will sometimes write just $\Unit$ to mean $\Graded{\Unit}{\Rgr}{\rgr}$ with arbitrary $\Rgr$ and $\rgr$.
+
+To be concise, the class table is abstractly modeled as follows, omitting its syntax, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  
+
+\begin{itemize}
+\item $\fields{\C}$ gives, for each class $\C$, the sequence $\Field{\T_1}{\f_1}\ldots\Field{\T_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their types
+\item $\mbody{\C}{\m}$ gives, for each method $\m$ of class $\C$, the sequence of its parameters, assumed to be distinct, and the body
+\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the grades of the $\this$ parameter, the parameter types and the return type 
+\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation. 
+\end{itemize}
+The (standard) definitions are omitted.\EZComm{o in Appendice?}
+
+\EZComm{dopo: Note that the operational semantics does not rely on type information, that is, only uses the field names from $\aux{fields}$ and $\aux{mbody}$. }
+
+\subsection{Resource-aware semantics} 
+The operational semantics assumes \emph{references} (object unique identifiers) $\loc$ and uses some auxiliary structures, given in \cref{fig:auxsem}. 
+\begin{figure}
+\begin{grammatica}
+\produzione{\val}{\loc\mid\unit\mid\ldots}{value}\\
+\produzione{\env}{\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}}{environment}\\
+\produzione{\obj}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{object state}\\
+\produzione{\mem}{\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}}{memory}\\
+\produzione{\conf}{\Conf{\e}{\env}{\mem}}{configuration}\\
+\produzione{\vconf}{\Conf{\val}{\env}{\mem}}{result}
+\end{grammatica}
+\caption{Auxiliary structures}
+\label{fig:auxsem}
+\end{figure}
+
+Values (produced by the evaluation) include references and $\unit$. 
+Environments are (sequences denoting) finite maps from variables into graded values. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are sequences of  graded field values, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a value.
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{var}{ }
+{ \RedVal{\x}{\AddToEnv{\env}{\x}{\sgr}{\val}}{\rgr}{\val}{\AddToEnv{\env}{\x}{\sgr'}{\val}}}
+{\rgr\rsum\sgr'\rord\sgr}
+\BigSpace
+\NamedRule{unit}{ }
+{ \RedVal{\unit}{\env}{\rgr}{\unit}{\env} } 
+{} 
+\\[3ex]
+\end{array}
+\end{math}
+\hrule
+\begin{math}
+\begin{array}{l}
+\\
+\bez
+\NamedRule{fields-access}{
+ \begin{array}{l}
+  \RedVal{\x}{\env}{\sgr_1\rsum\ldots\rsum\sgr_n}{\loc}{\env'}\\
+  \reduce{\Conf{\Subst{\e}{\y_i}{\x_i}}{\AddToEnv{\env'}{\y_i}{\sgr_i\rmul\rgr_i}{\val_i}}{\mem}}{\sgr}{\vconf}
+\end{array}
+}{ \reduce{\Conf{\FieldsMatch{\x_1\ldots\x_n}{\x}{\e}}{\env}{\mem}}{\sgr}{\vconf}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{m}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_m},\\ 
+  n\leq m\\
+%   \sgr_i=\R{\pgr_i}, \pgr_i\neq\rzero\ \forall i\in 1..n\\
+\y_i\not\in\dom{\env'}\ \forall i\in 1..n
+}
+\eez
+\\[4ex]
+\bez
+\NamedRule{field-update}{
+  \begin{array}{l}
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}\\
+  \RedVal{\ve}{\env'}{\rgr\rmul\rgr_i}{\val}{\env''}
+  \end{array}
+}{ \reduce{\Conf{\FieldUpdate{\x}{\f_i}{\ve}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\sgr}{\Conf{\unit}{\env''}{\mem,\MemElem{\loc}{\Subst{\obj}{\val}{i}}}}}
+{ \obj=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n}\\
+  i\in 1..n
+%  \\  \rgr=\W{\pgr}, \pgr\neq\rzero
+}
+\eez
+\\[4ex]
+\bez
+\NamedRule{free}{
+  \RedVal{\bez\x\eez}{\env}{\sgr}{\loc}{\env'}
+}{ \reduce{\Conf{\Free\bez\x\eez}{\env}{\mem,\MemElem{\loc}{\_}}}{\rgr}{\Conf{\unit}{\env'}{\mem}} }
+{ }
+\eez
+\\[4ex]
+\NamedRule{invk}{
+\begin{array}{l}
+\RedVal{\bez\x\eez}{\env}{\rgr_0}{\loc}{\env_0}\\
+\RedVal{\ve_1}{\env_0}{\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr_n}{\val_n}{\env'}\\
+\reduce{\Conf{\Subst{\Subst{\e}{\y_0}{\this}}{\y_i}{\x_i}^{i\in 1..n}}{\env',\EnvElem{\y}{\rgr_0}{\loc},\EnvElem{\y_i}{\rgr_i}{\val_i}^{i\in 1..n}}{\mem}}{\rgr}{\vconf}
+\end{array}
+}
+{ \reduce{\Conf{\MethCall{\bez\x\eez}{\m}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\vconf}}
+{\mem(\loc)=\Obj{\C}{\_}\\
+\mbody{\C}{\m}=\Pair{\x_1\dots\x_n}{\e}\\
+\y_i\not\in\dom{\env'}\ \forall i\in 0..n
+}
+\\[3ex]
+\bez
+\NamedRule{k-invk}{
+\begin{array}{l}
+\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\val_n}{\env'}\\
+\end{array}}
+{ \RedVal{\KE{\C}{\ve_1,\ldots,\ve_n}}{\env}{\rgr}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{\env'}}
+{
+\fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n} 
+}
+\eez
+\\[5ex]
+\bez
+\NamedRule{rec-new}{
+\begin{array}{l}
+\RedVal{\ke_1}{\env_0}{\rgr_1}{\obj_1}{\env_1}\\
+\ldots\\
+\RedVal{\ke_n}{\env_{n-1}}{\rgr_n}{\obj_n}{\env'}\\
+\end{array}
+}
+{ \reduce{\Conf{\RecNew{\x_1\ldots\x_n}{\ke_1\ldots\ke_n}}{\env}{\mem}}{\rgr_1}{\Conf{\loc_1}{\Restrict{\env'}{\dom{\env}}}{\mem'}}}
+{\env_0=\env,\EnvElem{\x_1}{\rgr_1}{\loc_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\loc_n}\\
+\loc_i\not\in\dom{\mem}\ \forall i\in 1..n\\
+\mem'=\mem,\MemElem{\loc_1}{\obj_1},\ldots\MemElem{\loc_n}{\obj_n}
+}
+\eez
+\\[4ex]
+\NamedRule{ret}{\RedVal{\ve}{\env}{\sgr}{\val}{\env'}}
+{ \reduce{\Conf{\Return\ve}{\env}{\mem}}{\rgr}{\Conf{\val}{\env'}{\mem}} }
+{ 
+  \rgr\rord\sgr\ne\rzero 
+}
+\\[3ex]
+\NamedRule{let}{
+ \begin{array}{l}
+  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\val}{\env'}{\mem'}} \\ 
+  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\AddToEnv{\env'}{\x'}{\sgr}{\val}}{\mem'}}{\rgr}{\vconf}
+  \end{array}
+}{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
+{\x'\not\in\dom{\env}}
+\\[3ex]
+\end{array}
+\end{math}
+\hrule
+\begin{math}
+\begin{array}{l}
+\\
+\bez
+\NamedRule{field-access}{
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}
+}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem}}{\sgr}{\Conf{\val_i}{\env'}{\mem}}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
+  \fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n}\\
+   i\in 1..n\\ 
+%  \rgr=\R{\pgr}, \pgr\neq\rzero\\
+\sgr \rord \rgr\rmul\rgr_i
+}
+\eez
+\\[4ex]
+\bez
+\NamedRule{new}{
+\begin{array}{l}
+\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\val_n}{\env'}\\
+\end{array}}
+{ \reduce{\Conf{\New{\C}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\Conf{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{\env'}{\mem,\MemElem{\loc}{\obj}}}}
+{
+\fields{\C}=\Field{\_}{\f_1} \ldots \Field{\_}{\f_n} \\
+\loc\not\in\dom{\mem}
+}
+\eez
+\end{array}
+\end{math}
+\caption{Resource-aware semantics}
+\label{fig:semantics}
+\end{figure}
+
+The resource-aware semantics is similar to  previous work \cite{ChoudhuryEEW21,BianchiniDGZ23ecoop,BianchiniDGZ23oopsla}: evaluation takes place in an environment of available resources, variable occurrences are replaced one at a time, by consuming some amount of their grade, and, if the required amount is not available, evaluation is stuck. Finally, the reduction relation is indexed by a grade $\rgr$, which will be the grade of the value obtained in the result, if any. 
+
+Here, we add a further component of a configuration, the memory, which behaves as expected in the imperative paradigm, that is, is read/modified by the imperative constructs. 
+
+The
+semantic judgment for configurations has shape $\reduce{\Conf{\e}{\env}{\mem}}{\rgr}{\vconf}$, and is defined in \cref{fig:semantics}, on top of the judgment  for \emph{pure configurations}, of shape $\RedVal{\ve}{\env}{\rgr}{\val}{\env'}$. As discussed in \cite{BianchiniDGZ23oopsla}, we adopt a big-style since in this way no annotations on subterms are needed. 
+
+Rules for  pure configurations, in the first section, just replace variables by their values in the environment; in the key rule \refToRule{var}, the grade $\sgr$ of the variable decreases to $\sgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). \EZComm{io userei la differenza, se no va motivato}
+
+\EZComm{da vedere, qui e nelle regole di tipo: When value expressions are actually \emph{used}, that is, are subterms of expressions, they should be evaluated with a non-zero grade, as required by a side condition in the corresponding rule in the second section.}
+
+In all the expressions which specify a receiver object, that is, in rules \refToRule{fields-access}, \refToRule{field-update},  \refToRule{free}, and \refToRule{invk}, the corresponding value expression needs to be evaluated to a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
+
+\bez
+Rules \refToRule{fields-access} and \refToRule{field-update} check that the object's class has as many fields as those of the object state (first and second side condition).  
+
+\EZComm{spiegare il fatto che sono i primi campi} In rule \refToRule{fields-access}, the reduction grade of the receiver should be a sum of $n$ grades.
+%, each one being a non-zero read grade. 
+The value of the $i$-th field is used to initialize the corresponding variable, with a grade which is the product of the $i$-th portion of the reduction grade of the receiver with the field grade. As a help for the reader, the derived rule \refToRule{field-access} for the standard single field-access is shown in the bottom section.
+
+In rule \refToRule{field-update},
+% the reduction grade should be a non-zero write grade. 
+the specified field in the object state is updated with the value of the second argument, which should be produced with a grade which is the product of the remaining grade of the receiver and that of the object's field. 
+\eez
+
+Rule \refToRule{free} removes the reference from the current memory.\\
+In rule \refToRule{invk}, method look-up is performed for the specified name. If a method is found, and parameters are as many as arguments, then the method body is evaluated in an environment enriched by associating the receiver to the implicit parameter $\this$, and arguments to parameters, with the grades obtained by their evaluation. To avoid clashes, parameter names are replaced by fresh variables. 
+
+\bez
+In rule \refToRule{rec-new}, many objects are simultaneously added in memory with fresh object identifiers (references), made mutually available through the corresponding variables, which are added in the environment. As a help for the reader, the derived rule \refToRule{new} for the standard single object creation is shown in the bottom section.
+For each object, the auxiliary rule \refToRule{k-invk} checks that the constructor arguments are as many as declared in the class, and evaluates them, replacing variables by their values in the environment. The result is an object state where fields initialized with the values of the arguments, which should be produced with a grade which is the product of the grade of the receiver and that of the object's field. \eez
+
+Finally, rules \refToRule{ret} and \refToRule{let} are the standard ones in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}. In rule \refToRule{ret}, the evaluation grade of the value expression should be enough to cover the current evaluation grade.
+In rule \refToRule{let}, the two subterms are evaluated sequentially, the latter in an environment where the local variable has been added  as available resource, modulo renaming to avoid clashes, with the graded value obtained by the evaluation of the first subterm.
+  
+\EZComm{da rivedere: As customary in resource-aware semantics, in addition to standard cases, evaluation can get stuck (formally, no judgment can be derived) when some resource (variable) is exhausted. Moreover, reduction is non-deterministic, since, when  a resource is needed, it can be consumed in different ways; hence, soundness of the type system is \emph{soundness-may}, meaning that \emph{there exists} a computation which does not get stuck. }

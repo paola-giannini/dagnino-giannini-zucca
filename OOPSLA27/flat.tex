@@ -1,0 +1,626 @@
+% !TEX root = main.tex
+
+\section{Flat memory}\label{sect:flat}
+
+In this section, we consider a simplified calculus where field values can only be primitive values, hence memory is flat.
+
+\subsection{Syntax} 
+%Dots stand for additional, unspecified, constructs, e.g., we could add primitive types and their operators. 
+The syntax is given in \cref{fig:syntax} in fine-grain style \cite{LevyPT03}. We assume \emph{variables} $\x, \y, \z, \ldots$, including the reserved variable $\this$, class names $\C$, including the reserved name $\Object$, field names $\f$, method names $\m$. 
+We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. 
+\begin{figure}
+\begin{grammatica}
+\produzione{\ve}{\x\mid\pval}{value expression}\\
+\produzione{\pval}{\unit\mid\ldots}{primitive value}\\
+%\produzione{\ke}{\KE{\C}{\vs}}{constructor call}\\
+\produzione{\e}{\FieldAccess{\x}{\f}\mid\FieldUpdate{\x}{\f}{\ve}\mid\Free{\x}\mid\MethCall{\x}{\m}{\vs}\mid\New{\C}{\vs}}{expression}\\
+%\FieldsMatch{\xs}{\x}{\e}}{expression}\\
+%\mid
+%\RecNew{\xs}{\ks}}{}\\
+\seguitoproduzione{\Return{\ve}\mid\Let{\x}{\e}{\e'}}{}\\
+\produzione{\tau}{\C\mid\PT}{non-graded type}\\
+\produzione{\PT}{\Unit\mid\ldots}{primitive type}\\
+\produzione{\T}{\Graded{\tau}{\Rgr}{\rgr}}{(graded) type}
+\end{grammatica}
+\caption{Syntax}\label{fig:syntax}
+\end{figure}
+
+Value expressions are either variables or (unspecified) primitive values, the latter including at least $\unit$, playing the role of result in field assignment and deallocation.  
+
+Expressions include field access, field update, deallocation, method invocation, and object creation.  Deallocation is explicit to show  that it is guaranteed to be safe by the type system.  
+Moreover, we consider the standard constructs of fine-grain style, $\terminale{return}$ embedding value expressions into expressions, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+
+Non-graded types are either class names or (unspecified) primitive types. Each primitive value $\pval$ has an associated primitive type $\typeof{}{\pval}$, with $\typeof{}{\unit}=\Unit$. 
+
+Types are \emph{graded}, that is, decorated with a \emph{usage} grade and an \emph{assumption} grade.
+Usage grades express how many times/in which way a value of the type can be used. Besides being decorations in types, they are relevant in the semantics as well, as will be shown in \cref{sect:semantics}. 
+On the other hand, assumption grades are only relevant in the type system, and will be explained in \cref{sect:typesystem}.
+%
+%An assumption grade $\Rgr$ expresses assumptions on how many times/in which way a value of the type (notably, a reference) is used elsewhere. 
+%An assumption grade $0$ means that the reference is \emph{unique}.
+As a help for the reader, we will use the metavariables $\Rgr$ for assumption grades, and $\rgr$ for usage grades. 
+%To have a uniform treatment, primitive types are decorated with graded as well. \EZComm{anche se ...}
+
+To be concise, we omit the syntax of the class table, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
+
+\subsection{Resource-aware semantics}\label{sect:semantics}
+The operational semantics assumes \emph{references} (object unique identifiers)  $\loc, \locPrime,\locSec$  and uses some auxiliary structures, given in \cref{fig:auxsem}. 
+\begin{figure}
+\begin{grammatica}
+\produzione{\val}{\loc\mid\pval}{value}\\
+\produzione{\env}{\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}}{environment}\\
+\produzione{\obj}{\Obj{\C}{\GradedValInd{\pval}{1}{\rgr},\ldots,\GradedValInd{\pval}{n}{\rgr}}}{object state}\\
+\produzione{\mem}{\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}}{memory}\\
+\produzione{\conf}{\Conf{\e}{\env}{\mem}}{configuration}\\
+\produzione{\vconf}{\Conf{\val}{\env}{\mem}}{result}
+\end{grammatica}
+\caption{Auxiliary structures}
+\label{fig:auxsem}
+\end{figure}
+
+Values (produced by the evaluation) are either references or primitive values.
+Environments are (sequences denoting) finite maps from variables into graded values. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are sequences of  graded field values, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a value.
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{var}{ }
+{ \RedVal{\x}{\AddToEnv{\env}{\x}{\sgr}{\val}}{\rgr}{\val}{\AddToEnv{\env}{\x}{\sgr'}{\val}}}
+{\rgr\rsum\sgr'\rord\sgr}
+\BigSpace
+\NamedRule{pval}{ }
+{ \RedVal{\pval}{\env}{\rgr}{\pval}{\env} } 
+{} 
+\\[3ex]
+\end{array}
+\end{math}
+\hrule
+\begin{math}
+\begin{array}{l}
+\\
+
+\NamedRule{field-access}{
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}
+}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem}}{\sgr}{\Conf{\pval_i}{\env'}{\mem}}}
+{ \mem(\loc)=\Obj{\C}{\GradedValInd{\pval}{1}{\rgr},\ldots,\GradedValInd{\pval}{n}{\rgr}}\\
+  \fnames{\C}=\f_1\ldots\f_n\\
+   i\in 1..n\\ 
+\sgr \rord \rgr\rmul\rgr_i
+}
+\\[5ex]
+\NamedRule{field-update}{
+  \begin{array}{l}
+  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}\\
+  \RedVal{\ve}{\env'}{\tgr\rmul\rgr_i}{\pval}{\env''}
+  \end{array}
+}{ \reduce{\Conf{\FieldUpdate{\x}{\f_i}{\ve}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\sgr}{\Conf{\unit}{\env''}{\mem,\MemElem{\loc}{\Subst{\obj}{\pval}{i}}}}}
+{ \obj=\Obj{\C}{\GradedValInd{\pval}{1}{\rgr},\ldots,\GradedValInd{\pval}{n}{\rgr}}\\
+  \fnames{\C}=\f_1\ldots\f_n\\
+  i\in 1..n
+%  \\  \rgr=\W{\pgr}, \pgr\neq\rzero
+}
+
+\\[4ex]
+
+\NamedRule{free}{
+  \RedVal{\x}{\env}{\sgr}{\loc}{\env'}
+}{ \reduce{\Conf{\Free\x}{\env}{\mem,\MemElem{\loc}{\_}}}{\rgr}{\Conf{\unit}{\env'}{\mem}} }
+{ }
+
+\\[4ex]
+\NamedRule{invk}{
+\begin{array}{l}
+\RedVal{\x}{\env}{\rgr_0}{\loc}{\env_0}\\
+\RedVal{\ve_1}{\env_0}{\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr_n}{\val_n}{\env'}\\
+\reduce{\Conf{\Subst{\Subst{\e}{\y_0}{\this}}{\y_i}{\x_i}^{i\in 1..n}}{\env',\EnvElem{\y}{\rgr_0}{\loc},\EnvElem{\y_i}{\rgr_i}{\val_i}^{i\in 1..n}}{\mem}}{\rgr}{\vconf}
+\end{array}
+}
+{ \reduce{\Conf{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\vconf}}
+{\mem(\loc)=\Obj{\C}{\_}\\
+\mbody{\C}{\m}=\Pair{\x_1\dots\x_n}{\e}\\
+\y_i\not\in\dom{\env'}\ \forall i\in 0..n
+}
+\\[3ex]
+
+\NamedRule{new}{
+\begin{array}{l}
+\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\pval_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\pval_n}{\env'}\\
+\end{array}}
+{ \reduce{\Conf{\New{\C}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\Conf{\loc}{\env'}{\mem,\MemElem{\loc}{\Obj{\C}{\GradedValInd{\pval}{1}{\rgr},\ldots,\GradedValInd{\pval}{n}{\rgr}}}}}}
+{
+  \fnames{\C}=\f_1\ldots\f_n\\
+\loc\not\in\dom{\mem}
+}
+
+\\[4ex]
+\NamedRule{ret}{\RedVal{\ve}{\env}{\sgr}{\val}{\env'}}
+{ \reduce{\Conf{\Return\ve}{\env}{\mem}}{\rgr}{\Conf{\val}{\env'}{\mem}} }
+{ 
+  \rgr\rord\sgr%\ne\rzero 
+}
+\\[3ex]
+\NamedRule{let}{
+ \begin{array}{l}
+  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\val}{\env'}{\mem'}} \\ 
+  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\AddToEnv{\env'}{\x'}{\sgr}{\val}}{\mem'}}{\rgr}{\vconf}
+  \end{array}
+}{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
+{\x'\not\in\dom{\env}}
+\\[3ex]
+\end{array}
+\end{math}
+\caption{Resource-aware semantics}
+\label{fig:semantics}
+\end{figure}
+
+The resource-aware semantics is similar to  previous work \cite{ChoudhuryEEW21,BianchiniDGZ23ecoop,BianchiniDGZ23oopsla}: evaluation takes place in an environment of available resources, variable occurrences are replaced one at a time, by consuming some amount of their grade, and, if the required amount is not available, evaluation is stuck. Finally, the reduction relation is indexed by a grade $\rgr$, which will be the grade of the value obtained in the result, if any. 
+
+Here, we add a further component of a configuration, the memory, which behaves as expected in the imperative paradigm, that is, is read/modified by the imperative constructs. 
+
+Finally, as customary for a Java-like calculus, program execution needs information from the class table, as modeled by the following functions:
+\begin{itemize}
+\item $\fnames{\C}$ gives, for each class $\C$, the sequence $\f_1\ldots\f_n$ of the names of its fields,  assumed to be distinct
+\item $\mbody{\C}{\m}$ gives, for each method $\m$ of class $\C$, the pair $\Pair{\xs}{\e}$ consisting of the sequence of its parameters, assumed to be distinct, and the body
+%\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}$ consisting of the grades of the $\this$ parameter, the parameter types and the return type 
+%\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation. 
+\end{itemize}
+The (standard) definitions are omitted.\EZComm{o in Appendice?}
+
+The
+semantic judgment for configurations has shape $\reduce{\Conf{\e}{\env}{\mem}}{\rgr}{\vconf}$, and is defined in \cref{fig:semantics}, on top of the judgment  for \emph{pure configurations}, of shape $\RedVal{\ve}{\env}{\rgr}{\val}{\env'}$. As discussed in \cite{BianchiniDGZ23oopsla}, we adopt a big-step style since in this way no annotations on subterms are needed. 
+
+Rules for  pure configurations, in the first section, just replace variables by their values in the environment; in the key rule \refToRule{var}, the grade $\sgr$ of the variable decreases to $\sgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). \EZComm{io userei la differenza, se no va motivato}
+
+\EZComm{da vedere, qui e nelle regole di tipo: When value expressions are actually \emph{used}, that is, are subterms of expressions, they should be evaluated with a non-zero grade, as required by a side condition in the corresponding rule in the second section.}
+
+In the expressions which specify a receiver object, that is, in rules \refToRule{field-access}, \refToRule{field-update},  \refToRule{free}, and \refToRule{invk}, the corresponding value expression needs to be evaluated to a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
+
+Rules \refToRule{field-access} and \refToRule{field-update} check that the the object state has as many fields as those of the object's class (first and second side condition), including one with the specified name (third side condition).
+
+ In rule \refToRule{field-access}, the corresponding field value is returned, with a reduction grade being (overapproximated by)  the product of the grade of the receiver with that of the object's field. 
+Indeed, the former specifies how many copies of the object we have and the latter how many copies of the field each of such objects has.
+% thus, their product provides an upper bound to the grade of the resulting value.  
+
+In rule \refToRule{field-update},
+the specified field in the object state is updated with the value of the second argument, which should be produced with a grade which is  a multiple of that  of the object's field. \EZComm{spiegare}
+
+Rule \refToRule{free} removes the reference from the current memory.\\
+In rule \refToRule{invk}, method look-up is performed for the specified name. If a method is found, and parameters are as many as arguments, then the method body is evaluated in an environment enriched by associating the receiver to the implicit parameter $\this$, and arguments to parameters, with the grades obtained by their evaluation. To avoid clashes, parameter names are replaced by fresh variables.
+
+Rule \refToRule{new} checks that the constructor invocation has as many arguments as the fields of the object's class. 
+A fresh object identifier (reference) is added in memory. Each field of the object state is initialized with the corresponding argument, which should be produced with with a grade which is the product of the grade of the object with that of the object's field.
+
+Finally, rules \refToRule{ret} and \refToRule{let} are the standard ones in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}. In rule \refToRule{ret}, the evaluation grade of the value expression should be enough to cover the current evaluation grade.
+In rule \refToRule{let}, the two subterms are evaluated sequentially, the latter in an environment where the local variable has been added  as available resource, modulo renaming to avoid clashes, with the graded value obtained by the evaluation of the first subterm.
+  
+As customary in resource-aware semantics, in addition to standard cases, evaluation can get stuck (formally, no judgment can be derived) when some resource (variable) is exhausted. \EZComm{da rivedere: Moreover, reduction is non-deterministic, since, when  a resource is needed, it can be consumed in different ways; hence, soundness of the type system is \emph{soundness-may}, meaning that \emph{there exists} a computation which does not get stuck. }
+
+\subsection{Type system}\label{sect:typesystem}
+\EZComm{Promemoria:
+\begin{itemize}
+\item ho tolto tutte le condizioni sui gradi diversi da zero, anche nella semantica
+\item controllare che ci sia subtyping e weakening quando necessario
+\item forse estendere le regole con $\Theta$ solo per la prova
+\end{itemize}
+}
+As shown in the previous section, usage grades play a role in the resource-aware semantics. Indeed, fields in object states are graded, and reduction is graded, meaning that its final result is produced in a given number of copies/a given modality.
+
+The type system relies on assumption grades as well. We informally explain their meaning by considering, e.g., the typing judgment for expressions, which has shape\footnote{Recall that we use the metavariables $\Rgr$ for assumption grades, and $\rgr$ for usage grades.}
+\begin{quote}
+$\IsWFExp{\CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\tau_n}}{\e}{\Graded{\tau}{\Rgr}{\rgr}}$
+\end{quote}
+and  the affinity algebra and algebra of modifiers introduced in \cref{ex:alg}. These algebras allow to express \emph{uniqueness} and \emph{immutability} properties, assuming in the latter to add the condition in \refToRule{t-field-update} that the receiver should have a $\mut$ grade. 
+
+For all $i\in 1..n$, the usage grade $\rgr_i$ means that the variable $\x_i$ is used at most $\rgr_i$ times/in $\rgr_i$ mode in the expression. The usage decoration $\rgr$ in the type means that an enclosing program context can use (the result of) the expression at most $\rgr$ times/in $\rgr$ mode. 
+
+For instance, in the affinity algebra, a variable with usage grade $1$ is \emph{affine} (cannot be used more than once) in $\e$; conversely, if the usage decoration in the type is $1$, 
+then a program context cannot use (the result of) $\e$ more than once; for instance, $\e$ cannot initialize a variable declared with usage $\infty$ (unrestricted usage). 
+In the algebra of modifiers, a variable with usage grade $\readonly$ cannot be updated in $\e$; conversely, if the usage decoration in the type is $\readonly$, then then a program context cannot use (the result of) $\e$ as $\mut$; for instance, $\e$ cannot initialize a variable declared with usage $\mut$. 
+
+This is the approach essentially taken, with minor variations, in existing graded type systems in literature.
+The novelty of our type system is that there are assumption grades  as well. Let us first illustrate their meaning considering values which are references.
+
+For all $i\in 1..n$, the assumption grade $\Rgr_i$ means that the expression (the programmer) can safely assume that the reference denoted by $\x_i$ is used at most $\Rgr_i$ times/in $\Rgr_i$ mode  in an enclosing program context.
+The assumption decoration $\Rgr$ in the type expresses that an enclosing program context can safely assume that (the reference which is the result of) the expression  is used at most $\Rgr$ times/in $\Rgr$ mode elsewhere. 
+
+For instance, in the affinity algebra, a variable with assumption grade $0$ denotes a \emph{unique} reference, that is, one never used elsewhere; conversely, if the assumption decoration in the type is $\infty$ (no assumption), then a program context cannot assume 
+anything on (the result of) $\e$; for instance, $\e$ cannot initialize a variable declared with assumption $0$ (unique). In the algebra of modifiers, a variable with assumption grade $\readonly$ denotes a reference which cannot be updated elsewhere; conversely, if the assumption decoration in the type is $\mut$, then a program context cannot assume 
+anything on (the result of) $\e$; for instance, $\e$ cannot initialize a variable declared with assumption $\readonly$. Note that assumption and usage grades both $\readonly$ means that the reference is \emph{immutable}. 
+
+For primitive types, assumption grades are significant in the context (on the left); namely, $\CtxElem{\x}{\Rgr}{\rgr}{\PT}$ means that the variable $\x$ is used at most $\Rgr$ times/in $\Rgr$ mode elsewhere. On the other hand, they are pointless as decorations in the type; e.g., it makes no sense to say that an integer value is unique. 
+%Indeed, only values which are references can be used elsewhere in a program context, whereas primitive values 
+To lighten the presentation, there is a unique production for types, with both decorations; however, in the following we feel free to omit the assumption decoration on primitive types.
+
+Coming now to the formalization, (type and grade) contexts are defined in \cref{fig:ctx}.  The metavariable $\ResGamma$ will be used for \emph{external contexts}, see in the following.
+
+\begin{figure}[ht]
+\begin{grammatica} 
+\produzione{\Gamma,\Delta,\ResGamma}{\CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\tau_n}}{context of variables}\\[1ex]
+\produzione{\Sigma}{\CtxElem{\loc_1}{\Rgr_1}{\rgr_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\Rgr_n}{\rgr_n}{\tau_n}}{context of references}
+\end{grammatica}
+\caption{(Type-and-grade) contexts}
+\label{fig:ctx}
+\end{figure}
+
+Contexts are (sequences representing) maps which associate to either variables or references an assumption grade, a usage grade\footnote{Also called \emph{coeffect} in previous work \cite{PetricekOM13,PetricekOM14,BrunelGMZ14}.}, and a (non-graded) type.  
+
+The typing rules use the following definitions.
+\begin{description}
+
+\item[Sum of grade decorations]  $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{(\Rgr_1 \rsub \rgr_2) \rmeet (\Rgr_2 \rsub \rgr_1)}{(\rgr_1\rsum\rgr_2)}$
+%\item[Sum of types] The type $\T_1\rsum\T_2$ is defined by:
+%\begin{quote}
+%$\Graded{\tau}{\Rgr_1}{\rgr_1}\rsum\Graded{\tau}{\Rgr_2}{\rgr_2}=\Graded{\tau}{\Rgr}{\rgr}$ if $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{\Rgr}{\rgr}$
+%\end{quote}
+%Note that sum of types is undefined if they have different base type ($\tau$) or if the needed subtractions of grades are undefined. Sum is associative and commutative. 
+
+
+\item[Sum] The context $\Gamma\ctxsum\Gamma'$ is defined by:
+\begin{quote}
+$\Gamma\ctxsum\emptyset=\Gamma$\\
+ $(\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}, \Gamma_1) \ctxsum(\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}, \Gamma_2) = \CtxElem{\x}{\Rgr}{\rgr}{\tau},(\Gamma_1\ctxsum\Gamma_2)$ if $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{\Rgr}{\rgr}$  \\  
+$(\CtxElem{\x}{\Rgr}{\rgr}{\tau}, \Gamma_1)\ctxsum\Gamma_2=\CtxElem{\x}{\Rgr}{\rgr}{\tau},(\Gamma_1\ctxsum\Gamma_2)$ if $\x\not\in\dom{\Gamma_2}$
+\end{quote}
+
+\item[Product] The context $\rgr\rmul\Gamma$ is defined by:
+\begin{quote}
+$\rgr\ctxmul\emptyset=\emptyset$\\
+$\rgr\ctxmul(\CtxElem{\x}{\Rgr}{\sgr}{\tau},\Gamma)=\CtxElem{\x}{\Rgr}{\rgr\rmul\sgr}{\tau},(\rgr\ctxmul\Gamma)$
+\end{quote}
+
+\item[Subtyping] The relation $\T\subt\T'$ is defined by:
+\begin{quote}
+$\GradedInd{\tau}{1}{\Rgr}{\rgr}\subt\GradedInd{\tau}{2}{\Rgr}{\rgr}$ if $\tau_1\subt\tau_2$, $\rgr_2\rord\rgr_1$, $\Rgr_1\rord\Rgr_2$
+\end{quote}
+
+%\item[Compatibility] The relation $\tau\comp\tau''$ holds if either $\tau\subt\tau'$ or $\tau'\subt\tau$.
+
+\item[Weakening]  The relation $\Gamma\ctxord\Gamma'$ is defined by
+\begin{quote}
+$\emptyset\ctxord\Gamma$\\
+$\Gamma\ctxord(\CtxElem{\x}{\Rgr}{\rgr}{\tau}, \Gamma')$ if $\x\notin \dom{\Gamma}$ and $\Gamma \ctxord \Gamma'$\\
+$(\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau},\Gamma) \ctxord (\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}, \Gamma')$ if $\rgr_1\rord\rgr_2$, $\Rgr_2\rord\Rgr_1$ and $\Gamma \ctxord \Gamma'$
+\end{quote}
+\end{description}
+ We briefly discuss the above definitions. 
+
+Sum of contexts is a key technical feature of our approach. 
+ Usually, in graded type systems, such sum is defined pointwise, that is, for each variable occurring in both sides, required to have the same type, the usage grades are summed. 
+
+%Intuitively, a context models, for each resource, its amount required by some code, hence when combining subterms the sum of the amounts is required.
+Here, the sum is still performed by-variable, but we have to take into account assumption grades as well. Assume to have $\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}$ and $\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}$ in the two contexts, respectively. In the first context, the assumption $\Rgr_1$ means that $\x$ can be used elsewhere with grade (at most) $\Rgr_1$.  When summing the contexts, $\x$ is used with grade $\rgr_2$, hence this amount should be subtracted from $\Rgr_1$. The same holds conversely. Altogether, $\x$ can still be used elsewhere with a grade which is the meet of the two residual assumptions. 
+For a concrete example, consider the algebra of extended natural numbers. Assuming to have $\CtxElem{\x}{3}{2}{\tau}$ and $\CtxElem{\x}{2}{3}{\tau}$ in the two contexts, respectively, we get $3-3=0$ and $2-2=0$, hence we have $\CtxElem{\x}{0}{5}{\PT}$ in the sum.  In \cref{ex:ex1} later we show an example of code where this situation arises. 
+
+Note that, in this way, the sum is undefined when, for some variable, the assumption in one context is not enough to cover the usage in the other. This is an additional source of partiality, besides the case in which the types in the two contexts are different. 
+
+The product of a grade with a context is defined as usual in graded type systems; note that assumption grades are not affected.
+
+In a more general type, usage grades and assumption grades can decrease and increase, respectively. For instance, considering affinity grades,
+an expression of type $\Graded{\C}{0}{\omega}$ can be used where a usage grade 1 and no assumption grade are required: as a concrete example, an argument which is unique and can be used with no constraints can be safely passed to a method handling the parameter in an affine way and assuming nothing about it. 
+
+ In a more general (weaker) context, resources can be added and/or their available usage grade can increase; on the other hand, assumption grades can dicrease. For instance, again considering affinity grades, an expression which can be typechecked assuming to have one copy of $\x$, and assumption $\infty$ (that is, no constraints on how $\x$ should be used elsewhere) can be typechecked as well if more than 1 copy of $\x$ is available, each one never used elsewhere). 
+ 
+ Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
+\begin{itemize}
+\item $\fields{\C}$ gives, for each class $\C$, the sequence $\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}$ of its fields,  assumed to have distinct names,   with their primitive types and usage grades
+\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}$ consisting of the grades of the $\this$ parameter, the parameter types and the return type 
+\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation, and, for simplicity, the identity on primitive types. 
+\end{itemize}
+The (standard) definitions are omitted.\EZComm{o in Appendice?}
+
+Source code (value expressions and expressions) does not mention references, so we only need a context of variables. 
+The judgments have shape $\IsWFExp{\Gamma}{\ve}{\T}$ and $\IsWFExp{\Gamma}{\e}{\T}$, and are defined in \cref{fig:typing-exp}. 
+\newcommand{\LocalGamma}{\hat{\Gamma}}
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+
+\NamedRule{t-var}{}
+{ \IsWFExp{\CtxElem{\x}{\Rgr}{\rgr}{\tau}}{\x}{\Graded{\tau}{\Rgr}{\rgr}}} 
+{}
+\BigSpace
+\NamedRule{t-pval}{}
+{\IsWFExp{\emptyset}{\pval}{\Graded{\PT}{}{\rgr}}} 
+{\typeof{}{\pval}=\PT}
+
+\\[2ex]
+\end{array}
+\end{math}
+\hrule 
+\begin{math}
+\begin{array}{l}
+\\
+
+\NamedRule{t-field-access}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\_}{\rgr}}}{\IsWFExp{\Gamma}{\FieldAccess{\x}{\f_i}}{\Graded{\PT_i}{}{\rgr\rmul\rgr_i}}}
+{
+\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}\\
+i\in 1..n
+}
+\\[5ex]
+\bez
+\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\Graded{{\PT_i}}{}{\Rgr\rmul\sgr}}}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}}{
+\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+\rgr_i\leq\sgr
+}
+\eez
+\\[4ex]
+\NamedRule{t-free}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\rgr}}}{\IsWFExp{\Gamma}{\Free{\x}}{\Graded{\Unit}{}{\rgr}}}{}
+\\[3ex]
+\NamedRule{t-invk}{
+\begin{array}{l}
+\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr'}{\rgr'}}\\
+\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
+\end{array}
+}{\IsWFExp{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}}{
+\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}\\
+\Rgr'\rord\Rgr\\
+\rgr\rord\rgr'\\
+\T'_i\leq\T_i\ \forall i\in 1..n
+}
+\\[5ex]
+
+\NamedRule{t-new}{\IsWFExp{\Gamma_i}{\ve_i}{\Graded{{\PT_i}}{}{\rgr\rmul\sgr_i}}\Space \forall i\in 1..n}{\IsWFExp{\Gamma_1\ctxsum\ldots\ctxsum\Gamma_n}{\New{\C}{\ve_1,\ldots,\ve_n}}{{\Graded{\C}{\rzero}{\rgr}}}}{
+\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}\\
+\rgr_i\leq\sgr_i\ \forall i\in 1..n
+ }
+
+\\[3ex]
+\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExp{\Gamma}{\Return\ve}{\T}}{}
+\\[4ex]
+\NamedRule{t-let}{
+\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma',\LocalGamma}{\e'}{\T}
+}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\Let{\x}{\e}{\e'}}{\T}}
+{\LocalGamma\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}
+%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
+}
+
+\\[2ex]
+\end{array}
+\end{math}
+\caption{Typing rules for value expressions and expressions}
+\label{fig:typing-exp} 
+\end{figure}
+
+\EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+
+In the top section of \cref{fig:typing-exp}, the rules \refToRule{t-var} and \refToRule{t-pval}, which define the typing judgment for value expressions,  are straightforward.  
+
+Rules \refToRule{t-field-access} and \refToRule{t-field-update} check that the receiver's class has a field with the specified name (first and second side conditions).
+
+In rule \refToRule{t-field-access}, the non-graded type of the expression is the primitive type of the field, whereas the usage grade is the product of that of the receiver with that of the field.
+
+\bez
+In rule \refToRule{t-field-update}, the second argument should have the primitive type of the field, and a usage grade obtained multiplying the assumption grade of the receiver with (at least) that expected for the field. 
+Indeed, the second argument should be available at least as many times as the receiver is assumed to be used elsewhere. 
+\EZComm{serve anche per tipi primitivi perch\'e il secondo argomento potrebbe essere una variabile, vedi esempio dopo}
+\eez
+
+Rule \refToRule{t-free} shows a key role of assumption grades: a reference can only be deallocated if its assumption grade is $\rzero$, that is, it is not used elsewhere. The expression gets type $\Unit$, with arbitrary grades. 
+
+Rule \refToRule{t-invk} is as in previous work \cite{BianchiniDGZ23ecoop}. Receiver and arguments are typechecked, receiver's type should be a class name, and method look-up is performed for the specified method name. If a method is found,  the grades of the receiver match those in the method declaration, and the argument types match the parameter types, then the expression gets the return type. The context is the sum of the needed contexts.
+
+
+Rule \refToRule{t-new} checks that the constructor arguments are as many as the fields of the class. Each argument should have the primitive type of the corresponding field. 
+The expression has assumption grade $\rzero$, since it denotes a fresh reference, and an arbitrary usage grade. The usage grade of each argument should be this grade multiplied by (at least) that declared for the field. 
+
+
+Finally, rules \refToRule{t-ret} and \refToRule{t-let} are the standard ones in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}.
+
+The following example shows how assumption and usage grades work together. \EZComm{anche un esempio in negativo?}
+To simplify, in the examples we  sometimes do not adhere to fine-grain style. Moreover, we  assume that usage grades are $\rone$ if omitted, assumption grades are $\infty$ if omitted, and we write $\Seq{\e}{\e'}$ for $\Let{\x}{\e}{\e'}$ when $\x\not\in\fv{\e'}$.  
+
+\begin{example}[Sum of contexts]\label{ex:ex1}
+Consider the algebra of extended natural numbers,  and assume the following class table, where $\PT$ is an arbitrary primitive type. 
+\begin{lstlisting}
+class C extends Object {$\Graded{\PT}{}{3}$ f}
+class D extends Object {$\Graded{\PT}{}{2}$ f}
+\end{lstlisting}
+In the judgment 
+\begin{quote}
+$\IsWFExp{\CtxElem{\y}{}{}{\C}, \CtxElem{\z}{}{}{\D}, \CtxElem{\x}{0}{5}{\PT}}{\Seq{\FieldUpdate{\y}{\f}{\x}}{\FieldUpdate{\z}{\f}{\x}}}{\Unit}$
+\end{quote}
+the expression is typechecked in a context where $\x$ can be used at most $5$ times, and is assumed to be never used elsewhere. 
+To obtain this typing judgment, the first occurrence of $\x$ should be typechecked assuming it is used $2$ times elsewhere, and the second occurence assuming that it is used $3$ times elsewhere, as shown below.
+\begin{small}
+\begin{quote}
+\begin{math}
+\\
+\NamedRule{t-let}{
+%{
+\NamedRule{t-field-update}
+{
+\Rule{}{\IsWFExp{\CtxElem{\y}{}{}{\C}}{\y}{\C}}{}\Space\Rule{}{\IsWFExp{\CtxElem{\x}{3}{2}{\PT}}{\x}{\Graded{D}{3}{2}}}{}
+}
+{\IsWFExp{\CtxElem{\y}{}{}{\C},\CtxElem{\x}{3}{2}{\PT}}{\FieldUpdate{\y}{\f}{\x}}{\Unit}}{}
+\Space
+\NamedRule{t-field-update}
+{
+\Rule{}{\IsWFExp{\CtxElem{\z}{}{}{\D}}{\y}{\D}}{}\Space\Rule{}{\IsWFExp{\CtxElem{\x}{2}{3}{\PT}}{\x}{\Graded{D}{2}{3}}}{}
+}
+{\IsWFExp{\CtxElem{\z}{}{}{\D},\CtxElem{\x}{2}{3}{\PT}}{\FieldUpdate{\z}{\f}{\x}}{\Unit}}{}
+%}
+}
+{
+\IsWFExp{\CtxElem{\y}{}{}{\C}, \CtxElem{\z}{}{}{\D}, \CtxElem{\x}{0}{5}{\PT}}{\Seq{\FieldUpdate{\y}{\f}{\x}}{\FieldUpdate{\z}{\f}{\x}}}{\Unit}
+}{}
+\\
+\end{math}
+\end{quote}
+\end{small}
+
+Hence, we should have $\CtxElem{\x}{0}{5}{\PT}=\CtxElem{\x}{3}{2}{\PT}\ctxsum\CtxElem{\x}{2}{3}{\PT}$. 
+This holds, since the assumption grade of $\x$ in the first context is equal to the usage grade in the second context, and conversely, hence both differences are $0$.
+
+\end{example}
+
+
+Typing rules for auxiliary structures are given in \cref{fig:typing-aux}.  The definitions of sum, product and weakening  on contexts of references are exactly as those on contexts of variables. 
+
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-ref}{}
+{ \IsWFVal{\CtxElem{\loc}{\Rgr}{\rgr}{\C}}{\loc}{\Graded{\C}{\Rgr}{\rgr}}}
+{} 
+\BigSpace
+\NamedRule{t-pval}{}
+{\IsWFVal{\emptyset}{\pval}{\Graded{\PT}{}{\rgr}}} 
+{\typeof{}{\pval}=\PT}
+\\[3ex]
+\end{array}
+\end{math}
+\hrule 
+
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-env}{
+\IsWFVal{\Sigma_i}{\val_i}{\T_i}\Space \forall i \in 1..n}
+{ \IsWFEnv{\Gamma}{\Sigma_1 \ctxsum \ldots \ctxsum\Sigma_n}{\env} }
+{ \env=\EnvElem{\x_1}{\rgr_1}{\val_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\val_n}\\
+  \Gamma= \CtxElem{\x_1}{\Rgr_1}{\rgr_1}{\tau_1},\ldots,\CtxElem{\x_n}{\Rgr_n}{\rgr_n}{\tau_n}\\
+  \T_i\subt\Graded{\tau_i}{\Rgr_i}{\rgr_i}\ \forall i\in 1..n
+}
+\\[4ex]
+\bez
+\NamedRule{t-obj}{\IsWFExp{}{\pval_i}{\Graded{{\PT_i}}{}{\rgr\rmul\rgr_i}}\Space \forall i\in 1..n}
+{
+\IsWFObj{}{\Obj{\C}{\GradedValInd{\pval}{1}{\rgr},\ldots,\GradedValInd{\pval}{n}{\rgr}}}{\Graded{\C}{}{\rgr}}
+}
+{  
+\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}
+%\\\rgr_i\subt \sgr_i\ \forall i\in 1..n 
+}
+\eez
+\\[4ex]
+
+\NamedRule{t-mem}{
+\IsWFObj{}{\obj_i}{\Graded{\C_i}{}{\rgr_i}}\Space \forall i \in 1..n}
+{
+\IsWFMem{\Sigma}{\mem}
+}{\mem=\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}\\
+\Sigma\ctxord\CtxElem{\iota_1}{}{\rgr_1}{\C_1},\ldots,\CtxElem{\iota_n}{}{\rgr_n}{\C_n}
+}
+
+\\[5ex]
+\end{array}
+\end{math}
+\hrule 
+
+
+\begin{math}
+\begin{array}{l}
+\\
+\NamedRule{t-pure-conf}
+{
+\IsWFExp{\Delta}{\ve}{\T}\BigSpace\IsWFEnv{\Gamma}{\Sigma}{\env'}
+}
+{
+\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\T}
+}
+{
+\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+
+}
+\\[5ex]
+\NamedRule{t-pure-res}
+{
+\begin{array}{l}
+\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+\end{array}
+}
+{
+\IsWFConfPure{\Gamma}{\Sigma_1\ctxsum\Sigma_2}{\ResGamma}{\VConf{\val}{\env}}{\T}
+}
+{
+\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+\T'\subt\T
+}
+\\[5ex]
+\NamedRule{t-conf}
+{
+\IsWFExp{\Delta}{\e}{\T}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma}{\env'}\BigSpace
+\IsWFMem{\Sigma}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\e}{\env}{\mem}}{\T}
+}
+{
+\Delta\ctxsum\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\Delta\ctxsum\ResGamma}}\\
+\mem'=\Restrict{\mem}{\dom{\Sigma}}
+}
+
+\\[5ex]
+
+\NamedRule{t-res}
+{
+\IsWFVal{\Sigma_1}{\val}{\T'}\BigSpace
+\IsWFEnv{\Gamma}{\Sigma_2}{\env'}\BigSpace
+\IsWFMem{\Sigma_1\ctxsum\Sigma_2}{\mem'}
+}
+{
+\IsWFConf{\Gamma}{\ResGamma}{\Conf{\val}{\env}{\mem}}{\T}
+}
+{
+\ResGamma\ctxord\Gamma\\
+\env'=\Restrict{\env}{\dom{\ResGamma}}\\
+\T'\subt\T\\
+\mem'=\Restrict{\mem}{\dom{\Sigma_1\ctxsum\Sigma_2}}
+}
+
+\end{array}
+\end{math}
+
+\caption{Typing rules for auxiliary structures}\label{fig:typing-aux}
+\end{figure}
+ The typing judgment for values has shape $\IsWFVal{\Sigma}{\val}{\T}$. The typing rules are analogous to those for value expressions, apart that they use a context of references. 
+  
+The typing judgment for environments has shape $\IsWFEnv{\Gamma}{\Sigma}{\env}$. As shown in rule \mbox{\refToRule{t-env}}, $\Gamma$ is a context of variables which can be \emph{assigned} to the environment, in the sense that the variables and their usage grades are exactly those in the environment. On the other hand, $\Sigma$ is the context of references \emph{needed} for that, obtained by summing those needed, for each variable, to assign to its value a subtype of that in the context assigned to the environment. 
+
+
+\begin{remark}\label{rem:checking}
+It is important to note that rule \refToRule{t-env} shows the role of assumption grades. Indeed, given the variables in the environment, it may happen that a reference is shared by more than one. 
+In this case, the assumption on the reference made by one variable should be satisfied by the sum of the usages from all the others. This is guaranteed in the rule by the fact that the sum is well-defined. For instance, given an environment $\env$ where $\x,\y,\z$ denote the same reference, we can safely assign to $\env$ a context where the assumption grade of $\x$ is $0$ only if the usage grades of both $\y$ and $\z$ are $0$. 
+\end{remark}
+
+
+
+The typing judgment for object states has shape $\IsWFObj{}{\obj}{\Graded{\C}{}{\rgr}}$. 
+\bez
+In rule \refToRule{t-obj}, analogously to rule \refToRule{t-new}, the object has an arbitrary usage grade, and the usage grade of each argument should be this grade multiplied by that declared for the field. 
+\EZComm{spiegare come mai deve essere invariante}
+\eez
+
+The typing judgment for memories has shape $\IsWFMem{\Sigma}{\mem}$, where $\Sigma$ models the types required for references  by an external user.
+For each reference in memory its associated object state should be well-typed.
+Moreover, the types assigned to references in $\Sigma$ should be covered by those obtained from typechecking the memory (side condition).   
+
+
+
+In the last four rules, the context $\ResGamma$ represents an (arbitrary) external use of the resources. \EZComm{spiegare meglio; mi pare $\ResGamma$ serva solo nella prova, forse lo introdurrei dopo}
+
+Rules \refToRule{t-pure-conf} and \refToRule{t-pure-res} define the typing judgments for pure configurations and results, which have shape $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\ve}{\env}}{\T}$ and $\IsWFConfPure{\Gamma}{\Sigma}{\ResGamma}{\VConf{\val}{\env}}{\T}$, respectively. The two components of a pure configuration/result should be well-typed. However, for the environment, we only need to consider its restriction to the variables which are either in the (context needed to typecheck) source code, in the case of \refToRule{t-pure-conf}, or in the external context. Indeed, the remaining part of the environment is useless, and could be safely removed. \EZComm{spiegare meglio}
+Then, the configuration/result is well-typed, with the type of its value expression/value, provided that the context extracted from the  restricted environment is enough to cover the resources needed by the source code, in the case of \refToRule{t-pure-conf}, and  the external context.
+
+Rules \refToRule{t-conf} and \refToRule{t-res} define the typing  judgments for configurations and results, which have shape $\IsWFConf{\Gamma}{\ResGamma}{\conf}{\T}$ and 
+$\IsWFConf{\Gamma}{\ResGamma}{\vconf}{\T}$, respectively. 
+These rules are analogous to those above, apart that there is an additional component, the memory. Analogously to the environment, for the memory as well we only need to consider a portion, notably only the \emph{observable} references. That is, those which are either denoted by a variable in the restricted environment, or, in the case of \refToRule{t-res}, in the (context needed to typecheck) the final value. Indeed, the remaining part of the memory is useless, and could be safely removed. \EZComm{spiegare meglio}
+
+
+
+
+
+
+
+
+

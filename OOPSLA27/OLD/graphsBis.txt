@@ -1,0 +1,49 @@
+G archi etichettati con nomi campi, nodi etichettati con r come definito sotto 
+
+r::= x.f1. ... .fn (n>=0) | [f1 -> r1, ..., fn -> rn] | u (per Unit o altro tipo primitivo)
+
+judgment |- e : <G,r> definito come vuoto |- e : <G,r>
+
+judgment ausiliario Pi |- e : <G,r> dove Pi è una mappa da variabili in r 
+
+Fissato un Pi:
+
+x restituisce <grafo vuoto,Pi(x)>
+
+x.f restituisce <grafo vuoto,Pi(x).f> 
+
+new(x1, …, xn)  restituisce <grafo vuoto, [f1 -> Pi(x1), ..., fn -> Pi(xn)]>
+
+x.f = y genera arco f da x a y 
+
+let x = e1 in e2
+
+fa il typechecking di e1 in Pi ottenendo <G,r>
+poi fa il typechecking di e2 in Pi,x -> r
+ottengo G',r'
+faccio overriding di G' su G
+
+ESEMPI DA RIVEDERE
+
+1) let x = new D(y) in return x.f
+
+
+2) let x = y.f in return x
+
+
+3) let x = z.f in return x
+
+--------------------------------------------------------------------------------------------------------------------------u.f = (let x = new C(w) in let y = new C(x) in new C(y));
+u.f = v;
+return w
+
+Gestione della ricorsione: 
+Pi è vuoto all'inizio
+
+Prendiamo l’esempio
+
+m(x,n) = if n=0 return new C(x) else new C(m(x,n-1))
+
+effetto: vuoto, fix R.[f -> x]+[f -> R]}
+
+
