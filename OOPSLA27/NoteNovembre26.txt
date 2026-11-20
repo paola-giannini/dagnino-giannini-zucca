@@ -1,0 +1,181 @@
+1) Versione senza assunzioni e senza update e free
+
+Uso di risorse "indiretto" con viewpoint adaptation. Ossia, se una risorsa contiene un riferimento ad un'altra risorsa, quando accedo attraverso la prima consumo la seconda, ma in un modo "mediato" dal contenitore. 
+
+Nel nostro caso Java-like, l'annotazione di uso del campo indica come modifico il consumo del reference attraverso il receiver. In altri termini, per ogni campo mi dice quanto posso usare quel campo "passando da" quel receiver. Formalmente, quando accedo a un campo consumo il reference corrispondente, ma il risultato si ottiene tramite prodotto con il grado del receiver.  Nel caso di gradi non quantitativi, per esempio 0/readonly/mut, questo corrisponde a viewpoint adaptation. 
+
+sintassi
+
+e ::= x | x.f | x.m(x1,...,xn) | new C(x1,...,xn) | let x = e in e'
+
+Judgment G^pre |- e : T => G^post
+
+In G associo a ogni variabile un uso r, un record di usi dei campi rho = f1:r1, ..., fn:rn e un tipo non graduato (classe), idem un tipo T contiene le tre informazioni
+
+per ora ignoro i tipi primitivi, da vedere modo migliore di gestirli 
+
+Regole di tipo (ometto di scrivere le classi)
+
+t-var G, x : r{rho} |- x : s{rho} => G, x : r'{rho}  con r'+s <= r
+
+t-field-access
+
+   G, x : r{f_i:r_i, rho} |- x.f_i : r*s{rho_i} => G, x:r{f_i:r'_i, rho} con r'_i+s <= r_i
+
+rho_i si ottiene dalla class table a partire dalla classe di x.f_i
+
+t-new 
+
+G, x_1 : r_1[rho_1], ... , x_n : r_n[rho_n] |- new C(x_1, ..., x_n) : r[f1:s1, ..., f_n:s_n ] => G, x_1 : r'1[rho_1], ... , x_n : r'n[rho_n] con r'_i+r*s_i <= r_i
+
+per ogni i, s_i si ottiene dalla class table a partire dalla classe C  
+
+t-let
+
+premesse Gamma |- e => T; Gamma'   x : T, Gamma' |- e => Gamma''
+
+conseguenza: Gamma |- let x = e in e' : Gamma''
+
+--- esempi per questa parte 
+
+class A {}
+class B { A^2 f;}
+class C { B^2 f;}
+
+let x0 = new A() in // sia i0 il reference creato qui
+// qui ho per esempio x0 : A^8 otto accessi a i0, tutti da x0
+let x1 = new B(x0) in // sia i1 il reference creato qui 
+// qui ho x1 : B^4{f:2} ora ho 4 accessi a i1 da x1 e 8 accessi a i0 da x1.f
+let x = new C(x1) in 
+// qui ho x : C^2{f:2} ora ho 4 accessi a i1 da x.f e 8 accessi a i0 da x.f.f 
+
+se ora faccio
+
+a) let y = x.f 
+// qui ho x : C^2{f:1}, y : B^2{f:2} ora ho due accessi a i1 da x.f e due da y
+// ho anche 4 accessi a i0 da x.f.f e 4 da y.f
+// ho usato la class table per ottenere il record di y
+
+se invece faccio
+
+b) let y = x 
+// qui ho x : C^1{f:2}, y : C^1{f:2} ora ho due accessi a i1 da x.f e due da y.f
+// qui ho x:1{f:0}, y:1{f:0}, z:1, w:1
+
+Variante: (anche se serve update per renderla significativa)
+
+class A {}
+class B { A f;} // il grado di f non è rilevante perchè A non ha campi 
+class C { B^readonly f;}
+
+let x0 = new A() in 
+let x1 = new B(x0) in 
+// qui ho per esempio x1 : B^mut{f:} 
+let x = new C(x1) in 
+// qui ho per esempio x : C^mut{f:readonly} 
+// quindi posso assegnare x.f, x1.f, ma non x.f.f
+
+se ora faccio
+
+a) let y = x.f 
+// qui ho x : C^mut{f:readonly}, y : B^readonly{f:}
+// posso assegnare x.f, x1.f, ma non y.f
+
+se invece faccio
+
+b) let y = x 
+// qui ho x : C^mut{f:readonly}, y : C^mut{f:readonly}
+// posso assegnare x.f e y.f, ma non x.f.f oppure y.f.f
+// potrei anche avere x : C^mut{f:readonly}, y : C^readonly{f:readonly}
+
+---------------------------------------------
+
+2) aggiungo assunzioni, update e free
+
+sintassi
+
+e ::= x | x.f | x.m(x1,...,xn) | new C(x1,...,xn) | x.f = y | free x |let x = e in e'
+
+Judgment G^pre |- e : T => G^post
+
+In G associo a ogni variabile un'assunzione e uso R;r, un record di assunzioni e usi dei campi rho = f1:R1;r1, ..., fn:Rn;rn e un tipo non graduato (classe), idem un tipo T contiene le tre informazioni
+
+per ora ignoro i tipi primitivi, da vedere modo migliore di gestirli 
+
+Regole di tipo (ometto di scrivere le classi)
+
+t-var G, x : R;r{rho} |- x : S;s{rho} => G, x : R';r'{rho}  con R';r'+S;s <= R;r
+
+t-field-access
+
+   G, x : R;r{f_i:R_i;r_i, rho} |- x.f_i : r*S;r*s{rho_i} => G, x:r{f_i:R'_i;r'_i, rho} con R'_i;r'_i+S;s <= R_i;r_i
+
+rho_i si ottiene dalla class table a partire dalla classe di x.f_i
+
+t-new 
+
+G, x_1 : R1;r1[rho_1], ... , x_n : Rn;r_n[rho_n] |- new C(x_1, ..., x_n) : r[f1:S1;s1, ..., f_n:Sn;s_n ] 
+  => G, x_1 : R'1;r'1[rho_1], ... , x_n : R'n;r'n[rho_n] con R'i;r'_i+r*S_i;r*s_i <= R_i;r_i
+
+per ogni i, S_i;s_i si ottiene dalla class table a partire dalla classe C  
+
+t-field-update
+
+   G, x : R;r{f_i:R_i;r_i, rho}, y : S,s{rho'} |- x.f_i = y => G, x:R;r{f_i:S_i;s_i, rho}, y : S';s'
+
+con S';s'+ (R+r)*S_i;(R+r)*s_i <= S;s
+
+S_i;s_i si ottiene dalla class table a partire dalla classe di x
+
+t-free
+
+G, x:0;r{rho} |- free x => G 
+
+t-let
+
+premesse Gamma |- e => T; Gamma'   x : T, Gamma' |- e => Gamma''
+
+conseguenza: Gamma |- let x = e in e' : Gamma''
+
+--- esempi per questa parte 
+
+NEList {
+  int head;
+  List^0,infty tail;
+}
+
+Precondition: 
+
+this:0;infty{tail:0;infty}
+
+NEList add2(int I) { 
+  Let x = this.tail in
+// this:0;infty{tail:infty;0}, x:0,infty
+   Let y = new NENode(I, x) in 
+// this:0;infty{tail:0;infty}, x:0,infty, y : 0, infty
+  this.next = y; return this //OK
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
