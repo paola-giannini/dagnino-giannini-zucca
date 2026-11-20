@@ -53,7 +53,7 @@ se ora faccio
 
 a) let y = x.f 
 // qui ho x : C^2{f:1}, y : B^2{f:2} ora ho due accessi a i1 da x.f e due da y
-// ho anche 4 accessi a i0 da x.f.f e 4 da y.f sposto ownershiop di tutto il ROG
+// ho anche 4 accessi a i0 da x.f.f e 4 da y.f sposto ownership di tutto il ROG
 // ho usato la class table per ottenere il record di y
 
 se invece faccio
@@ -131,10 +131,18 @@ rho_i si ottiene dalla class table a partire dalla classe di x.f_i
 
 t-new 
 
-G, x_1 : R1;r1[rho_1], ... , x_n : Rn;r_n[rho_n] |- new C(x_1, ..., x_n) : r[f1:S1;s1, ..., f_n:Sn;s_n ] 
-  => G, x_1 : R'1;r'1[rho_1], ... , x_n : R'n;r'n[rho_n] con R'i;r'_i+r*S_i;r*s_i <= R_i;r_i
+G, x_1 : R1;r1[rho_1], ... , x_n : Rn;r_n[rho_n] |- new C(x_1, ..., x_n) : 0;r[f1:S1;s1, ..., f_n:Sn;s_n ] 
+  => G, x_1 : R1+r*s1;r'1[rho_1], ... , x_n : Rn+r*sn;r'n[rho_n] con 
+
+r'_i + r*s_i >0 r_i
+
+R'i;r'_i+r*S_i;r*s_i <= R_i;r_i
+
+R'_i + R_i <= r.S_i  
 
 per ogni i, S_i;s_i si ottiene dalla class table a partire dalla classe C  
+
+per ogni i rho_i deve coincidere con quanto estratto per la classe di f_i
 
 t-field-update
 
