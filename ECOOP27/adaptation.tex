@@ -1,0 +1,25 @@
+\section{Indirect usage}
+
+\subsection{Syntax} 
+ The syntax is given in \cref{fig:syntax} . Dots stand for additional, unspecified, constructs, e.g., we could add primitive types and their operators. 
+We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. 
+We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. 
+\begin{figure}
+\begin{grammatica}
+%\produzione{\ve}{\x\mid\pval}{value expression}\\
+%\produzione{\pval}{\unit\mid\ldots}{primitive value}\\
+%\produzione{\ke}{\KE{\C}{\vs}}{constructor call}\\
+\produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
+%\FieldUpdate{\x}{\f}{\y}\mid\Free{\x}\mid
+\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
+%\FieldsMatch{\xs}{\x}{\e}}{expression}\\
+%\mid
+%\RecNew{\xs}{\ks}}{}\\
+%\seguitoproduzione{\Return{\ve}}{}\\
+\produzione{\tau}{\C\mid\ldots}{non-graded type}\\
+%\produzione{\PT}{\Unit\mid\ldots}{primitive type}\\
+\produzione{\T}{\UGraded{\tau}{\rgr}{\phi}}{(graded) type}\\
+\produzione{\phi}{\Field{\f_1}{\rgr_1}\ldots\Field{\f_n}{\rgr_n}}{field grades}\
+\end{grammatica}
+\caption{Syntax}\label{fig:syntax}
+\end{figure}
