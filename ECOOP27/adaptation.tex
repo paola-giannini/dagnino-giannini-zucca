@@ -16,10 +16,98 @@ We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and anal
 %\mid
 %\RecNew{\xs}{\ks}}{}\\
 %\seguitoproduzione{\Return{\ve}}{}\\
-\produzione{\tau}{\C\mid\ldots}{non-graded type}\\
+\produzione{\tau}{\C}{non-graded type (class name)}\\
 %\produzione{\PT}{\Unit\mid\ldots}{primitive type}\\
 \produzione{\T}{\UGraded{\tau}{\rgr}{\phi}}{(graded) type}\\
-\produzione{\phi}{\Field{\f_1}{\rgr_1}\ldots\Field{\f_n}{\rgr_n}}{field grades}\
+\produzione{\phi}{\VarGrade{\f_1}{\rgr_1}\ldots\VarGrade{\f_n}{\rgr_n}}{field grades}\
 \end{grammatica}
 \caption{Syntax}\label{fig:syntax}
 \end{figure}
+
+\subsection{Type system}
+
+(Type and grade) contexts are defined in \cref{fig:ctx}.
+\begin{figure}[ht]
+\begin{grammatica} 
+\produzione{\Gamma}{\UCtxElem{\x_1}{\rgr_1}{\phi_1}{\tau_1}, \ldots, \UCtxElem{\x_n}{\rgr_n}{\phi_n}{\tau_n}}{context of variables}
+\\[1ex]
+\produzione{\Sigma}{\UCtxElem{\loc_1}{\rgr_1}{\phi_1}{\tau_1}, \ldots, \UCtxElem{\loc_n}{\rgr_n}{\phi_n}{\tau_n}}{context of references}
+\end{grammatica}
+\caption{(Type-and-grade) contexts}
+\label{fig:ctx}
+\end{figure}
+Contexts are (sequences representing) maps which associate to variables a usage grade\footnote{Also called \emph{coeffect} in previous work \cite{PetricekOM13,PetricekOM14,BrunelGMZ14}.}, and a (non-graded) type.  
+
+The typing judgment 
+
+Source code (expressions) does not mention references, so we only need a context of variables. 
+The judgment shape has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and $\Gamma'$ model the resources available before and after evaluating $\e$, respectively, and is defined in \cref{fig:typing-exp}. 
+\begin{figure}
+\begin{math}
+\begin{array}{l}
+\NamedRule{t-var}{}
+{ \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\phi}{\tau}}
+{\x}
+{\UGraded{\tau}{\sgr}{\phi}}
+{\Gamma,\UCtxElem{\x}{\rgr'}{\phi}{\tau}}
+}
+{\rgr'\rsum\sgr\rord\rgr}
+\\[4ex]
+%  G, x : r{f_i:r_i, rho} |- x.f_i : r*s{rho_i} => G, x:r{f_i:r'_i, rho} con r'_i+s <= r_i
+\NamedRule{t-field-access}{}
+{\TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\phi,\VarGrade{\f_i}{\rgr_i}}{\C}}
+{\FieldAccess{\x}{\f_i}}
+{\UGraded{\tau_i}{\rgr\rmul\sgr}{\phi_i}}
+{\Gamma,\UCtxElem{\x}{\rgr}{\phi,\VarGrade{\f_i}{\rgr'_i}}{\tau_i}}}
+{\rgr'_i\rsum\sgr\rord\rgr_i\\
+\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
+\fgrades{\tau_i}=\phi_i\\
+}
+%i\in 1..n
+\\[5ex]
+%\bez
+%\NamedRule{t-field-update}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma'}{\ve}{\Graded{{\PT_i}}{}{\Rgr\rmul\sgr}}}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\FieldUpdate{\x}{\f_i}{\ve}}{\Unit}}{
+%\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}\\
+%i\in 1..n\\
+%\rgr_i\leq\sgr
+%}
+%\eez
+%\\[4ex]
+%\NamedRule{t-free}{\IsWFExp{\Gamma}{\x}{\Graded{\C}{\rzero}{\rgr}}}{\IsWFExp{\Gamma}{\Free{\x}}{\Graded{\Unit}{}{\rgr}}}{}
+%\\[3ex]
+%\NamedRule{t-invk}{
+%\begin{array}{l}
+%\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr'}{\rgr'}}\\
+%\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
+%\end{array}
+%}{\IsWFExp{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}}{
+%\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}\\
+%\Rgr'\rord\Rgr\\
+%\rgr\rord\rgr'\\
+%\T'_i\leq\T_i\ \forall i\in 1..n
+%}
+%\\[5ex]
+%
+%\NamedRule{t-new}{\IsWFExp{\Gamma_i}{\ve_i}{\Graded{{\PT_i}}{}{\rgr\rmul\sgr_i}}\Space \forall i\in 1..n}{\IsWFExp{\Gamma_1\ctxsum\ldots\ctxsum\Gamma_n}{\New{\C}{\ve_1,\ldots,\ve_n}}{{\Graded{\C}{\rzero}{\rgr}}}}{
+%\fields{\C}=\Field{\Graded{\PT_1}{}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\PT_n}{}{\rgr_n}}{\f_n}\\
+%\rgr_i\leq\sgr_i\ \forall i\in 1..n
+% }
+%
+%\\[3ex]
+%\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExp{\Gamma}{\Return\ve}{\T}}{}
+%\\[4ex]
+%\NamedRule{t-let}{
+%\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma',\LocalGamma}{\e'}{\T}
+%}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\Let{\x}{\e}{\e'}}{\T}}
+%{\LocalGamma\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}
+%%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
+%}
+%
+%\\[2ex]
+\end{array}
+\end{math}
+\caption{Typing rules for expressions}
+\label{fig:typing-exp} 
+\end{figure}
+
+

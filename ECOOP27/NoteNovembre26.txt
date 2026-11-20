@@ -1,3 +1,8 @@
+Token 
+
+
+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
+
 1) Versione senza assunzioni e senza update e free
 
 Uso di risorse "indiretto" con viewpoint adaptation. Ossia, se una risorsa contiene un riferimento ad un'altra risorsa, quando accedo attraverso la prima consumo la seconda, ma in un modo "mediato" dal contenitore. 

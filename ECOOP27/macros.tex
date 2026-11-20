@@ -70,7 +70,7 @@
 %\newcommand{\img}[1]{\aux{img}(#1)}
 \newcommand{\N}{\mathbb{N}} 
 
-%GRADES
+%GRADI
 \newcommand{\RR}{\mathit{R}} 
 \newcommand{\RSet}{\RC\RR}  
 \newcommand{\RC}[1]{\emath{|#1|}} 
@@ -83,9 +83,6 @@
 \newcommand{\Rgr}{\textsc{R}} %grado assunzione
 \newcommand{\Sgr}{\textsc{S}} %grado assunzione
 \newcommand{\Tgr}{\textsc{T}} %grado assunzione
-%\newcommand{\RW}[2]{#1\mathcal{R}\rsum#2\mathcal{W}}
-%\newcommand{\R}[1]{#1\mathcal{R}}
-%\newcommand{\W}[1]{#1\mathcal{W}}
 %operatori
 \newcommand{\rsum}{+}
 \newcommand{\rmul}{{\cdot}}
@@ -111,7 +108,8 @@
 \newcommand{\aux}[1]{\textsc{#1}}%stile per funzioni ausiliarie
 \newcommand{\mvar}[1]{\mathit{#1}}
 
-%SINTASSI CALCOLO
+%INDIRECT USAGE
+%sintassi
 %metavariabili
 \newcommand{\m}{\mvar{m}}
 \newcommand{\f}{\mvar{f}} %field name
@@ -120,47 +118,57 @@
 \newcommand{\xs}{\mvar{xs}}
 \newcommand{\y}{\mvar{y}} 
 \newcommand{\z}{\mvar{z}}
-\newcommand{\pval}{\mvar{p}}
-\newcommand{\ps}{\mvar{ps}}
-\newcommand{\ve}{\mvar{v}}%metavariabile value expression
-\newcommand{\vs}{\mvar{vs}}
+%\newcommand{\pval}{\mvar{p}}
+%\newcommand{\ps}{\mvar{ps}}
+%\newcommand{\ve}{\mvar{v}}%metavariabile value expression
+%\newcommand{\vs}{\mvar{vs}}
 \newcommand{\e}{\mvar{e}}
 \newcommand{\es}{\mvar{es}}
 %\newcommand{\E}{\mvar{E}}%value expression or expression
 \newcommand{\this}{\terminale{this}}
 
-%tipi
-\newcommand{\C}{\mvar{C}}
-\newcommand{\D}{\mvar{D}}
-\newcommand{\Object}{\terminale{Object}}
-\newcommand{\PT}{\mvar{P}}
-\newcommand{\Unit}{\terminale{Unit}}
-\newcommand{\T}{\mvar{T}}
-\newcommand{\Graded}[3]{{#1}^{#2\diamond#3}}
-\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
-\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
 %costrutti
 \newcommand{\New}[2]{\terminale{new}\; #1\terminale{(}#2\terminale{)}}
 \newcommand{\FieldAccess}[2]{#1\terminale{.}#2}
 %\newcommand{\FieldsMatch}[3]{\terminale{match}\ #1\ \terminale{with}\ \fields{#2}\ \terminale{in}\ #3}
-\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
+%\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
 \newcommand{\MethCall}[3]{#1{\terminale{.}}#2\terminale{(}#3\terminale{)}}
+\newcommand{\UField}[3]{#1^{#2}\ #3\terminale{;}}
 \newcommand{\Field}[2]{#1\ #2\terminale{;}}
-\newcommand{\unit}{\terminale{unit}}
-\newcommand{\Free}[1]{\terminale{free}\, #1}
-\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
-\newcommand{\Return}[1]{\terminale{return}\, #1} 
+%\newcommand{\unit}{\terminale{unit}}
+%\newcommand{\Free}[1]{\terminale{free}\, #1}
+%\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
+%\newcommand{\Return}[1]{\terminale{return}\, #1} 
 \newcommand{\Let}[3]{\terminale{let}\ #1\ \terminale{=}\ #2\ \terminale{in}\ #3} 
-%\newcommand{\TypedLet}[6]{\terminale{let}\ \CtxElem{#1}{#2}{#3}{#4}\ \terminale{=}\ #5\ \terminale{in}\ #6} 
 
 %class table
 \newcommand{\fields}[1]{\aux{fields}(#1)}
 \newcommand{\fnames}[1]{\aux{fnames}(#1)}
+\newcommand{\fgrades}[1]{\aux{fgrades}(#1)}
 \newcommand{\mbody}[2]{\aux{mbody}(#1,#2)}
 \newcommand{\mtype}[2]{{\aux{mtype}(#1,#2)}}
-\newcommand{\mType}[4]{\Graded{\_}{#1}{#2}#3 \rightarrow #4}
-\newcommand{\mTypeDep}[5]{\Graded{\_}{#1}{#2}#3 \rightarrow #4 \mid #5}
+%\newcommand{\mType}[4]{\Graded{\_}{#1}{#2}#3 \rightarrow #4}
+%\newcommand{\mTypeDep}[5]{\Graded{\_}{#1}{#2}#3 \rightarrow #4 \mid #5}
 \newcommand{\subt}{\leq}
+
+
+%tipi
+\newcommand{\C}{\mvar{C}}
+\newcommand{\D}{\mvar{D}}
+\newcommand{\Object}{\terminale{Object}}
+%\newcommand{\PT}{\mvar{P}}
+%\newcommand{\Unit}{\terminale{Unit}}
+\newcommand{\T}{\mvar{T}}
+\newcommand{\UGraded}[3]{{#1}^{#2\{#3\}}}
+
+%\newcommand{\Graded}[4]{{#1}^{#2\diamond#3\{#4\}}}
+%\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
+%\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
+
+%type system
+\newcommand{\UCtxElem}[4]{#1 :_{#2\{#3\}}#4}
+\newcommand{\TypingExp}[4]{#1\vdash#2:#3\Rightarrow#4}
+
 
 %semantica
 \newcommand{\val}{\mathbf{v}}%metavariabile valori finali
