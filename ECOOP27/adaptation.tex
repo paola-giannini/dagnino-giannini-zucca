@@ -11,7 +11,7 @@ We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and anal
 \produzione{\tau}{\C}{non-graded type (class name)}\\
 \produzione{\gr}{\UGr{\rgr}{\varphi}}{grade annotation}\\
 \produzione{\T}{\Graded{\tau}{\gr}}{(graded) type}\\
-\produzione{\varphi}{\VarGrade{\f_1}{\rgr_1}\ldots\VarGrade{\f_n}{\rgr_n}}{field grades}\
+\produzione{\varphi}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}{field grades}\
 \end{grammatica}
 \caption{Syntax}\label{fig:syntax}
 \end{figure}
@@ -36,23 +36,23 @@ The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and
 \begin{math}
 \begin{array}{l}
 \NamedRule{t-var}{}
-{ \TypingExp{\Gamma,\CtxElem{\x}{\UGr{\rgr}{\varphi}}{\tau}}
+{ \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi}}{\tau}
 {\x}
 {\Graded{\tau}{\UGr{\sgr}{\varphi}}}
-{\Gamma,\CtxElem{\x}{\UGr{\rgr'}{\varphi}}{\tau}}
+{\Gamma,\UCtxElem{\x}{\rgr'}{\varphi}{\tau}}
 }
 {\rgr'\rsum\sgr\rord\rgr}
 \\[4ex]
-%  G, x : r{f_i:r_i, rho} |- x.f_i : r*s{rho_i} => G, x:r{f_i:r'_i, rho} con r'_i+s <= r_i
 \NamedRule{t-field-access}{}
-{\TypingExp{\Gamma,\CtxElem{\x}{\rgr}{\varphi,\VarGrade{\f_i}{\rgr_i}}{\C}}
+{
+\TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}{\C}}
 {\FieldAccess{\x}{\f_i}}
-{\Graded{\tau_i}{\rgr\rmul\sgr}{\varphi_i}}
-{\Gamma,\CtxElem{\x}{\rgr}{\varphi,\VarGrade{\f_i}{\rgr'_i}}{\tau_i}}}
-{\rgr'_i\rsum\sgr\rord\rgr_i\\
-\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
-\fgrades{\tau_i}=\varphi_i\\
-i\in 1..n
+{\Graded{\tau_i}{\UGr{\rgr\rmul\sgr}{\varphi_i}}}
+{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}{\tau_i}}}
+{\fields{\C}=\Field{\Graded{\tau_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\rgr_n}}{\f_n}\\
+i\in 1..n\\
+\rgr'_i\rsum\sgr\rord\rgr_i\\
+\fgrades{\tau_i}=\varphi_i
 }
 \\[6ex]
 %\NamedRule{t-invk}{
@@ -69,9 +69,9 @@ i\in 1..n
 %\\[5ex]
 %G, x_1 : r_1[rho_1], ... , x_n : r_n[rho_n] |- new C(x_1, ..., x_n) : r[f1:s1, ..., f_n:s_n ] => G, x_1 : r'1[rho_1], ... , x_n : r'n[rho_n] con r'_i+r*s_i <= r_i
 %per ogni i, s_i si ottiene dalla class table a partire dalla classe C  
-\NamedRule{t-new}{}{\TypingExp{\Gamma,\CtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\CtxElem{\x_n}{\rgr_n}{\varphi_n}}
+\NamedRule{t-new}{}{\TypingExp{\Gamma,\UCtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}}
 {\New{\C}{\x_1,\ldots,\x_n}}
-{\Graded{\C}{\rgr}{\varphi}}
+{\UGraded{\C}{\rgr}{\varphi}}
 {}}
 {
 \fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
