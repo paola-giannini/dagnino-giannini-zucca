@@ -151,22 +151,21 @@
 %\newcommand{\mTypeDep}[5]{\Graded{\_}{#1}{#2}#3 \rightarrow #4 \mid #5}
 \newcommand{\subt}{\leq}
 
-
 %tipi
 \newcommand{\C}{\mvar{C}}
 \newcommand{\D}{\mvar{D}}
 \newcommand{\Object}{\terminale{Object}}
-%\newcommand{\PT}{\mvar{P}}
 %\newcommand{\Unit}{\terminale{Unit}}
+\newcommand{\gr}{\mathcal{R}} %grade annotation
 \newcommand{\T}{\mvar{T}}
-\newcommand{\UGraded}[3]{{#1}^{#2\{#3\}}}
+\newcommand{\UGr}[2]{#1{\scriptstyle\langle}#2{\scriptstyle\rangle}}
+\newcommand{\Graded}[2]{#1^{#2}}
 
 %\newcommand{\Graded}[4]{{#1}^{#2\diamond#3\{#4\}}}
 %\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
 %\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
 
 %type system
-\newcommand{\UCtxElem}[4]{#1 :_{#2\{#3\}}#4}
 \newcommand{\TypingExp}[4]{#1\vdash#2:#3\Rightarrow#4}
 
 
@@ -195,7 +194,7 @@
 \newcommand{\ctxsum}{\rsum}
 \newcommand{\ctxmul}{\rmul}
 \newcommand{\ctxord}{\preceq}
-\newcommand{\CtxElem}[4]{#1 :^{#2}_{#3}#4}
+\newcommand{\CtxElem}[3]{#1 :^{#2}#3}
 \newcommand{\VarType}[2]{#1:#2}
 \newcommand{\VarGrade}[2]{#1:#2}
 
