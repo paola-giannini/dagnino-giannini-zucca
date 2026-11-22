@@ -54,12 +54,20 @@ For each $i\in 1..n$, the meaning of $\rgr_i$ is how many times/in which way the
 %}
 %\end{lstlisting}
 
-The novelty is that, when $\tau$ is a class $\C$, with fields, say, $\Field{\Graded{\tau_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\rgr_n}}{\f_n}$, then a value of the type is a \emph{reference}, denoting in memory an object state, a record associating references to field names. Of course we expect 
-
-To be concise, we omit the syntax of the class table, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
+To be concise, we omit the syntax of the class table.
+%, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  
+Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
 
 
 \subsection{Type system}
+
+ Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
+\begin{itemize}
+\item $\fields{\C}$ gives, for each class $\C$, the sequence $\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their primitive types and usage grades
+\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}$ consisting of the grades of the $\this$ parameter, the parameter types and the return type 
+\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation, and, for simplicity, the identity on primitive types. 
+\end{itemize}
+The (standard) definitions are omitted.\EZComm{o in Appendice?}
 
 (Type and grade) contexts are defined in \cref{fig:ctx}.
 \begin{figure}[ht]
@@ -71,7 +79,7 @@ To be concise, we omit the syntax of the class table, which is standard, apart t
 \caption{(Type-and-grade) contexts}
 \label{fig:ctx}
 \end{figure}
-Contexts are (sequences representing) maps which associate to variables a usage grade\footnote{Also called \emph{coeffect} in previous work \cite{PetricekOM13,PetricekOM14,BrunelGMZ14}.}, and a (non-graded) type.  
+Contexts are (sequences representing) maps which associate to variables a grade annotations and a (non-graded) type.  
 
 Source code (expressions) does not mention references, so we only need a context of variables. 
 The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and $\Gamma'$ model the resources available before and after evaluating $\e$, respectively, and is defined in \cref{fig:typing-exp}. 
@@ -93,7 +101,7 @@ The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and
 {\FieldAccess{\x}{\f_i}}
 {\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
 {\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}{\tau_i}}}
-{\fields{\C}=\Field{\Graded{\tau_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\rgr_n}}{\f_n}\\
+{\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
 i\in 1..n\\
 \rgr'_i\rsum\sgr\rord\rgr_i\\
 \fgrades{\tau_i}=\varphi_i
@@ -114,7 +122,7 @@ i\in 1..n\\
 }
 }
 {
-\fields{\C}=\Field{\Graded{\tau_1}{\sgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\sgr_n}}{\f_n}\\
+\fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
 \Gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
 \Gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}{\tau_n}\\
 }
@@ -134,5 +142,8 @@ i\in 1..n\\
 \caption{Typing rules for expressions}
 \label{fig:typing-exp} 
 \end{figure}
+
+\EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+
 
 
