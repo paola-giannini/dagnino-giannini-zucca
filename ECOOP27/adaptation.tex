@@ -63,11 +63,16 @@ Instead, the class table is abstractly modeled by the functions extracting the i
 
  Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
 \begin{itemize}
-\item $\fields{\C}$ gives, for each class $\C$, the sequence $\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their primitive types and usage grades
-\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}$ consisting of the grades of the $\this$ parameter, the parameter types and the return type 
-\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation, and, for simplicity, the identity on primitive types. 
+\item $\fields{\C}$ gives, for each class $\C$, the sequence $\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their (graded) types 
+\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Gamma}{\T}{\Gamma'}$ , where the domain of $\Gamma$ and $\Gamma'$ are the parameters, including the implicit parameter $\this$
+\item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation. 
 \end{itemize}
 The (standard) definitions are omitted.\EZComm{o in Appendice?}
+
+Moreover, we write $\fgrades{\C}$ for the field grades of class $\C$, that is:
+\begin{quote}
+$\fgrades{\C}=\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$ if $\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$
+\end{quote}
 
 (Type and grade) contexts are defined in \cref{fig:ctx}.
 \begin{figure}[ht]
@@ -107,13 +112,17 @@ i\in 1..n\\
 \fgrades{\tau_i}=\varphi_i
 }
 \\[6ex]
+\mbox{\EZComm{regola del metodo solo abbozzata!}}
+\\
 \NamedRule{t-invk}
 {}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{\Gamma,\Gamma^\textit{post}}}{
-\Gamma^\textit{pre}=\UCtxElem{\x}{\rgr}{\varphi}{\C},\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
-\mtype{\C}{\m}=\mType{\Gamma}{\T}{\Gamma'}\\
-\Gamma^\textit{post}=\UCtxElem{\x}{\rgr'}{\varphi'}{\C},\UCtxElem{\x_1}{\rgr'_1}{\varphi'_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi'_n}{\tau_n}
+\Gamma^\textit{pre}=\CtxElem{\x}{\grdec}{\C},\CtxElem{\x_1}{\grdec_1}{\tau_1},\ldots,\CtxElem{\x_n}{\grdec_n}{\tau_n}\\
+\mtype{\C}{\m}=\mType{\Gamma_\m^\textit{pre}}{\T}{\Gamma_\m^\textit{post}}\\
+\Gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec'}{\C},\CtxElem{\y_1}{\grdec'_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec'_n}{\tau_n}\\
+\Gamma_\m^\textit{post}=\CtxElem{\this}{\grdec''}{\C},\CtxElem{\y_1}{\grdec''_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec''_n}{\tau_n}\\
+\Gamma^\textit{post}=\ldots
 }
-\\[5ex]
+\\[6ex]
 \NamedRule{t-new}{}
 {\TypingExp{\Gamma,\Gamma^\textit{pre}}
 {\New{\C}{\x_1,\ldots,\x_n}}
@@ -126,7 +135,7 @@ i\in 1..n\\
 \Gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
 \Gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}{\tau_n}\\
 }
-\\[4ex]
+\\[5ex]
 \newcommand{\LocalGamma}{\hat{\Gamma}}
 \NamedRule{t-let}{
 \TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
@@ -144,6 +153,19 @@ i\in 1..n\\
 \end{figure}
 
 \EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+
+Rule \refToRule{t-var} is the standard rule for variables in graded type systems. The availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
+Some amount $\sgr$ of the resource is used to obtain the result, letting a residual availability $\rgr'$. Of course the initial availability should be enough to allow the usage. 
+
+Rule \refToRule{t-field-access} is partly analogous, but handles \emph{indirect usage}. The availability of the resource denoted by $\FieldAccess{\x}{\f}$ (through such field access) is $\rgr_i$ before evaluating the field access occurrence. As in \refToRule{t-var}, some amount $\sgr$ is used to obtain the result, letting a residual availability $\rgr_i'$, and the initial availability should be enough to allow the usage. 
+The key difference is that the availability of the result is obtained by \emph{multiplying} the grade of $\x$ with the used amount $\sgr$. In other words, the receiver's grade acts as a scale facor, as will be illustrated by the examples in the following. The field grades of the result are those declared in its class.
+
+\EZComm{regola del metodo da fare}
+
+Rule \refToRule{t-new} 
+
+\subsection{Examples} 
+ 
 
 
 

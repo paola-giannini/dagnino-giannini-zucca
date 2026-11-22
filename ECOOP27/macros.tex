@@ -108,7 +108,7 @@
 \newcommand{\aux}[1]{\textsc{#1}}%stile per funzioni ausiliarie
 \newcommand{\mvar}[1]{\mathit{#1}}
 
-%INDIRECT USAGE
+%PRIMA PARTE INDIRECT USAGE
 %sintassi
 %metavariabili
 \newcommand{\m}{\mvar{m}}
@@ -156,7 +156,6 @@
 \newcommand{\FieldUGrade}[2]{#1:#2}
 \newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
 
-
 % contexts 
 \newcommand{\ctxsum}{\rsum}
 \newcommand{\ctxmul}{\rmul}
@@ -165,39 +164,46 @@
 \newcommand{\UCtxElem}[4]{\CtxElem{#1}{\UGrDec{#2}{#3}}{#4}}
 \newcommand{\VarType}[2]{#1:#2}
 
-
 %\newcommand{\Graded}[4]{{#1}^{#2\diamond#3\{#4\}}}
 %\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
 %\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
 
 %type system
 \newcommand{\TypingExp}[4]{#1\vdash#2:#3\Rightarrow#4}
+\newcommand{\loc} {\iota} %metavariabile locazioni
+
+%SECONDA PARTE ASSUMPTIONS
+\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
+%\newcommand{\unit}{\terminale{unit}}
+\newcommand{\Free}[1]{\terminale{free}\, #1}
+\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
+\newcommand{\GrDec}[3]{#1{\diamond}#2{\scriptstyle\langle}#3{\scriptstyle\rangle}}
+\newcommand{\FieldGrade}[3]{#1:#2\diamond#3}
+\newcommand{\Field}[4]{\Graded{#1}{#2\diamond#3}\ #4\terminale{;}}
+\newcommand{\AUCtxElem}[5]{\CtxElem{#1}{\GrDec{#2}{#3}{#4}}{#5}}
+
 
 %semantica
 %\newcommand{\val}{\mathbf{v}}%metavariabile valori finali
-\newcommand{\loc} {\iota} %metavariabile locazioni
 %\newcommand{\locPrime} {\kappa} %metavariabile locazioni
 %\newcommand{\locSec} {\lambda} %metavariabile locazioni
-\newcommand{\obj}{\mvar{o}}
+%\newcommand{\obj}{\mvar{o}}
 %\newcommand{\env}{\rho}
 %\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
 %\newcommand{\AddToEnv}[4]{#1,\EnvElem{#2}{#3}{#4}}
-\newcommand{\mem}{\mu}
-\newcommand{\MemElem}[2]{#1\mapsto#2}
+%\newcommand{\mem}{\mu}
+%\newcommand{\MemElem}[2]{#1\mapsto#2}
 %\newcommand{\conf}{\mvar{c}}
 %\newcommand{\vconf}{\mathbf{c}}
-\newcommand{\Obj}[2]{[#2]^#1}
-\newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
+%\newcommand{\Obj}[2]{[#2]^#1}
+%\newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
 %\newcommand{\VConf}[2]{#1\parallel#2}
 %\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
 %\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
 %\newcommand{\RedVal}[5]{#1{\parallel}#2\Rightarrow_{#3}#4{\parallel}#5}
 %\newcommand{\Subst}[3]{#1[#2/#3]}
-%
+
 %%typing judgments
-%\newcommand{\IsWFExp}[3]{#1\vdash#2:#3}
-%%\newcommand{\IsWFExpNarrow}[3]{#1\vdash#2{:}#3}
-%\newcommand{\IsWFVal}[3]{#1\vdash#2:#3}
 %\newcommand{\IsWFEnv}[3]{#2\vdash#3 : #1}
 %\newcommand{\IsWFObj}[3]{#1\vdash#2:#3}
 %\newcommand{\IsWFMem}[2]{\vdash_{#1}#2\, \diamond}

@@ -1,0 +1,105 @@
+\section{Assumption grades}
+
+\subsection{Syntax} 
+ The extended syntax is given in \cref{fig:ext-syntax}. 
+\begin{figure}
+\begin{grammatica}
+\produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
+\FieldUpdate{\x}{\f}{\y}\mid\Free{\x}\mid\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
+\produzione{\tau}{\C}{non-graded type}\\
+\produzione{\grdec}{\GrDec{\rgr}{\Rgr}{\varphi}}{grade decoration}\\
+\produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}\\
+\produzione{\varphi}{\FieldGrade{\f_1}{\Rgr_1}{\rgr_1}\ldots\FieldGrade{\f_n}{\Rgr_n}{\rgr_n}}{field grades}\
+\end{grammatica}
+\caption{Extended syntax}\label{fig:ext-syntax}
+\end{figure}
+
+In addition to the previous constructs, we include field update and deallocation.  
+
+\subsection{Type system}
+
+Information extracted from the class table and contexts are as before, apart that usage grades are replaced by pairs of assumption and usage grades.
+
+The extended typing rules are given in \cref{fig:ext-typing-exp}.
+
+\begin{figure}
+\begin{small}
+\begin{math}
+\begin{array}{l}
+
+%R';r'+S;s <= R;r
+
+\NamedRule{t-var}{}
+{ \TypingExp{\Gamma,\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi}{\tau}}
+{\x}
+{\Graded{\tau}{\GrDec{\Sgr}{\sgr}{\varphi}}}
+{\Gamma,\AUCtxElem{\x}{\Rgr'}{\rgr'}{\varphi}{\tau}}
+}
+{\Rgr'\diamond\rgr'\rsum\Sgr\diamond\sgr\rord\Rgr\diamond\rgr}
+%\\[4ex]
+%\NamedRule{t-field-access}{}
+%{
+%\TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}{\C}}
+%{\FieldAccess{\x}{\f_i}}
+%{\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
+%{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}{\tau_i}}}
+%{\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
+%i\in 1..n\\
+%\rgr'_i\rsum\sgr\rord\rgr_i\\
+%\fgrades{\tau_i}=\varphi_i
+%}
+%\\[6ex]
+%\mbox{\EZComm{regola del metodo solo abbozzata!}}
+%\\
+%\NamedRule{t-invk}
+%{}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{\Gamma,\Gamma^\textit{post}}}{
+%\Gamma^\textit{pre}=\CtxElem{\x}{\grdec}{\C},\CtxElem{\x_1}{\grdec_1}{\tau_1},\ldots,\CtxElem{\x_n}{\grdec_n}{\tau_n}\\
+%\mtype{\C}{\m}=\mType{\Gamma_\m^\textit{pre}}{\T}{\Gamma_\m^\textit{post}}\\
+%\Gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec'}{\C},\CtxElem{\y_1}{\grdec'_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec'_n}{\tau_n}\\
+%\Gamma_\m^\textit{post}=\CtxElem{\this}{\grdec''}{\C},\CtxElem{\y_1}{\grdec''_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec''_n}{\tau_n}\\
+%\Gamma^\textit{post}=\ldots
+%}
+%\\[6ex]
+%\NamedRule{t-new}{}
+%{\TypingExp{\Gamma,\Gamma^\textit{pre}}
+%{\New{\C}{\x_1,\ldots,\x_n}}
+%{\UGraded{\C}{\rgr}{\varphi}}
+%{\Gamma,\Gamma^\textit{post}
+%}
+%}
+%{
+%\fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
+%\Gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
+%\Gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}{\tau_n}\\
+%}
+%\\[5ex]
+%\newcommand{\LocalGamma}{\hat{\Gamma}}
+%\NamedRule{t-let}{
+%\TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
+%}
+%{\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{\Gamma''}}
+%{\LocalGamma\ctxord\CtxElem{\x}{\grdec}{\tau}
+%%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
+%}
+%
+\end{array}
+\end{math}
+\end{small}
+\caption{Extended typing rules for expressions}
+\label{fig:ext-typing-exp} 
+\end{figure}
+
+\EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+
+Rule \refToRule{t-var} is the standard rule for variables in graded type systems. The availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
+Some amount $\sgr$ of the resource is used to obtain the result, letting a residual availability $\rgr'$. Of course the initial availability should be enough to allow the usage. 
+
+Rule \refToRule{t-field-access} is partly analogous, but handles \emph{indirect usage}. The availability of the resource denoted by $\FieldAccess{\x}{\f}$ (through such field access) is $\rgr_i$ before evaluating the field access occurrence. As in \refToRule{t-var}, some amount $\sgr$ is used to obtain the result, letting a residual availability $\rgr_i'$, and the initial availability should be enough to allow the usage. 
+The key difference is that the availability of the result is obtained by \emph{multiplying} the grade of $\x$ with the used amount $\sgr$. In other words, the receiver's grade acts as a scale facor, as will be illustrated by the examples in the following. The field grades of the result are those declared in its class.
+
+\EZComm{regola del metodo da fare}
+
+Rule \refToRule{t-new} 
+
+\subsection{Examples} 
+
