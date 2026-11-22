@@ -7,7 +7,7 @@
 \produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
 \FieldUpdate{\x}{\f}{\y}\mid\Free{\x}\mid\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
 \produzione{\tau}{\C}{non-graded type}\\
-\produzione{\grdec}{\GrDec{\rgr}{\Rgr}{\varphi}}{grade decoration}\\
+\produzione{\grdec}{\GrDec{\Rgr}{\rgr}{\varphi}}{grade decoration}\\
 \produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}\\
 \produzione{\varphi}{\FieldGrade{\f_1}{\Rgr_1}{\rgr_1}\ldots\FieldGrade{\f_n}{\Rgr_n}{\rgr_n}}{field grades}\
 \end{grammatica}
@@ -18,9 +18,22 @@ In addition to the previous constructs, we include field update and deallocation
 
 \subsection{Type system}
 
-Information extracted from the class table and contexts are as before, apart that usage grades are replaced by pairs of assumption and usage grades.
+Information extracted from the class table and contexts are as before, apart that usage grades are replaced by pairs of assumption and usage grades. The sum of such pairs is defined as follows:
 
-The extended typing rules are given in \cref{fig:ext-typing-exp}.
+\begin{quote}
+$\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{(\Rgr_1 \rsub \rgr_2) \rmeet (\Rgr_2 \rsub \rgr_1)}{(\rgr_1\rsum\rgr_2)}$
+\end{quote}
+
+Such sum is a key technical feature of our approach. 
+ Usually, in graded type systems, usage grades of occurrences of the same variable are summed. 
+
+Here, assumption grades should be taken into account as well. Assume to have $\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}$ and $\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}$ in two contexts, respectively. In the first context, the assumption $\Rgr_1$ means that $\x$ can be used elsewhere with grade (at most) $\Rgr_1$.  When summing the contexts, $\x$ is used with grade $\rgr_2$, hence this amount should be subtracted from $\Rgr_1$. The same holds conversely. Altogether, $\x$ can still be used elsewhere with a grade which is the meet of the two residual assumptions. 
+For a concrete example, consider the algebra of extended natural numbers. Assuming to have $\CtxElem{\x}{3}{2}{\tau}$ and $\CtxElem{\x}{2}{3}{\tau}$ in the two contexts, respectively, we get $3-3=0$ and $2-2=0$, hence we have $\CtxElem{\x}{0}{5}{}$ in the sum.  In \cref{ex:ex1} later we show an example of code where this situation arises. 
+
+Note that, in this way, the sum is undefined when, for some variable, the assumption in one context is not enough to cover the usage in the other. This is an additional source of partiality, besides the case in which the types in the two contexts are different. 
+
+
+The extended typing rules are given in \cref{fig:ext-typing-exp}. They use the following definitions:
 
 \begin{figure}
 \begin{small}
@@ -35,7 +48,7 @@ The extended typing rules are given in \cref{fig:ext-typing-exp}.
 {\Graded{\tau}{\GrDec{\Sgr}{\sgr}{\varphi}}}
 {\Gamma,\AUCtxElem{\x}{\Rgr'}{\rgr'}{\varphi}{\tau}}
 }
-{\Rgr'\diamond\rgr'\rsum\Sgr\diamond\sgr\rord\Rgr\diamond\rgr}
+{\Pair{\Rgr'}{\rgr'}\rsum\Pair{\Sgr}{\sgr}\rord\Pair{\Rgr}{\rgr}}
 %\\[4ex]
 %\NamedRule{t-field-access}{}
 %{
@@ -91,15 +104,10 @@ The extended typing rules are given in \cref{fig:ext-typing-exp}.
 
 \EZComm{CONTROLLARE SUBTYPING E WEAKENING}
 
-Rule \refToRule{t-var} is the standard rule for variables in graded type systems. The availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
+In rule \refToRule{t-var}, besides consuming the usage grade as in the previous version, 
+
+in addition to the behaviour on usage grades he availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
 Some amount $\sgr$ of the resource is used to obtain the result, letting a residual availability $\rgr'$. Of course the initial availability should be enough to allow the usage. 
-
-Rule \refToRule{t-field-access} is partly analogous, but handles \emph{indirect usage}. The availability of the resource denoted by $\FieldAccess{\x}{\f}$ (through such field access) is $\rgr_i$ before evaluating the field access occurrence. As in \refToRule{t-var}, some amount $\sgr$ is used to obtain the result, letting a residual availability $\rgr_i'$, and the initial availability should be enough to allow the usage. 
-The key difference is that the availability of the result is obtained by \emph{multiplying} the grade of $\x$ with the used amount $\sgr$. In other words, the receiver's grade acts as a scale facor, as will be illustrated by the examples in the following. The field grades of the result are those declared in its class.
-
-\EZComm{regola del metodo da fare}
-
-Rule \refToRule{t-new} 
 
 \subsection{Examples} 
 

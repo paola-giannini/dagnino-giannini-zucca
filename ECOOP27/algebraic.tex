@@ -5,7 +5,7 @@ We introduce the variant of grade algebras we will use throughout the paper.
 Recall from \cite{BianchiniDGZ23ecoop,BianchiniDGZ23oopsla} that a grade algebra is an ordered semiring 
 $\RR = \ple{\RSet,\rord,\rsum,\rmul,\rzero,\rone}$ such that $\rzero\rord\pgr$ implies $\pgr = \rzero$, for all $\pgr\in\RSet$. 
  % 
-Roughly, addition and multiplication (not necessarily commutative) provide parallel and sequential composition of usages, 
+Roughly, \EZComm{da cambiare} addition and multiplication (not necessarily commutative) provide parallel and sequential composition of usages, 
 $\rone$ models the unitary or default usage and 
 $\rzero$ models  no use. The partial order models overapproximation, which allows for flexibility, for instance to have  different usage in the branches of an if-then-else construct. 
 Moreover, we forbid elements $\pgr\rord\rzero$; this property is not technically needed, but motivated by modelling reasons and to simplify some definitions. 
@@ -34,7 +34,7 @@ Then, the following hold for all $\pgr,\qgr,\ugr\in\RSet$.
 \end{proposition}
 
 \begin{definition}[ Meet  grade algebra]
-\EZComm{ho messo meet invece di uniqueness ma non so}
+\EZComm{ho messo meet ma non so}
 A \emph{ meet  grade algebra} is a subtractive grade algebra 
 $\RR = \ple{\RSet,\rord,\rsum,\rmul,\rzero,\rone}$ such that 
 the partial order $\ple{\RSet,\rord}$ is a meet-semilattice. 
@@ -72,7 +72,7 @@ $((\pgr\rsub\ugr)\rmeet(\qgr\rsub\ugr))\rsum\ugr\rord(\qgr\rsub\ugr)\rsum\ugr\ro
 \end{proof}
 
 The fact that  meet  grade algebras are affine is a necessary feature in our context. 
-Indeed, a grade $\pgr$ such that $\rzero\not\rord\pgr$, e.g., $1$ meaning \emph{linear}, imposes, besides a usage bound, a \emph{no-waste} constraint as well.  Here, we want to have the classical update in imperative languages, which is intrinsically wasting, as detailed later when commenting the reduction rule.\EZComm{da fare; ricordarsi di citare da qualche parte il lavoro da rivista}
+Indeed, a grade $\pgr$ such that $\rzero\not\rord\pgr$, e.g., $1$ meaning \emph{linear}, imposes, besides a usage bound, a \emph{no-waste} constraint as well.  Here, we want to have the classical update in imperative languages, which is intrinsically wasting, as detailed later.\EZComm{da fare; ricordarsi di citare da qualche parte il lavoro da rivista}
 
 Finally, as done in previous work \cite{BianchiniDGZ23oopsla}, 
 we will assume our grade algebras to be \emph{integral}, that is, 

@@ -62,7 +62,6 @@
 %matematiche generali
 \newcommand{\ple}[1]{\emath{\langle #1 \rangle}}
 \newcommand{\Pair}[2]     {\ple{{#1},{#2}}}
-%\newcommand{\PairBar}[2]     {#1\mid#2}
 \newcommand{\Triple}[3]     {\ple{{#1},{#2},{#3}}}
 \newcommand{\fun}[3]{#1 : #2 \to #3} 
 \newcommand{\fv}[1]{\aux{fv}(#1)}
@@ -177,10 +176,11 @@
 %\newcommand{\unit}{\terminale{unit}}
 \newcommand{\Free}[1]{\terminale{free}\, #1}
 \newcommand{\Seq}[2]{#1\terminale{;}\, #2}
-\newcommand{\GrDec}[3]{#1{\diamond}#2{\scriptstyle\langle}#3{\scriptstyle\rangle}}
-\newcommand{\FieldGrade}[3]{#1:#2\diamond#3}
-\newcommand{\Field}[4]{\Graded{#1}{#2\diamond#3}\ #4\terminale{;}}
+\newcommand{\GrDec}[3]{\PairGr{#1}{#2}{\scriptstyle\langle}#3{\scriptstyle\rangle}}
+\newcommand{\FieldGrade}[3]{#1:\PairGr{#2}{#3}}
+\newcommand{\Field}[4]{\Graded{#1}{\PairGr{#2}{#3}}\ #4\terminale{;}}
 \newcommand{\AUCtxElem}[5]{\CtxElem{#1}{\GrDec{#2}{#3}{#4}}{#5}}
+\newcommand{\PairGr}[2]     {#1{\diamond}#2}
 
 
 %semantica
