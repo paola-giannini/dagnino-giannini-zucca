@@ -127,7 +127,7 @@
 \newcommand{\FieldAccess}[2]{#1\terminale{.}#2}
 %\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
 \newcommand{\MethCall}[3]{#1{\terminale{.}}#2\terminale{(}#3\terminale{)}}
-\newcommand{\UField}[3]{#1^{#2}\ #3\terminale{;}}
+\newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
 \newcommand{\Field}[2]{#1\ #2\terminale{;}}
 %\newcommand{\unit}{\terminale{unit}}
 %\newcommand{\Free}[1]{\terminale{free}\, #1}
@@ -140,9 +140,8 @@
 \newcommand{\fnames}[1]{\aux{fnames}(#1)}
 \newcommand{\fgrades}[1]{\aux{fgrades}(#1)}
 \newcommand{\mbody}[2]{\aux{mbody}(#1,#2)}
-\newcommand{\mtype}[2]{{\aux{mtype}(#1,#2)}}
-%\newcommand{\mType}[4]{\Graded{\_}{#1}{#2}#3 \rightarrow #4}
-%\newcommand{\mTypeDep}[5]{\Graded{\_}{#1}{#2}#3 \rightarrow #4 \mid #5}
+\newcommand{\mtype}[2]{\aux{mtype}(#1,#2)}
+\newcommand{\mType}[3]{#1:#2\Rightarrow#3}
 \newcommand{\subt}{\leq}
 
 %tipi

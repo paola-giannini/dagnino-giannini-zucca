@@ -33,10 +33,11 @@ Contexts are (sequences representing) maps which associate to variables a usage 
 Source code (expressions) does not mention references, so we only need a context of variables. 
 The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and $\Gamma'$ model the resources available before and after evaluating $\e$, respectively, and is defined in \cref{fig:typing-exp}. 
 \begin{figure}
+\begin{small}
 \begin{math}
 \begin{array}{l}
 \NamedRule{t-var}{}
-{ \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi}}{\tau}
+{ \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi}{\tau}}
 {\x}
 {\Graded{\tau}{\UGr{\sgr}{\varphi}}}
 {\Gamma,\UCtxElem{\x}{\rgr'}{\varphi}{\tau}}
@@ -55,41 +56,38 @@ i\in 1..n\\
 \fgrades{\tau_i}=\varphi_i
 }
 \\[6ex]
-%\NamedRule{t-invk}{
-%\bein{array}{l}
-%\IsWFExp{\Gamma_0}{\x}{\Graded{\C}{\Rgr'}{\rgr'}}\\
-%\IsWFExp{\Gamma_i}{\ve_i}{\T'_i}\Space \forall i\in 1..n
-%\end{array}
-%}{\IsWFExp{\Gamma_0\ctxsum\ldots\Gamma_n}{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\T}}{
-%\mtype{\C}{\m}=\mType{\Rgr}{\rgr}{\T_1\ldots\T_n}{\T}\\
-%\Rgr'\rord\Rgr\\
-%\rgr\rord\rgr'\\
-%\T'_i\leq\T_i\ \forall i\in 1..n
-%}
-%\\[5ex]
-%G, x_1 : r_1[rho_1], ... , x_n : r_n[rho_n] |- new C(x_1, ..., x_n) : r[f1:s1, ..., f_n:s_n ] => G, x_1 : r'1[rho_1], ... , x_n : r'n[rho_n] con r'_i+r*s_i <= r_i
-%per ogni i, s_i si ottiene dalla class table a partire dalla classe C  
-\NamedRule{t-new}{}{\TypingExp{\Gamma,\UCtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}}
+\NamedRule{t-invk}
+{}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{\Gamma,\Gamma^\textit{post}}}{
+\Gamma^\textit{pre}=\UCtxElem{\x}{\rgr}{\varphi}{\C},\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
+\mtype{\C}{\m}=\mType{\Gamma}{\T}{\Gamma'}\\
+\Gamma^\textit{post}=\UCtxElem{\x}{\rgr'}{\varphi'}{\C},\UCtxElem{\x_1}{\rgr'_1}{\varphi'_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi'_n}{\tau_n}
+}
+\\[5ex]
+\NamedRule{t-new}{}
+{\TypingExp{\Gamma,\Gamma^\textit{pre}}
 {\New{\C}{\x_1,\ldots,\x_n}}
 {\UGraded{\C}{\rgr}{\varphi}}
-{}}
+{\Gamma,\Gamma^\textit{post}
+}
+}
 {
-\fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
- }
-%
-%\\[3ex]
-%\NamedRule{t-ret}{\IsWFExp{\Gamma}{\ve}{\T}}{\IsWFExp{\Gamma}{\Return\ve}{\T}}{}
-%\\[4ex]
-%\NamedRule{t-let}{
-%\IsWFExp{\Gamma}{\e}{\Graded{\tau}{\Rgr}{\rgr}}\BigSpace\IsWFExp{\Gamma',\LocalGamma}{\e'}{\T}
-%}{\IsWFExp{\Gamma\ctxsum\Gamma'}{\Let{\x}{\e}{\e'}}{\T}}
-%{\LocalGamma\ctxord\CtxElem{\x}{\Rgr}{\rgr}{\tau}
-%%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
-%}
-%
-%\\[2ex]
+\fields{\C}=\Field{\Graded{\tau_1}{\sgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\sgr_n}}{\f_n}\\
+\Gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
+\Gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}{\tau_n}\\
+}
+\\[4ex]
+\newcommand{\LocalGamma}{\hat{\Gamma}}
+\NamedRule{t-let}{
+\TypingExp{\Gamma}{\e}{\Graded{\tau}{\gr}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
+}
+{\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{\Gamma''}}
+{\LocalGamma\ctxord\CtxElem{\x}{\gr}{\tau}
+%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
+}
+
 \end{array}
 \end{math}
+\end{small}
 \caption{Typing rules for expressions}
 \label{fig:typing-exp} 
 \end{figure}
