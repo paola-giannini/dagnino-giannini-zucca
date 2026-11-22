@@ -1,29 +1,72 @@
 \section{Indirect usage}
 
+We illustrate our approach on a tiny imperative Java-like language, in the spirit of the seminal calculus Featherweight Java (FJ) \cite{IgarashiPW99}. 
+Imperative means that evaluation takes place in a memory, a map from references (unique object identifiers) into object states. \EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}.
+% as shown in \cref{fig:mem}.
+%
+%\begin{figure}
+%\begin{grammatica}
+%\produzione{\obj}{\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}}{object state}\\
+%\produzione{\mem}{\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}}{memory}
+%\end{grammatica}
+%\caption{Memory}
+%\label{fig:mem}
+%\end{figure}
+
+In this first part, however, the calculus does include field update and deallocation, since our aim is to focus on indirect usage of resources. 
+
 \subsection{Syntax} 
- The syntax is given in \cref{fig:syntax} . Dots stand for additional, unspecified, constructs, e.g., we could add primitive types and their operators. 
+ The syntax is given in \cref{fig:syntax} . 
 We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. 
-We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. 
-\begin{figure}
+We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. \begin{figure}
 \begin{grammatica}
 \produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
 \MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
-\produzione{\tau}{\C}{non-graded type (class name)}\\
-\produzione{\gr}{\UGr{\rgr}{\varphi}}{grade annotation}\\
-\produzione{\T}{\Graded{\tau}{\gr}}{(graded) type}\\
+\produzione{\tau}{\C}{non-graded type}\\
+\produzione{\grdec}{\UGrDec{\rgr}{\varphi}}{grade decoration}\\
+\produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}\\
 \produzione{\varphi}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}{field grades}\
 \end{grammatica}
 \caption{Syntax}\label{fig:syntax}
 \end{figure}
+
+Expressions include variables (including the special variable $\this$ denoting the receiver in a method's body), field access, method invocation, and object creation, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+
+To keep the technical treatment simpler, non-graded types are just class names. \EZComm{dire da qualche part come includere tipi primitivi, peraltro nella seconda parte serve $\Unit$}
+However, we keep two distinct metavariables and use $\C$ where a class name is needed.
+
+Types are \emph{graded}, that is, paired with a \emph{grade decoration}. 
+%In this first part, a grade decoration has shape $\UGrDec{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$.
+In a type  $\Graded{\tau}{\grdec}$, with  $\grdec=\UGrDec{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$, the meaning of $\rgr$ is that customary in graded type systems, that is, how many times/in which way a value of the type can be used. 
+%In other words, $\rgr$ represents the availability of the resource denoted by such value. 
+
+On the other hand, in the case $\tau$ is a class name $\C$,  the field grades $\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$, expected to correspond to the fields of $\C$, are a novelty of our approach. 
+For each $i\in 1..n$, the meaning of $\rgr_i$ is how many times/in which way the resource contained in field $\f_i$ can be used \emph{through an access to that field}.
+%In other words, $\rgr$ represents the availability of the resource denoted by such value. 
+
+%More in detail, field declarations in classes are annotated with a grade, as in the example below, where we assume the grade algebra of extended natural numbers.
+%
+%\begin{lstlisting}
+%class D {}
+%class C {
+%  D$^2$ f;
+%  ...
+%}
+%\end{lstlisting}
+
+The novelty is that, when $\tau$ is a class $\C$, with fields, say, $\Field{\Graded{\tau_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\rgr_n}}{\f_n}$, then a value of the type is a \emph{reference}, denoting in memory an object state, a record associating references to field names. Of course we expect 
+
+To be concise, we omit the syntax of the class table, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
+
 
 \subsection{Type system}
 
 (Type and grade) contexts are defined in \cref{fig:ctx}.
 \begin{figure}[ht]
 \begin{grammatica} 
-\produzione{\Gamma}{\CtxElem{\x_1}{\gr_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\gr_n}{\tau_n}}{context of variables}
+\produzione{\Gamma}{\CtxElem{\x_1}{\grdec_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\grdec_n}{\tau_n}}{context of variables}
 \\[1ex]
-\produzione{\Sigma}{\CtxElem{\loc_1}{\gr_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\gr_n}{\tau_n}}{context of references}
+\produzione{\Sigma}{\CtxElem{\loc_1}{\grdec_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\grdec_n}{\tau_n}}{context of references}
 \end{grammatica}
 \caption{(Type-and-grade) contexts}
 \label{fig:ctx}
@@ -39,7 +82,7 @@ The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and
 \NamedRule{t-var}{}
 { \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi}{\tau}}
 {\x}
-{\Graded{\tau}{\UGr{\sgr}{\varphi}}}
+{\Graded{\tau}{\UGrDec{\sgr}{\varphi}}}
 {\Gamma,\UCtxElem{\x}{\rgr'}{\varphi}{\tau}}
 }
 {\rgr'\rsum\sgr\rord\rgr}
@@ -48,7 +91,7 @@ The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and
 {
 \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}{\C}}
 {\FieldAccess{\x}{\f_i}}
-{\Graded{\tau_i}{\UGr{\rgr\rmul\sgr}{\varphi_i}}}
+{\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
 {\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}{\tau_i}}}
 {\fields{\C}=\Field{\Graded{\tau_1}{\rgr_1}}{\f_1} \ldots \Field{\Graded{\tau_n}{\rgr_n}}{\f_n}\\
 i\in 1..n\\
@@ -78,10 +121,10 @@ i\in 1..n\\
 \\[4ex]
 \newcommand{\LocalGamma}{\hat{\Gamma}}
 \NamedRule{t-let}{
-\TypingExp{\Gamma}{\e}{\Graded{\tau}{\gr}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
+\TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
 }
 {\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{\Gamma''}}
-{\LocalGamma\ctxord\CtxElem{\x}{\gr}{\tau}
+{\LocalGamma\ctxord\CtxElem{\x}{\grdec}{\tau}
 %\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
 }
 

@@ -62,7 +62,7 @@
 %matematiche generali
 \newcommand{\ple}[1]{\emath{\langle #1 \rangle}}
 \newcommand{\Pair}[2]     {\ple{{#1},{#2}}}
-\newcommand{\PairBar}[2]     {#1\mid#2}
+%\newcommand{\PairBar}[2]     {#1\mid#2}
 \newcommand{\Triple}[3]     {\ple{{#1},{#2},{#3}}}
 \newcommand{\fun}[3]{#1 : #2 \to #3} 
 \newcommand{\fv}[1]{\aux{fv}(#1)}
@@ -70,7 +70,7 @@
 %\newcommand{\img}[1]{\aux{img}(#1)}
 \newcommand{\N}{\mathbb{N}} 
 
-%GRADI
+%GRADE ALGEBRAS
 \newcommand{\RR}{\mathit{R}} 
 \newcommand{\RSet}{\RC\RR}  
 \newcommand{\RC}[1]{\emath{|#1|}} 
@@ -95,7 +95,7 @@
 \newcommand{\rsub}{-}
 \newcommand{\rseq}{;}
 
-%esempi
+%esempi di grade algebra
 \newcommand{\readonly}{\aux{read}}
 \newcommand{\mut}{\aux{mut}}
 
@@ -112,7 +112,7 @@
 %sintassi
 %metavariabili
 \newcommand{\m}{\mvar{m}}
-\newcommand{\f}{\mvar{f}} %field name
+\newcommand{\f}{\mvar{f}} 
 \newcommand{\fs}{\mvar{fs}} 
 \newcommand{\x}{\mvar{x}}
 \newcommand{\xs}{\mvar{xs}}
@@ -127,13 +127,24 @@
 \newcommand{\FieldAccess}[2]{#1\terminale{.}#2}
 %\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
 \newcommand{\MethCall}[3]{#1{\terminale{.}}#2\terminale{(}#3\terminale{)}}
-\newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
-\newcommand{\Field}[2]{#1\ #2\terminale{;}}
 %\newcommand{\unit}{\terminale{unit}}
 %\newcommand{\Free}[1]{\terminale{free}\, #1}
 %\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
 %\newcommand{\Return}[1]{\terminale{return}\, #1} 
 \newcommand{\Let}[3]{\terminale{let}\ #1\ \terminale{=}\ #2\ \terminale{in}\ #3} 
+
+%tipi
+\newcommand{\C}{\mvar{C}}
+\newcommand{\D}{\mvar{D}}
+\newcommand{\Object}{\terminale{Object}}
+\newcommand{\Unit}{\terminale{Unit}}
+\newcommand{\grdec}{\mathcal{R}} %grade decoration
+\newcommand{\T}{\mvar{T}}
+\newcommand{\UGrDec}[2]{#1{\scriptstyle\langle}#2{\scriptstyle\rangle}}
+\newcommand{\Graded}[2]{#1^{#2}}
+\newcommand{\UGraded}[3]{\Graded{#1}{\UGrDec{#2}{#3}}}
+\newcommand{\FieldUGrade}[2]{#1:#2}
+
 
 %class table
 \newcommand{\fields}[1]{\aux{fields}(#1)}
@@ -143,25 +154,16 @@
 \newcommand{\mtype}[2]{\aux{mtype}(#1,#2)}
 \newcommand{\mType}[3]{#1:#2\Rightarrow#3}
 \newcommand{\subt}{\leq}
+\newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
+\newcommand{\Field}[2]{#1\ #2\terminale{;}}
 
-%tipi
-\newcommand{\C}{\mvar{C}}
-\newcommand{\D}{\mvar{D}}
-\newcommand{\Object}{\terminale{Object}}
-%\newcommand{\Unit}{\terminale{Unit}}
-\newcommand{\gr}{\mathcal{R}} %grade annotation
-\newcommand{\T}{\mvar{T}}
-\newcommand{\UGr}[2]{#1{\scriptstyle\langle}#2{\scriptstyle\rangle}}
-\newcommand{\Graded}[2]{#1^{#2}}
-\newcommand{\UGraded}[3]{\Graded{#1}{\UGr{#2}{#3}}}
-\newcommand{\FieldUGrade}[2]{#1:#2}
 
 % contexts 
 \newcommand{\ctxsum}{\rsum}
 \newcommand{\ctxmul}{\rmul}
 \newcommand{\ctxord}{\preceq}
 \newcommand{\CtxElem}[3]{#1 :^{#2}#3}
-\newcommand{\UCtxElem}[4]{\CtxElem{#1}{\UGr{#2}{#3}}{#4}}
+\newcommand{\UCtxElem}[4]{\CtxElem{#1}{\UGrDec{#2}{#3}}{#4}}
 \newcommand{\VarType}[2]{#1:#2}
 
 
@@ -173,108 +175,108 @@
 \newcommand{\TypingExp}[4]{#1\vdash#2:#3\Rightarrow#4}
 
 %semantica
-\newcommand{\val}{\mathbf{v}}%metavariabile valori finali
+%\newcommand{\val}{\mathbf{v}}%metavariabile valori finali
 \newcommand{\loc} {\iota} %metavariabile locazioni
-\newcommand{\locPrime} {\kappa} %metavariabile locazioni
-\newcommand{\locSec} {\lambda} %metavariabile locazioni
+%\newcommand{\locPrime} {\kappa} %metavariabile locazioni
+%\newcommand{\locSec} {\lambda} %metavariabile locazioni
 \newcommand{\obj}{\mvar{o}}
-\newcommand{\env}{\rho}
-\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
-\newcommand{\AddToEnv}[4]{#1,\EnvElem{#2}{#3}{#4}}
+%\newcommand{\env}{\rho}
+%\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
+%\newcommand{\AddToEnv}[4]{#1,\EnvElem{#2}{#3}{#4}}
 \newcommand{\mem}{\mu}
 \newcommand{\MemElem}[2]{#1\mapsto#2}
-\newcommand{\conf}{\mvar{c}}
-\newcommand{\vconf}{\mathbf{c}}
+%\newcommand{\conf}{\mvar{c}}
+%\newcommand{\vconf}{\mathbf{c}}
 \newcommand{\Obj}[2]{[#2]^#1}
 \newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
-\newcommand{\VConf}[2]{#1\parallel#2}
-\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
-\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
-\newcommand{\RedVal}[5]{#1{\parallel}#2\Rightarrow_{#3}#4{\parallel}#5}
-\newcommand{\Subst}[3]{#1[#2/#3]}
-
-%typing judgments
-\newcommand{\IsWFExp}[3]{#1\vdash#2:#3}
-%\newcommand{\IsWFExpNarrow}[3]{#1\vdash#2{:}#3}
-\newcommand{\IsWFVal}[3]{#1\vdash#2:#3}
-\newcommand{\IsWFEnv}[3]{#2\vdash#3 : #1}
-\newcommand{\IsWFObj}[3]{#1\vdash#2:#3}
-\newcommand{\IsWFMem}[2]{\vdash_{#1}#2\, \diamond}
-\newcommand{\typeof}[2]{\aux{type}_{#1}(#2)}
-
-\newcommand{\Restrict}[2]{{#1}_{\mid#2}}
-\newcommand{\DReach}[4]{#1\xrightarrow[#2]{#3}#4}
-\newcommand{\Reach}[3]{#1\xrightarrow[#2]{\star}#3}
-\newcommand{\IsWFConfPure}[5]{#1;#2\sststile{#3}{}#4:#5} 
-\newcommand{\IsWFConf}[4]{#1\sststile{#2}{}#3:#4}
-\newcommand{\ResGamma}{\Theta}
-\newcommand{\RefSet}{\mathcal{I}}
-\newcommand{\From}[2]{#1\ \aux{from}\ #2}
-
-
-%promotion
-\newcommand{\aliasing}{\mathcal{A}}
-\newcommand{\Alias}[2]{#1\Rightarrow#2}
-%\newcommand{\EqStar}[3]{#1\doteq_{#2}#3}
-%\newcommand{\NotEqStar}[3]{#1\not\doteq_{#2}#3}
-\newcommand{\OptEqs}[2]{\aliasing_{\Pair{#1}{#2}}}
-%%\newcommand{\Closure}[1]{#1^\star}
-\newcommand{\IsWFExpEq}[4]{#1\vdash#2:#3\mid #4}
-%\newcommand{\Type}[2]{\aux{T}_{#1}(#2)} %da eliminare
-\newcommand{\Borrowed}{\mathcal{B}}
-%\newcommand{\Alive}[3]{\aux{Alive}_{#1,#2}(#3)}
-%\newcommand{\Aliased}[1]{\hat{#1}}
-\newcommand{\CtxSum}[3]{#1\rsum_{#2}#3}
-\newcommand{\res}{\aux{res}}
-
-%esempi
-%\newcommand{\intType}{\terminale{int}}
-%\newcommand{\Dtt}{\texttt{D}}
-\newcommand{\fone}{\texttt{f1}}
-\newcommand{\ftwo}{\texttt{f1}}
-
-%soundness
-\newcommand{\erase}[1]{\lceil#1\rceil} 
-\newcommand{\vconfE}{\tilde{\vconf}}
-\newcommand{\reduceE}[2]{#1\Rightarrow#2}
-%\newcommand{\FinalUsage}[3]{#1\xRightarrow[#2]{\star}#3} %da eliminare
-\newcommand{\GrReach}[6]{#1\xrightarrow[#2\diamond#3]{#4\diamond#5}#6} %usato solo in soundness, da eliminare?
-
-%%USATI SOLO IN APPENDICE
-\newcommand{\IsWFConfOld}[5]{#1;#2\sststile{#3}{}#4:#5} %da eliminare
-\newcommand{\IsWFMemOld}[3]{\vdash_{#2}#3 : #1} %da eliminare
-%\newcommand{\RemoveEl}[2]{#1{\setminus}\{#2\}}
-%\newcommand{\SommaS}[2]{+_{#1}#2}
-%%\newcommand{\rsh}{\gg} 
-\newcommand{\refToRuleP}[1]{rule~\textsc{\small (#1)}}
-\newcommand{\envE}{\boldsymbol{\rho}}
-\newcommand{\memE}{\boldsymbol{\mu}}
-%\newcommand{\IsWFField}[4]{#1\vdash_{#2} #3 : #4}
-
-%%%%%%%% Double \widehat and \widetilde
-\makeatletter
-\newcommand{\doublewidetilde}[1]{{%
-  \mathpalette\double@widetilde{#1}%
-}}
-\newcommand{\double@widetilde}[2]{%
-  \sbox\z@{$\m@th#1\widetilde{#2}$}%
-  \ht\z@=.9\ht\z@
-  \widetilde{\box\z@}%
-}
-\makeatother
-
-
-
-\makeatletter
-\newcommand{\doublewidehat}[1]{{%
-  \mathpalette\double@widehat{#1}%
-}}
-\newcommand{\double@widehat}[2]{%
-  \sbox\z@{$\m@th#1\widehat{#2}$}%
-  \ht\z@=.9\ht\z@
-  \widehat{\box\z@}%
-}
-\makeatother
+%\newcommand{\VConf}[2]{#1\parallel#2}
+%\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
+%\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
+%\newcommand{\RedVal}[5]{#1{\parallel}#2\Rightarrow_{#3}#4{\parallel}#5}
+%\newcommand{\Subst}[3]{#1[#2/#3]}
+%
+%%typing judgments
+%\newcommand{\IsWFExp}[3]{#1\vdash#2:#3}
+%%\newcommand{\IsWFExpNarrow}[3]{#1\vdash#2{:}#3}
+%\newcommand{\IsWFVal}[3]{#1\vdash#2:#3}
+%\newcommand{\IsWFEnv}[3]{#2\vdash#3 : #1}
+%\newcommand{\IsWFObj}[3]{#1\vdash#2:#3}
+%\newcommand{\IsWFMem}[2]{\vdash_{#1}#2\, \diamond}
+%\newcommand{\typeof}[2]{\aux{type}_{#1}(#2)}
+%
+%\newcommand{\Restrict}[2]{{#1}_{\mid#2}}
+%\newcommand{\DReach}[4]{#1\xrightarrow[#2]{#3}#4}
+%\newcommand{\Reach}[3]{#1\xrightarrow[#2]{\star}#3}
+%\newcommand{\IsWFConfPure}[5]{#1;#2\sststile{#3}{}#4:#5} 
+%\newcommand{\IsWFConf}[4]{#1\sststile{#2}{}#3:#4}
+%\newcommand{\ResGamma}{\Theta}
+%\newcommand{\RefSet}{\mathcal{I}}
+%\newcommand{\From}[2]{#1\ \aux{from}\ #2}
+%
+%
+%%promotion
+%\newcommand{\aliasing}{\mathcal{A}}
+%\newcommand{\Alias}[2]{#1\Rightarrow#2}
+%%\newcommand{\EqStar}[3]{#1\doteq_{#2}#3}
+%%\newcommand{\NotEqStar}[3]{#1\not\doteq_{#2}#3}
+%\newcommand{\OptEqs}[2]{\aliasing_{\Pair{#1}{#2}}}
+%%%\newcommand{\Closure}[1]{#1^\star}
+%\newcommand{\IsWFExpEq}[4]{#1\vdash#2:#3\mid #4}
+%%\newcommand{\Type}[2]{\aux{T}_{#1}(#2)} %da eliminare
+%\newcommand{\Borrowed}{\mathcal{B}}
+%%\newcommand{\Alive}[3]{\aux{Alive}_{#1,#2}(#3)}
+%%\newcommand{\Aliased}[1]{\hat{#1}}
+%\newcommand{\CtxSum}[3]{#1\rsum_{#2}#3}
+%\newcommand{\res}{\aux{res}}
+%
+%%esempi
+%%\newcommand{\intType}{\terminale{int}}
+%%\newcommand{\Dtt}{\texttt{D}}
+%\newcommand{\fone}{\texttt{f1}}
+%\newcommand{\ftwo}{\texttt{f1}}
+%
+%%soundness
+%\newcommand{\erase}[1]{\lceil#1\rceil} 
+%\newcommand{\vconfE}{\tilde{\vconf}}
+%\newcommand{\reduceE}[2]{#1\Rightarrow#2}
+%%\newcommand{\FinalUsage}[3]{#1\xRightarrow[#2]{\star}#3} %da eliminare
+%\newcommand{\GrReach}[6]{#1\xrightarrow[#2\diamond#3]{#4\diamond#5}#6} %usato solo in soundness, da eliminare?
+%
+%%%USATI SOLO IN APPENDICE
+%\newcommand{\IsWFConfOld}[5]{#1;#2\sststile{#3}{}#4:#5} %da eliminare
+%\newcommand{\IsWFMemOld}[3]{\vdash_{#2}#3 : #1} %da eliminare
+%%\newcommand{\RemoveEl}[2]{#1{\setminus}\{#2\}}
+%%\newcommand{\SommaS}[2]{+_{#1}#2}
+%%%\newcommand{\rsh}{\gg} 
+%\newcommand{\refToRuleP}[1]{rule~\textsc{\small (#1)}}
+%\newcommand{\envE}{\boldsymbol{\rho}}
+%\newcommand{\memE}{\boldsymbol{\mu}}
+%%\newcommand{\IsWFField}[4]{#1\vdash_{#2} #3 : #4}
+%
+%%%%%%%%% Double \widehat and \widetilde
+%\makeatletter
+%\newcommand{\doublewidetilde}[1]{{%
+%  \mathpalette\double@widetilde{#1}%
+%}}
+%\newcommand{\double@widetilde}[2]{%
+%  \sbox\z@{$\m@th#1\widetilde{#2}$}%
+%  \ht\z@=.9\ht\z@
+%  \widetilde{\box\z@}%
+%}
+%\makeatother
+%
+%
+%
+%\makeatletter
+%\newcommand{\doublewidehat}[1]{{%
+%  \mathpalette\double@widehat{#1}%
+%}}
+%\newcommand{\double@widehat}[2]{%
+%  \sbox\z@{$\m@th#1\widehat{#2}$}%
+%  \ht\z@=.9\ht\z@
+%  \widehat{\box\z@}%
+%}
+%\makeatother
 
 
 
