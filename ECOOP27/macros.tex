@@ -149,7 +149,9 @@
 \newcommand{\fgrades}[1]{\aux{fgrades}(#1)}
 \newcommand{\mbody}[2]{\aux{mbody}(#1,#2)}
 \newcommand{\mtype}[2]{\aux{mtype}(#1,#2)}
-\newcommand{\mType}[3]{#1:#2\Rightarrow#3}
+\newcommand{\mgrade}[2]{\aux{mgrade}(#1,#2)}
+\newcommand{\mType}[2]{#1\rightarrow#2}
+\newcommand{\mGrade}[3]{\{#1\}\_:#2\{#3\}}
 \newcommand{\subt}{\leq}
 %\newcommand{\Field}[2]{#1\ #2\terminale{;}}
 \newcommand{\FieldUGrade}[2]{#1:#2}
@@ -160,7 +162,7 @@
 \newcommand{\ctxmul}{\rmul}
 \newcommand{\ctxord}{\preceq}
 \newcommand{\CtxElem}[2]{#1 :#2}
-\newcommand{\UCtxElem}[4]{\CtxElem{#1}{\UGrDec{#2}{#3}}{#4}}
+\newcommand{\UCtxElem}[3]{\CtxElem{#1}{\UGrDec{#2}{#3}}}
 \newcommand{\VarType}[2]{#1:#2}
 
 %\newcommand{\Graded}[4]{{#1}^{#2\diamond#3\{#4\}}}
@@ -169,6 +171,7 @@
 
 %type system
 \newcommand{\TypingExp}[5]{#1\vdash\{#2\}\,#3:#4\{ #5\}}
+\newcommand{\HasType}[3]{#1\vdash #2:#3}
 \newcommand{\loc} {\iota} %metavariabile locazioni
 
 %SECONDA PARTE ASSUMPTIONS

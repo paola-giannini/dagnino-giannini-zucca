@@ -95,9 +95,9 @@ $\TypingExp{\Gamma}{\gamma}{\e}{\T}{\gamma'}$, where $\gamma$ and $\gamma'$ mode
 }
 {\rgr'\rsum\sgr\rord\rgr}
 \\[4ex]
-\NamedRule{t-field-access}{}
+\NamedRule{t-field-access}{\HasType{\Gamma}{\x}{\C}}
 {
-\TypingExp{\Gamma,\CtxElem{\x}{\C}}
+\TypingExp{\Gamma}
 {\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}}
 {\FieldAccess{\x}{\f_i}}
 {\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
@@ -111,35 +111,38 @@ i\in 1..n\\
 \mbox{\EZComm{regola del metodo solo abbozzata!}}
 \\
 \NamedRule{t-invk}
-{}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{}{\Gamma,\Gamma^\textit{post}}}{
-\Gamma^\textit{pre}=\CtxElem{\x}{\grdec}{\C},\CtxElem{\x_1}{\grdec_1}{\tau_1},\ldots,\CtxElem{\x_n}{\grdec_n}{\tau_n}\\
-\mtype{\C}{\m}=\mType{\Gamma_\m^\textit{pre}}{\T}{\Gamma_\m^\textit{post}}\\
-\Gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec'}{\C},\CtxElem{\y_1}{\grdec'_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec'_n}{\tau_n}\\
-\Gamma_\m^\textit{post}=\CtxElem{\this}{\grdec''}{\C},\CtxElem{\y_1}{\grdec''_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec''_n}{\tau_n}\\
-\Gamma^\textit{post}=\ldots
+{\HasType{\Gamma}{\x}{\C}\BigSpace\HasType{\Gamma}{\x_i}{\tau_i}\ \Space i\in 1..n}{\TypingExp{\Gamma}
+{\gamma,\gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\Graded{\tau}{\grdec}}
+{\gamma,\gamma^\textit{post}}}{
+\gamma^\textit{pre}=\CtxElem{\x}{\grdec_0},\CtxElem{\x_1}{\grdec_1},\ldots,\CtxElem{\x_n}{\grdec_n}\\
+\mtype{\C}{\m}=\mType{\tau_1\ldots\tau_n}{\tau}\\
+\mgrade{\C}{\m}=\mGrade{\gamma_\m^\textit{pre}}{\grdec}{\gamma_\m^\textit{post}}\\
+\gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec_0'},\CtxElem{\y_1}{\grdec'_1},\ldots,\CtxElem{\y_n}{\grdec'_n}\\
+\gamma_\m^\textit{post}=\CtxElem{\this}{\grdec_0''},\CtxElem{\y_1}{\grdec''_1},\ldots,\CtxElem{\y_n}{\grdec''_n}\\
+\gamma^\textit{post}=\ldots
 }
 \\[6ex]
-\NamedRule{t-new}{}
-{\TypingExp{\Gamma,\Gamma^\textit{pre}}
+\NamedRule{t-new}{\HasType{\Gamma}{\x_i}{\tau_i}\ \Space \forall i\in 1..n}
+{\TypingExp{\Gamma}
+{\gamma,\gamma^\textit{pre}}
 {\New{\C}{\x_1,\ldots,\x_n}}
-{\UGraded{\C}{\rgr}{\varphi}}{}
-{\Gamma,\Gamma^\textit{post}
+{\UGraded{\C}{\rgr}{\varphi}}
+{\gamma,\gamma^\textit{post}
 }
 }
 {
 \fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
-\Gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}{\tau_n}\\
-\Gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1}{\tau_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}{\tau_n}\\
+\gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}\\
+\gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}\\
+\rgr'_i\rsum\sgr_i\rord\rgr_i\ \forall i\in 1..n\\
 }
 \\[5ex]
 \newcommand{\LocalGamma}{\hat{\Gamma}}
 \NamedRule{t-let}{
-\TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{}{\Gamma''}
+\TypingExp{\Gamma}{\gamma}{\e}{\Graded{\tau}{\grdec}}{\gamma'}\BigSpace\TypingExp{\Gamma,\CtxElem{\x}{\tau}}{\gamma',\CtxElem{\x}{\grdec}}{\e'}{\T}{\gamma''}
 }
-{\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{}{\Gamma''}}
-{\LocalGamma\ctxord\CtxElem{\x}{\grdec}{\tau}
-%\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
-}
+{\TypingExp{\Gamma}{\gamma}{\Let{\x}{\e}{\e'}}{\T}{\gamma''}}
+{}
 
 \end{array}
 \end{math}
