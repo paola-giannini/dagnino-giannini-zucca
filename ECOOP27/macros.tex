@@ -159,7 +159,7 @@
 \newcommand{\ctxsum}{\rsum}
 \newcommand{\ctxmul}{\rmul}
 \newcommand{\ctxord}{\preceq}
-\newcommand{\CtxElem}[3]{#1 :^{#2}#3}
+\newcommand{\CtxElem}[2]{#1 :#2}
 \newcommand{\UCtxElem}[4]{\CtxElem{#1}{\UGrDec{#2}{#3}}{#4}}
 \newcommand{\VarType}[2]{#1:#2}
 
@@ -168,7 +168,7 @@
 %\newcommand{\GradedVal}[3]{{#1}^{#3_{#2}}_{#2}}
 
 %type system
-\newcommand{\TypingExp}[4]{#1\vdash#2:#3\Rightarrow#4}
+\newcommand{\TypingExp}[5]{#1\vdash\{#2\}\,#3:#4\{ #5\}}
 \newcommand{\loc} {\iota} %metavariabile locazioni
 
 %SECONDA PARTE ASSUMPTIONS

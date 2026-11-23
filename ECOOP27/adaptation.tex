@@ -1,7 +1,7 @@
 \section{Indirect usage}
 
 We illustrate our approach on a tiny imperative Java-like language, in the spirit of the seminal calculus Featherweight Java (FJ) \cite{IgarashiPW99}. 
-Imperative means that evaluation takes place in a memory, a map from references (unique object identifiers) into object states. \EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}.
+Imperative means that evaluation takes place in a memory, a map from references (unique object identifiers) into object states, as will be formalized in \cref{sect:semantics}. \EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}.
 % as shown in \cref{fig:mem}.
 %
 %\begin{figure}
@@ -12,8 +12,7 @@ Imperative means that evaluation takes place in a memory, a map from references 
 %\caption{Memory}
 %\label{fig:mem}
 %\end{figure}
-
-In this first part, however, the calculus does include field update and deallocation, since our aim is to focus on indirect usage of resources. 
+In this first part, however, the calculus does not include field update and deallocation, since our aim is to focus on indirect usage of resources. 
 
 \subsection{Syntax} 
  The syntax is given in \cref{fig:syntax} . 
@@ -23,45 +22,51 @@ We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and anal
 \produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
 \MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
 \produzione{\tau}{\C}{non-graded type}\\
-\produzione{\grdec}{\UGrDec{\rgr}{\varphi}}{grade decoration}\\
-\produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}\\
-\produzione{\varphi}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}{field grades}\
+\produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}
 \end{grammatica}
 \caption{Syntax}\label{fig:syntax}
 \end{figure}
 
-Expressions include variables (including the special variable $\this$ denoting the receiver in a method's body), field access, method invocation, and object creation, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+Expressions include variables (including the special variable $\this$ denoting the receiver in a method's body), field access, method invocation, object creation, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
 
 To keep the technical treatment simpler, non-graded types are just class names. \EZComm{dire da qualche part come includere tipi primitivi, peraltro nella seconda parte serve $\Unit$}
 However, we keep two distinct metavariables and use $\C$ where a class name is needed.
-
-Types are \emph{graded}, that is, paired with a \emph{grade decoration}. 
-%In this first part, a grade decoration has shape $\UGrDec{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$.
-In a type  $\Graded{\tau}{\grdec}$, with  $\grdec=\UGrDec{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$, the meaning of $\rgr$ is that customary in graded type systems, that is, how many times/in which way a value of the type can be used. 
-%In other words, $\rgr$ represents the availability of the resource denoted by such value. 
-
-On the other hand, in the case $\tau$ is a class name $\C$,  the field grades $\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$, expected to correspond to the fields of $\C$, are a novelty of our approach. 
-For each $i\in 1..n$, the meaning of $\rgr_i$ is how many times/in which way the resource contained in field $\f_i$ can be used \emph{through an access to that field}.
-%In other words, $\rgr$ represents the availability of the resource denoted by such value. 
-
-%More in detail, field declarations in classes are annotated with a grade, as in the example below, where we assume the grade algebra of extended natural numbers.
-%
-%\begin{lstlisting}
-%class D {}
-%class C {
-%  D$^2$ f;
-%  ...
-%}
-%\end{lstlisting}
+Types are \emph{graded}, that is, paired with a \emph{grade decoration} $\grdec$, which will be detailed in \cref{sect:adaptation-typesystem}
 
 To be concise, we omit the syntax of the class table.
 %, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  
 Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
 
 
-\subsection{Type system}
+\subsection{Type system}\label{sect:adaptation-typesystem}
+ Grade decorations and contexts are defined in \cref{fig:ctx}.
+\begin{figure}[ht]
+\begin{grammatica} 
+\produzione{\grdec}{\UGrDec{\rgr}{\varphi}}{grade decoration}\\
+\produzione{\varphi}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}{field (usage) grades}\\
+\produzione{\Gamma}{\CtxElem{\x_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\tau_n}}{type context}\\
+\produzione{\gamma}{\CtxElem{\x_1}{\rgr_1}, \ldots, \CtxElem{\x_n}{\rgr_n}}{grade context}\\
+\end{grammatica}
+\caption{Grade decorations and contexts}
+\label{fig:ctx}
+\end{figure}
+Grade decorations consist of a (usage) grade and a (sequence representing) a map from field names to field (usage) grades. Contexts are (sequences representing) maps which associate to variables either types or grades.  
 
- Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
+In a grade decoration  $\grdec=\UGrDec{\rgr}{\varphi}$, the meaning of the usage grade $\rgr$ is that customary in graded type systems.
+We informally recall this meaning  below by considering the affinity algebra and the algebra of modifiers introduced in \cref{ex:alg}. 
+
+Assume to typecheck an expression $\e$ in a context where the variable $\x$ has usage grade $\rgr$. The meaning is that $\x$ is used (at most) $\rgr$ times/in $\rgr$ mode in $\e$. Conversely\EZComm{giusto questo avverbio?}, usage grade $\rgr$ in the type of an expression $\e$ means that (the result of) $\e$ can be used $\rgr$ times/in $\rgr$ mode by an enclosing program context.
+
+For instance, in the affinity algebra, a variable with usage grade $1$ is \emph{affine} (cannot be used more than once) in $\e$. Conversely, if the usage grade in the type of $\e$ is $1$, 
+then a program context cannot use (the result of) $\e$ more than once; for instance, $\e$ cannot initialize a variable declared with usage $\infty$ (unrestricted usage). 
+In the algebra of modifiers, a variable with usage grade $\readonly$ cannot be updated in $\e$; conversely, if the usage grade in the type of $\e$ is $\readonly$,  then a program context cannot use (the result of) $\e$ as $\mut$; for instance, $\e$ cannot initialize a variable declared with usage $\mut$. 
+
+%Until now, this is the approach taken, with minor variations, in existing graded type systems in literature. 
+We describe now the meaning of the field (usage) grades $\varphi$, which are a key novelty of our approach. First of all, we expect a grade decoration $\grdec=\UGrDec{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$ to be paired with a class name $\C$ such that $\f_1, \ldots, \f_n$ are exactly the field names of $\C$. 
+
+Then, for each $i\in 1..n$, the meaning of $\rgr_i$ is analogous to that of the usage grade $\rgr$, with the difference that it denotes the \emph{indirect usage} of the resource referred by field $\f_i$ through an access to such field. \EZComm{da espandere e migliorare}
+
+Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
 \begin{itemize}
 \item $\fields{\C}$ gives, for each class $\C$, the sequence $\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their (graded) types 
 \item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Gamma}{\T}{\Gamma'}$ , where the domain of $\Gamma$ and $\Gamma'$ are the parameters, including the implicit parameter $\this$
@@ -74,38 +79,29 @@ Moreover, we write $\fgrades{\C}$ for the field grades of class $\C$, that is:
 $\fgrades{\C}=\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$ if $\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$
 \end{quote}
 
-(Type and grade) contexts are defined in \cref{fig:ctx}.
-\begin{figure}[ht]
-\begin{grammatica} 
-\produzione{\Gamma}{\CtxElem{\x_1}{\grdec_1}{\tau_1}, \ldots, \CtxElem{\x_n}{\grdec_n}{\tau_n}}{context of variables}
-\\[1ex]
-\produzione{\Sigma}{\CtxElem{\loc_1}{\grdec_1}{\tau_1}, \ldots, \CtxElem{\loc_n}{\grdec_n}{\tau_n}}{context of references}
-\end{grammatica}
-\caption{(Type-and-grade) contexts}
-\label{fig:ctx}
-\end{figure}
-Contexts are (sequences representing) maps which associate to variables a grade annotations and a (non-graded) type.  
-
-Source code (expressions) does not mention references, so we only need a context of variables. 
-\EZComm{far notare approccio non sottostrutturale e spiegare il motivo} The judgment has shape $\TypingExp{\Gamma}{\e}{\T}{\Gamma'}$, where $\Gamma$ and $\Gamma'$ model the resources available before and after evaluating $\e$, respectively, and is defined in \cref{fig:typing-exp}. 
+%Source code (expressions) does not mention references, so we only need a context of variables. 
+The judgment has shape 
+$\TypingExp{\Gamma}{\gamma}{\e}{\T}{\gamma'}$, where $\gamma$ and $\gamma'$ model the resources available before and after evaluating $\e$, respectively, and is defined in \cref{fig:typing-exp}. 
+\EZComm{far notare approccio non sottostrutturale e spiegare il motivo} 
 \begin{figure}
 \begin{small}
 \begin{math}
 \begin{array}{l}
 \NamedRule{t-var}{}
-{ \TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi}{\tau}}
+{ \TypingExp{\Gamma}
+{\gamma,\UCtxElem{\x}{\rgr}{\varphi}{\tau}}
 {\x}
-{\Graded{\tau}{\UGrDec{\sgr}{\varphi}}}
-{\Gamma,\UCtxElem{\x}{\rgr'}{\varphi}{\tau}}
+{\Graded{\tau}{\UGrDec{\sgr}{\varphi}}}{\gamma,\UCtxElem{\x}{\rgr'}{\varphi}{\tau}}
 }
 {\rgr'\rsum\sgr\rord\rgr}
 \\[4ex]
 \NamedRule{t-field-access}{}
 {
-\TypingExp{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}{\C}}
+\TypingExp{\Gamma,\CtxElem{\x}{\C}}
+{\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr_i}}}
 {\FieldAccess{\x}{\f_i}}
 {\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
-{\Gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}{\tau_i}}}
+{\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}}}
 {\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
 i\in 1..n\\
 \rgr'_i\rsum\sgr\rord\rgr_i\\
@@ -115,7 +111,7 @@ i\in 1..n\\
 \mbox{\EZComm{regola del metodo solo abbozzata!}}
 \\
 \NamedRule{t-invk}
-{}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{\Gamma,\Gamma^\textit{post}}}{
+{}{\TypingExp{\Gamma,\Gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\T}{}{\Gamma,\Gamma^\textit{post}}}{
 \Gamma^\textit{pre}=\CtxElem{\x}{\grdec}{\C},\CtxElem{\x_1}{\grdec_1}{\tau_1},\ldots,\CtxElem{\x_n}{\grdec_n}{\tau_n}\\
 \mtype{\C}{\m}=\mType{\Gamma_\m^\textit{pre}}{\T}{\Gamma_\m^\textit{post}}\\
 \Gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec'}{\C},\CtxElem{\y_1}{\grdec'_1}{\tau_1},\ldots,\CtxElem{\y_n}{\grdec'_n}{\tau_n}\\
@@ -126,7 +122,7 @@ i\in 1..n\\
 \NamedRule{t-new}{}
 {\TypingExp{\Gamma,\Gamma^\textit{pre}}
 {\New{\C}{\x_1,\ldots,\x_n}}
-{\UGraded{\C}{\rgr}{\varphi}}
+{\UGraded{\C}{\rgr}{\varphi}}{}
 {\Gamma,\Gamma^\textit{post}
 }
 }
@@ -138,9 +134,9 @@ i\in 1..n\\
 \\[5ex]
 \newcommand{\LocalGamma}{\hat{\Gamma}}
 \NamedRule{t-let}{
-\TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{\Gamma''}
+\TypingExp{\Gamma}{\e}{\Graded{\tau}{\grdec}}{}{\Gamma'}\BigSpace\TypingExp{\Gamma',\LocalGamma}{\e'}{\T}{}{\Gamma''}
 }
-{\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{\Gamma''}}
+{\TypingExp{\Gamma}{\Let{\x}{\e}{\e'}}{\T}{}{\Gamma''}}
 {\LocalGamma\ctxord\CtxElem{\x}{\grdec}{\tau}
 %\\\T'\subt\Graded{\tau}{\Rgr}{\sgr}
 }

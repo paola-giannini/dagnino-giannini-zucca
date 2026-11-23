@@ -13,8 +13,14 @@
 \end{grammatica}
 \caption{Extended syntax}\label{fig:ext-syntax}
 \end{figure}
-
 In addition to the previous constructs, we include field update and deallocation.  
+
+Grade decorations have the enriched shape $\GrDec{\Rgr}{\rgr}{\varphi}$, where $\Rgr$ is an \emph{assumption grade}. 
+In a type  $\Graded{\tau}{\grdec}$, with  $\grdec=\GrDec{\Rgr}{\rgr}{\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}}$, the meaning of $\Rgr$ is that the enclosing code can safely assume that (the result of) an expression of that type is used $\Rgr$ times/in $\Rgr$ elsewhere. For instance, 
+
+On the other hand, in the case $\tau$ is a class name $\C$,  the field grades $\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$, expected to correspond to the fields of $\C$, are a novelty of our approach. 
+For each $i\in 1..n$, the meaning of $\rgr_i$ is how many times/in which way the resource contained in field $\f_i$ can be used \emph{through an access to that field}.
+
 
 \subsection{Type system}
 
@@ -26,7 +32,6 @@ $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{(\Rgr_1 \rsub \rgr_2) \rm
 
 Such sum is a key technical feature of our approach. 
  Usually, in graded type systems, usage grades of occurrences of the same variable are summed. 
-
 Here, assumption grades should be taken into account as well. Assume to have $\CtxElem{\x}{\Rgr_1}{\rgr_1}{\tau}$ and $\CtxElem{\x}{\Rgr_2}{\rgr_2}{\tau}$ in two contexts, respectively. In the first context, the assumption $\Rgr_1$ means that $\x$ can be used elsewhere with grade (at most) $\Rgr_1$.  When summing the contexts, $\x$ is used with grade $\rgr_2$, hence this amount should be subtracted from $\Rgr_1$. The same holds conversely. Altogether, $\x$ can still be used elsewhere with a grade which is the meet of the two residual assumptions. 
 For a concrete example, consider the algebra of extended natural numbers. Assuming to have $\CtxElem{\x}{3}{2}{\tau}$ and $\CtxElem{\x}{2}{3}{\tau}$ in the two contexts, respectively, we get $3-3=0$ and $2-2=0$, hence we have $\CtxElem{\x}{0}{5}{}$ in the sum.  In \cref{ex:ex1} later we show an example of code where this situation arises. 
 
