@@ -33,10 +33,8 @@ To keep the technical treatment simpler, non-graded types are just class names. 
 However, we keep two distinct metavariables and use $\C$ where a class name is needed.
 Types are \emph{graded}, that is, paired with a \emph{grade decoration} $\grdec$, which will be detailed in \cref{sect:adaptation-typesystem}
 
-To be concise, we omit the syntax of the class table.
-%, which is standard, apart that method headers specify, besides the parameters with their types and the return type, the usage and assumption grades of the $\this$ implicit parameter.  
+To be concise, we omit the syntax of the class table, which is standard, apart that field declarations specify, besides a type, a grade, and method headers specify, besides the parameters with their types and the return type, \EZComm{da completare} 
 Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
-
 
 \subsection{Type system}\label{sect:adaptation-typesystem}
  Grade decorations and contexts are defined in \cref{fig:ctx}.
@@ -68,16 +66,17 @@ Then, for each $i\in 1..n$, the meaning of $\rgr_i$ is analogous to that of the 
 
 Analogously to the resource-aware semantics, typechecking needs information from the class table, as modeled by the following functions:
 \begin{itemize}
-\item $\fields{\C}$ gives, for each class $\C$, the sequence $\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$ of its fields,  assumed to have distinct names,   with their (graded) types 
-\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\Gamma}{\T}{\Gamma'}$ , where the domain of $\Gamma$ and $\Gamma'$ are the parameters, including the implicit parameter $\this$
+\item $\ftypes{\C}$ and $\fgrades{\C}$ give, for each class $\C$, the sequences $\FieldType{\f_1}{\tau_1} \ldots \FieldType{\f_n}{\tau_n}$ and $\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$ representing maps from the field names of $\C$ to their types and grades, respectively
+\item  $\mtype{\C}{\m}$ gives, for each method $\m$ of class $\C$, the tuple $\mType{\T_1\ldots\T_n}{\T}{\Gamma'}$ of its parameter types and return type
+\item $\mgrade{\C}{\m}$ gives, for each method $\m$ of class $\C$, \EZComm{da completare}
 \item $\subt$ is the subtyping relation, being, on class names, the reflexive and transitive closure of the $\aux{extends}$ relation. 
 \end{itemize}
 The (standard) definitions are omitted.\EZComm{o in Appendice?}
 
-Moreover, we write $\fgrades{\C}$ for the field grades of class $\C$, that is:
-\begin{quote}
-$\fgrades{\C}=\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$ if $\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$
-\end{quote}
+%Moreover, we write $\fgrades{\C}$ for the field grades of class $\C$, that is:
+%\begin{quote}
+%$\fgrades{\C}=\FieldUGrade{\f_1}{\rgr_1}\ldots\FieldUGrade{\f_n}{\rgr_n}$ if $\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}$
+%\end{quote}
 
 %Source code (expressions) does not mention references, so we only need a context of variables. 
 The judgment has shape 
@@ -102,7 +101,8 @@ $\TypingExp{\Gamma}{\gamma}{\e}{\T}{\gamma'}$, where $\gamma$ and $\gamma'$ mode
 {\FieldAccess{\x}{\f_i}}
 {\Graded{\tau_i}{\UGrDec{\rgr\rmul\sgr}{\varphi_i}}}
 {\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldUGrade{\f_i}{\rgr'_i}}}}
-{\fields{\C}=\UField{\tau_1}{\rgr_1}{\f_1} \ldots \UField{\tau_n}{\rgr_n}{\f_n}\\
+{
+\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\\
 i\in 1..n\\
 \rgr'_i\rsum\sgr\rord\rgr_i\\
 \fgrades{\tau_i}=\varphi_i
@@ -131,10 +131,11 @@ i\in 1..n\\
 }
 }
 {
-\fields{\C}=\UField{\tau_1}{\sgr_1}{\f_1} \ldots \UField{\tau_n}{\sgr_n}{\f_n}\\
+\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\\
+\fgrades{\C}=\FieldUGrade{\f_1}{\sgr_1},\ldots, \FieldUGrade{\f_n}{\sgr_n}\\
 \gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}\\
 \gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}\\
-\rgr'_i\rsum\sgr_i\rord\rgr_i\ \forall i\in 1..n\\
+\rgr'_i\rsum\rgr\rmul\sgr_i\rord\rgr_i\ \forall i\in 1..n\\
 }
 \\[5ex]
 \newcommand{\LocalGamma}{\hat{\Gamma}}
@@ -151,7 +152,7 @@ i\in 1..n\\
 \label{fig:typing-exp} 
 \end{figure}
 
-\EZComm{CONTROLLARE SUBTYPING E WEAKENING}
+\EZComm{PER ORA NON HO GESTITO SUBTYPING E WEAKENING}
 
 Rule \refToRule{t-var} is the standard rule for variables in graded type systems. The availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
 Some amount $\sgr$ of the resource is used to obtain the result, letting a residual availability $\rgr'$. Of course the initial availability should be enough to allow the usage. 

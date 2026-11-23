@@ -119,32 +119,32 @@
 \newcommand{\z}{\mvar{z}}
 \newcommand{\e}{\mvar{e}}
 \newcommand{\es}{\mvar{es}}
-\newcommand{\this}{\terminale{this}}
+\newcommand{\T}{\mvar{T}}
+\newcommand{\Graded}[2]{#1^{#2}}
+\newcommand{\UGraded}[3]{\Graded{#1}{\UGrDec{#2}{#3}}}
 
 %costrutti
-\newcommand{\New}[2]{\terminale{new}\; #1\terminale{(}#2\terminale{)}}
+\newcommand{\this}{\terminale{this}}
 \newcommand{\FieldAccess}[2]{#1\terminale{.}#2}
-%\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
 \newcommand{\MethCall}[3]{#1{\terminale{.}}#2\terminale{(}#3\terminale{)}}
+\newcommand{\New}[2]{\terminale{new}\; #1\terminale{(}#2\terminale{)}}
+%\newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
 %\newcommand{\unit}{\terminale{unit}}
 %\newcommand{\Free}[1]{\terminale{free}\, #1}
 %\newcommand{\Seq}[2]{#1\terminale{;}\, #2}
 %\newcommand{\Return}[1]{\terminale{return}\, #1} 
 \newcommand{\Let}[3]{\terminale{let}\ #1\ \terminale{=}\ #2\ \terminale{in}\ #3} 
-
-%tipi
 \newcommand{\C}{\mvar{C}}
 \newcommand{\D}{\mvar{D}}
-\newcommand{\Object}{\terminale{Object}}
+%\newcommand{\Object}{\terminale{Object}}
 \newcommand{\Unit}{\terminale{Unit}}
+
+%grade decorations and contexts
 \newcommand{\grdec}{\mathcal{R}} %grade decoration
-\newcommand{\T}{\mvar{T}}
 \newcommand{\UGrDec}[2]{#1{\scriptstyle\langle}#2{\scriptstyle\rangle}}
-\newcommand{\Graded}[2]{#1^{#2}}
-\newcommand{\UGraded}[3]{\Graded{#1}{\UGrDec{#2}{#3}}}
 
 %class table
-\newcommand{\fields}[1]{\aux{fields}(#1)}
+\newcommand{\ftypes}[1]{\aux{ftypes}(#1)}
 \newcommand{\fnames}[1]{\aux{fnames}(#1)}
 \newcommand{\fgrades}[1]{\aux{fgrades}(#1)}
 \newcommand{\mbody}[2]{\aux{mbody}(#1,#2)}
@@ -154,8 +154,9 @@
 \newcommand{\mGrade}[3]{\{#1\}\_:#2\{#3\}}
 \newcommand{\subt}{\leq}
 %\newcommand{\Field}[2]{#1\ #2\terminale{;}}
+\newcommand{\FieldType}[2]{#1:#2}
 \newcommand{\FieldUGrade}[2]{#1:#2}
-\newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
+%\newcommand{\UField}[3]{\Graded{#1}{#2}\ #3\terminale{;}}
 
 % contexts 
 \newcommand{\ctxsum}{\rsum}
@@ -164,6 +165,7 @@
 \newcommand{\CtxElem}[2]{#1 :#2}
 \newcommand{\UCtxElem}[3]{\CtxElem{#1}{\UGrDec{#2}{#3}}}
 \newcommand{\VarType}[2]{#1:#2}
+\newcommand{\Field}[2]{#1 :#2}
 
 %\newcommand{\Graded}[4]{{#1}^{#2\diamond#3\{#4\}}}
 %\newcommand{\GradedInd}[4]{#1_#2^{#3_#2\diamond#4_#2}}
@@ -181,7 +183,7 @@
 \newcommand{\Seq}[2]{#1\terminale{;}\, #2}
 \newcommand{\GrDec}[3]{\PairGr{#1}{#2}{\scriptstyle\langle}#3{\scriptstyle\rangle}}
 \newcommand{\FieldGrade}[3]{#1:\PairGr{#2}{#3}}
-\newcommand{\Field}[4]{\Graded{#1}{\PairGr{#2}{#3}}\ #4\terminale{;}}
+%\newcommand{\Field}[4]{\Graded{#1}{\PairGr{#2}{#3}}\ #4\terminale{;}}
 \newcommand{\AUCtxElem}[5]{\CtxElem{#1}{\GrDec{#2}{#3}{#4}}{#5}}
 \newcommand{\PairGr}[2]     {#1{\diamond}#2}
 
