@@ -157,12 +157,12 @@ i\in 1..n\\
 Rule \refToRule{t-var} is the standard rule for variables in graded type systems. The availability of the resource denoted by $\x$ is $\rgr$ before evaluating the variable occurrence. 
 Some amount $\sgr$ of the resource is used to obtain the result, letting a residual availability $\rgr'$. Of course the initial availability should be enough to allow the usage. 
 
-Rule \refToRule{t-field-access} is partly analogous, but handles \emph{indirect usage}. The availability of the resource denoted by $\FieldAccess{\x}{\f}$ (through such field access) is $\rgr_i$ before evaluating the field access occurrence. As in \refToRule{t-var}, some amount $\sgr$ is used to obtain the result, letting a residual availability $\rgr_i'$, and the initial availability should be enough to allow the usage. 
+Rule \refToRule{t-field-access} is partly analogous, but handles \emph{indirect usage}. The availability of the resource denoted by $\FieldAccess{\x}{\f_i}$ (through such field access) is $\rgr_i$ before evaluating the field access occurrence. As in \refToRule{t-var}, some amount $\sgr$ is used to obtain the result, letting a residual availability $\rgr_i'$, and the initial availability should be enough to allow the usage. 
 The key difference is that the availability of the result is obtained by \emph{multiplying} the grade of $\x$ with the used amount $\sgr$. In other words, the receiver's grade acts as a scale facor, as will be illustrated by the examples in the following. The field grades of the result are those declared in its class.
 
 \EZComm{regola del metodo da fare}
 
-Rule \refToRule{t-new} 
+Rule \refToRule{t-new} \EZComm{da completare}
 
 \subsection{Examples} 
  
