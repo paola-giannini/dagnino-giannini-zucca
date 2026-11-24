@@ -118,32 +118,24 @@ semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, a
 \label{fig:semantics}
 \end{figure}
 
-%
-%Rules for  pure configurations, in the first section, just replace variables by their values in the environment; in the key rule \refToRule{var}, the grade $\sgr$ of the variable decreases to $\sgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). \EZComm{io userei la differenza, se no va motivato}
-%
-%\EZComm{da vedere, qui e nelle regole di tipo: When value expressions are actually \emph{used}, that is, are subterms of expressions, they should be evaluated with a non-zero grade, as required by a side condition in the corresponding rule in the second section.}
-%
-%In the expressions which specify a receiver object, that is, in rules \refToRule{field-access}, \refToRule{field-update},  \refToRule{free}, and \refToRule{invk}, the corresponding value expression needs to be evaluated to a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
-%
-%Rules \refToRule{field-access} and \refToRule{field-update} check that the the object state has as many fields as those of the object's class (first and second side condition), including one with the specified name (third side condition).
-%
-% In rule \refToRule{field-access}, the corresponding field value is returned, with a reduction grade being (overapproximated by)  the product of the grade of the receiver with that of the object's field. 
+
+In rule \refToRule{var}, the grade $\rgr$ of the variable decreases to $\rgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). 
+\EZComm{va motivato che non si usa la differenza}
+
+In the expressions which specify a receiver, that is, in rules \refToRule{field-access} and \refToRule{invk}, the receiver should denote a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
+
+Rule \refToRule{field-access} checks that the the object state \EZComm{forse non farei questo controllo ed andrei ad estrarre solo le info sul campo} has as many fields as those of the object's class, including one with the specified name (second and third side condition). \EZComm{da completare}
+%The corresponding field value is returned, with a reduction grade being (overapproximated by)  the product of the grade of the receiver with that of the object's field. 
 %Indeed, the former specifies how many copies of the object we have and the latter how many copies of the field each of such objects has.
-%% thus, their product provides an upper bound to the grade of the resulting value.  
-%
-%In rule \refToRule{field-update},
-%the specified field in the object state is updated with the value of the second argument, which should be produced with a grade which is  a multiple of that  of the object's field. \EZComm{spiegare}
-%
-%Rule \refToRule{free} removes the reference from the current memory.\\
-%In rule \refToRule{invk}, method look-up is performed for the specified name. If a method is found, and parameters are as many as arguments, then the method body is evaluated in an environment enriched by associating the receiver to the implicit parameter $\this$, and arguments to parameters, with the grades obtained by their evaluation. To avoid clashes, parameter names are replaced by fresh variables.
-%
-%Rule \refToRule{new} checks that the constructor invocation has as many arguments as the fields of the object's class. 
-%A fresh object identifier (reference) is added in memory. Each field of the object state is initialized with the corresponding argument, which should be produced with with a grade which is the product of the grade of the object with that of the object's field.
-%
-%Finally, rules \refToRule{ret} and \refToRule{let} are the standard ones in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}. In rule \refToRule{ret}, the evaluation grade of the value expression should be enough to cover the current evaluation grade.
-%In rule \refToRule{let}, the two subterms are evaluated sequentially, the latter in an environment where the local variable has been added  as available resource, modulo renaming to avoid clashes, with the graded value obtained by the evaluation of the first subterm.
-%  
-%As customary in resource-aware semantics, in addition to standard cases, evaluation can get stuck (formally, no judgment can be derived) when some resource (variable) is exhausted. \EZComm{da rivedere: Moreover, reduction is non-deterministic, since, when  a resource is needed, it can be consumed in different ways; hence, soundness of the type system is \emph{soundness-may}, meaning that \emph{there exists} a computation which does not get stuck. }
+
+In rule \refToRule{invk}, method look-up is performed for the specified name. If a method is found, and parameters are as many as arguments, then the method body is evaluated in an environment enriched by associating the receiver to the implicit parameter $\this$, and arguments to parameters, with their grades. To avoid clashes, parameter names are replaced by fresh variables.
+
+\EZComm{da controllare}Rule \refToRule{new} checks that the constructor invocation has as many arguments as the fields of the object's class. 
+A fresh object identifier (reference) is added in memory. Each field of the object state is initialized with the corresponding argument, which should be produced  with a grade which is the product of the grade of the object with that of the object's field.
+
+Finally, \refToRule{let} is the standard one in resource-aware calculi, see, e.g., \cite{BianchiniDGZ23oopsla}. The two subterms are evaluated sequentially, the latter in an environment where the local variable has been added  as available resource, modulo renaming to avoid clashes, with the graded value obtained by the evaluation of the first subterm.
+  
+As customary in resource-aware semantics, in addition to standard cases, evaluation can get stuck (formally, no judgment can be derived) when some resource (variable) is exhausted. \EZComm{da rivedere: Moreover, reduction is non-deterministic, since, when  a resource is needed, it can be consumed in different ways; hence, soundness of the type system is \emph{soundness-may}, meaning that \emph{there exists} a computation which does not get stuck. }
 
 \subsection{Type system}\label{sect:adaptation-typesystem}
  Grade decorations and contexts are defined in \cref{fig:ctx}.
