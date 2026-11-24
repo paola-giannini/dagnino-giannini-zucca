@@ -72,84 +72,48 @@ semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, a
 
 
 \begin{figure}
+\begin{small}
 \begin{math}
 \begin{array}{l}
 \NamedRule{var}{ }
-{\Reduce{\x}{\env,\EnvElem{\x}{\sgr}{\loc}}{\mem}{\rgr}{\loc}{\env,\EnvElem{\x}{\sgr'}{\loc}}{\mem}}
-{\rgr\rsum\sgr'\rord\sgr}
-\\[5ex]
-\NamedRule{field-access}{}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem}}{\sgr}{\Conf{\loc_i}{\env'}{\mem}}}
-{ \mem(\loc)=\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}\\
-  \fnames{\C}=\f_1\ldots\f_n\\
-   i\in 1..n\\ 
-\sgr \rord \rgr\rmul\rgr_i
+{\Reduce{\x}{\env,\EnvElem{\x}{\rgr}{\loc}}{\mem}{\sgr}{\loc}{\env,\EnvElem{\x}{\rgr'}{\loc}}{\mem}}
+{\rgr'\rsum\sgr\rord\rgr}
+\\[3ex]
+\NamedRule{field-access}{}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\rgr\rmul\sgr}{\Conf{\loc_i}{\env}{\mem,\MemElem{\loc}{\Subst{\obj}{\rgr'_i}{i}}}}}
+{ \EnvElem{\x}{\rgr}{\loc}\in\env\\
+\obj=\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}\\
+  \fnames{\C}=\f_1\ldots\f_n,    i\in 1..n\\ 
+\rgr_i'\rsum\sgr\rord\rgr_i
 }
-%\\[5ex]
-%\NamedRule{field-update}{
-%  \begin{array}{l}
-%  \RedVal{\x}{\env}{\rgr}{\loc}{\env'}\\
-%  \RedVal{\ve}{\env'}{\tgr\rmul\rgr_i}{\loc}{\env''}
-%  \end{array}
-%}{ \reduce{\Conf{\FieldUpdate{\x}{\f_i}{\ve}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\sgr}{\Conf{\unit}{\env''}{\mem,\MemElem{\loc}{\Subst{\obj}{\loc}{i}}}}}
-%{ \obj=\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}\\
-%  \fnames{\C}=\f_1\ldots\f_n\\
-%  i\in 1..n
-%%  \\  \rgr=\W{\pgr}, \pgr\neq\rzero
-%}
-%
-%\\[4ex]
-%
-%\NamedRule{free}{
-%  \RedVal{\x}{\env}{\sgr}{\loc}{\env'}
-%}{ \reduce{\Conf{\Free\x}{\env}{\mem,\MemElem{\loc}{\_}}}{\rgr}{\Conf{\unit}{\env'}{\mem}} }
-%{ }
-%
-%\\[4ex]
-%\NamedRule{invk}{
-%\begin{array}{l}
-%\RedVal{\x}{\env}{\rgr_0}{\loc}{\env_0}\\
-%\RedVal{\ve_1}{\env_0}{\rgr_1}{\loc_1}{\env_1}\\
-%\ldots\\
-%\RedVal{\ve_n}{\env_{n-1}}{\rgr_n}{\loc_n}{\env'}\\
-%\reduce{\Conf{\Subst{\Subst{\e}{\y_0}{\this}}{\y_i}{\x_i}^{i\in 1..n}}{\env',\EnvElem{\y}{\rgr_0}{\loc},\EnvElem{\y_i}{\rgr_i}{\loc_i}^{i\in 1..n}}{\mem}}{\rgr}{\vconf}
+\\[5ex]
+\NamedRule{invk}{
+\reduce{\Conf{\Subst{\Subst{\e}{\y'_0}{\this}}{\y'_i}{\y_i}^{i\in 1..n}}{\env',\EnvElem{\y_i}{\rgr_i}{\loc_i}^{i\in 0..n}}{\mem}}{\rgr}{\vconf}
 %\end{array}
-%}
-%{ \reduce{\Conf{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\vconf}}
-%{\mem(\loc)=\Obj{\C}{\_}\\
-%\mbody{\C}{\m}=\Pair{\x_1\dots\x_n}{\e}\\
-%\y_i\not\in\dom{\env'}\ \forall i\in 0..n
-%}
-%\\[3ex]
-%
-%\NamedRule{new}{
-%\begin{array}{l}
-%\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\loc_1}{\env_1}\\
-%\ldots\\
-%\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\loc_n}{\env'}\\
-%\end{array}}
-%{ \reduce{\Conf{\New{\C}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\Conf{\loc}{\env'}{\mem,\MemElem{\loc}{\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}}}}}
-%{
-%  \fnames{\C}=\f_1\ldots\f_n\\
-%\loc\not\in\dom{\mem}
-%}
-%
-%\\[4ex]
-%\NamedRule{ret}{\RedVal{\ve}{\env}{\sgr}{\loc}{\env'}}
-%{ \reduce{\Conf{\Return\ve}{\env}{\mem}}{\rgr}{\Conf{\loc}{\env'}{\mem}} }
-%{ 
-%  \rgr\rord\sgr%\ne\rzero 
-%}
-%\\[3ex]
-%\NamedRule{let}{
-% \begin{array}{l}
-%  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\loc}{\env'}{\mem'}} \\ 
-%  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\AddToEnv{\env'}{\x'}{\sgr}{\loc}}{\mem'}}{\rgr}{\vconf}
-%  \end{array}
-%}{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
-%{\x'\not\in\dom{\env}}
-%\\[3ex]
+}
+{\reduce{\Conf{\MethCall{\x_0}{\m}{\x_1,\ldots,\x_n}}{\env,\EnvElem{\x_i}{\rgr_i}{\loc_i}^{i\in 0..n}}{\mem}}{\rgr}{\vconf}}
+{\mem(\loc_0)=\Obj{\C}{\_}\\
+\mbody{\C}{\m}=\Pair{\y_1\dots\y_n}{\e}\\
+\y'_i\not\in\dom{\env}\ \forall i\in 0..n
+}
+\\[4ex]
+\NamedRule{new}{}
+{ \reduce{\Conf{\New{\C}{\x_1,\ldots,\x_n}}{\env,\EnvElem{\x_i}{\rgr_i}{\loc_i}^{i\in 1..n}}{\mem}}{\rgr}{\Conf{\loc}{\env,\EnvElem{\x_i}{\rgr'_i}{\loc_i}^{i\in 1..n}}{\mem,\MemElem{\loc}{\Obj{\C}{\GradedValInd{\loc}{1}{\sgr},\ldots,\GradedValInd{\loc}{n}{\sgr}}}}}}
+{
+  \fnames{\C}=\f_1\ldots\f_n\\
+\loc\not\in\dom{\mem}\\
+\rgr'_i\rsum\rgr\rmul\sgr_i\rord\rgr_i\ \forall i\in 1..n
+}
+\\[4ex]
+\NamedRule{let}{
+ \begin{array}{l}
+  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\loc}{\env'}{\mem'}} \\ 
+  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\env',\EnvElem{\x'}{\sgr}{\loc}}{\mem'}}{\rgr}{\vconf}
+  \end{array}
+}{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
+{\x'\not\in\dom{\env}}
 \end{array}
 \end{math}
+\end{small}
 \caption{Resource-aware semantics}
 \label{fig:semantics}
 \end{figure}
