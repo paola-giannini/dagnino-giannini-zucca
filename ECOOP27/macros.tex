@@ -174,7 +174,6 @@
 %type system
 \newcommand{\TypingExp}[5]{#1\vdash\{#2\}\,#3:#4\{ #5\}}
 \newcommand{\HasType}[3]{#1\vdash #2:#3}
-\newcommand{\loc} {\iota} %metavariabile locazioni
 
 %SECONDA PARTE ASSUMPTIONS
 \newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
@@ -189,23 +188,22 @@
 
 
 %semantica
-%\newcommand{\val}{\mathbf{v}}%metavariabile valori finali
-%\newcommand{\locPrime} {\kappa} %metavariabile locazioni
-%\newcommand{\locSec} {\lambda} %metavariabile locazioni
-%\newcommand{\obj}{\mvar{o}}
-%\newcommand{\env}{\rho}
-%\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
-%\newcommand{\AddToEnv}[4]{#1,\EnvElem{#2}{#3}{#4}}
-%\newcommand{\mem}{\mu}
-%\newcommand{\MemElem}[2]{#1\mapsto#2}
-%\newcommand{\conf}{\mvar{c}}
-%\newcommand{\vconf}{\mathbf{c}}
-%\newcommand{\Obj}[2]{[#2]^#1}
-%\newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
+\newcommand{\loc} {\iota} %metavariabile locazioni
+\newcommand{\locPrime} {\kappa} %metavariabile locazioni
+\newcommand{\locSec} {\lambda} %metavariabile locazioni
+\newcommand{\obj}{\mvar{o}}
+\newcommand{\env}{\rho}
+\newcommand{\EnvElem}[3]{#1\mapsto\Pair{#2}{#3}}
+\newcommand{\mem}{\mu}
+\newcommand{\MemElem}[2]{#1\mapsto#2}
+\newcommand{\conf}{\mvar{c}}
+\newcommand{\vconf}{\mathbf{c}}
+\newcommand{\Obj}[2]{[#2]^#1}
+\newcommand{\GradedValInd}[3]{#1_{#2}^{#3_{#2}}}
 %\newcommand{\VConf}[2]{#1\parallel#2}
-%\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
-%\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
-%\newcommand{\RedVal}[5]{#1{\parallel}#2\Rightarrow_{#3}#4{\parallel}#5}
+\newcommand{\Conf}[3]{#1\parallel#2\parallel#3}
+\newcommand{\reduce}[3]{#1\Rightarrow_{#2}#3}
+\newcommand{\Reduce}[7]{\reduce{\Conf{#1}{#2}{#3}}{#4}{\Conf{#5}{#6}{#7}}}
 %\newcommand{\Subst}[3]{#1[#2/#3]}
 
 %%typing judgments

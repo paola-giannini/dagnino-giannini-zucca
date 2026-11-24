@@ -114,6 +114,18 @@ t-field-access
 
    G, x : R;r{f_i:R_i;r_i, rho} |- x.f_i : r*(R_i+r'i)+R*(r_i+R_i);r*s{rho_i} => G, x:r{f_i:R_i+s;r'_i, rho} 
 
+   G, x : R;r{f_i:R_i;r_i, rho} |- x.f_i : r*(R_i+r'i)+R*(r_i+R_i);r*s{rho_i} => G, x:r{f_i:R'_i;r'_i, rho} 
+
+r*S + 
+
+r_i'+ R_i <= S
+
+potrei dire che è proprio uguale (scelta ottimale)
+
+usi futuri attraverso x e gli alias al campo di x
+
+R*(r_i+R_i) pezzo che dipende solo dali alias di x
+
 con r'_i+s <= r_i
 
 (r+R)*R_i + r*r'_i + R*r_i 
@@ -126,6 +138,7 @@ Let y = x.f in
 // x:0;2{1;1}, y:_;2
 Let z = x in 
 // x:1;1{1;1}, y:_;2, z:1;1{1;1}
+x.f
 S = 1 infatti x.f ha tre alias, due in y e uno in z.f (R*r_i) s = 1
 1 + 1 + 1
 // x:1;1{2;0}, y:_;2, x:1;1{1;1}
@@ -151,7 +164,9 @@ per ogni i rho_i deve coincidere con quanto estratto per la classe di f_i
 
 t-field-update
 
-   G, x : R;r{f_i:R_i;r_i, rho}, y : S,s{rho'} |- x.f_i = y => G, x:R;r{f_i:S_i;s_i, rho}, y : S';s'
+  supponiamo che siano diversi
+
+ G, x : R;r{f_i:R_i;r_i, rho}, y : S,s{rho'} |- x.f_i = y => G, x:R;r{f_i:S_i;s_i, rho}, y : S';s'
 
 con S';s'+ (R+r)*S_i;(R+r)*s_i <= S;s
 
