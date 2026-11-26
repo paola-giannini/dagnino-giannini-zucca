@@ -1,11 +1,11 @@
-\section{Indirect usage}
+\section{Ownership and viewpoint adaptation}
 
 We illustrate our approach on a tiny imperative Java-like language, in the spirit of the seminal calculus Featherweight Java (FJ) \cite{IgarashiPW99}. 
 Imperative means that evaluation takes place in a memory, a map from references (unique object identifiers) into object states, as will be formalized in \cref{sect:semantics}. \EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}.
-In this first part, however, the calculus does not include field update and deallocation, since our aim is to focus on indirect usage of resources. 
+In this first part, however, the calculus does not include field update and deallocation, since our aim is to focus on indirect usage of resources (ownership and viewpoint adaptation). 
 
 \subsection{Syntax} 
- The syntax is given in \cref{fig:syntax} . 
+ The syntax is given in \cref{fig:syntax}. 
 We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. Variables include the special variable $\this$ denoting the receiver in a method's body.
 We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. \begin{figure}
 \begin{grammatica}
@@ -19,7 +19,7 @@ We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and anal
 \end{figure}
 
 The syntax is given in \cref{fig:syntax} in fine-grain style \cite{LevyPT03}. 
-To keep the technical treatment simpler, we omit primitive constructs and types, hence value expressions are just variables, and non-graded types are just class names. \EZComm{dire da qualche parte come includere tipi primitivi} However, we keep two distinct metavariables and use $\x$ and $\C$ where a variable/class name is needed.
+To keep the technical treatment simpler, we omit primitive constructs and types, hence value expressions are just variables, and non-graded types are just class names. \EZComm{dire da qualche parte come includere tipi primitivi} However, we keep two distinct metavariables and use $\x$ and $\C$ where a variable/class name is strictly needed.
 
 Expressions include field access, method invocation, and object creation.  Moreover, we consider the standard constructs of fine-grain style, $\terminale{return}$ embedding value expressions into expressions, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
 
@@ -32,19 +32,19 @@ Instead, the class table is abstractly modeled by the functions extracting the i
 The operational semantics assumes \emph{references} (object unique identifiers)  $\loc, \locPrime,\locSec$  and uses some auxiliary structures, given in \cref{fig:auxsem}. 
 \begin{figure}
 \begin{grammatica}
+\produzione{\val}{\loc}{value}\\
 \produzione{\env}{\EnvElem{\x_1}{\rgr_1}{\loc_1},\ldots,\EnvElem{\x_n}{\rgr_n}{\loc_n}}{environment}\\
-\produzione{\obj}{\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}}{object state}\\
+\produzione{\obj}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}{object state}\\
 \produzione{\mem}{\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}}{memory}\\
-\produzione{\conf}{\Conf{\e}{\env}{\mem}}{configuration}
-\\
-\produzione{\vconf}{\Conf{\loc}{\env}{\mem}}{result}
+\produzione{\conf}{\Conf{\e}{\env}{\mem}}{configuration}\\
+\produzione{\vconf}{\Conf{\val}{\env}{\mem}}{result}
 \end{grammatica}
 \caption{Auxiliary structures}
 \label{fig:auxsem}
 \end{figure}
 
-%Values produced by the evaluation are references.
-Environments are (sequences denoting) finite maps from variables into graded references. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are sequences of graded references, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a reference.
+Since we omit primitive constructs and types, values produced by the evaluation are just references. However, as before, we keep two distinct metavariables and use $\loc$ where a reference is strictly needed.
+Environments are (sequences denoting) finite maps from variables into graded values. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are sequences of graded values, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a value.
 
 The resource-aware semantics is similar to  previous work \cite{ChoudhuryEEW21,BianchiniDGZ23ecoop,BianchiniDGZ23oopsla}: evaluation takes place in an environment of available resources, variable occurrences are replaced one at a time, by consuming some amount of their grade, and, if the required amount is not available, evaluation is stuck. Finally, the reduction relation is indexed by a grade $\rgr$, which will be the grade of the result, if any. 
 
@@ -60,47 +60,69 @@ Finally, as customary for a Java-like calculus, program execution needs informat
 The (standard) definitions are omitted.\EZComm{o in Appendice?}
 
 The
-semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, and is defined in \cref{fig:semantics}. As discussed in \cite{BianchiniDGZ23oopsla}, we adopt a big-step style since in this way no annotations on subterms are needed. 
+semantic judgment for configurations has shape $\reduce{\Conf{\e}{\env}{\mem}}{\rgr}{\vconf}$, and is defined in \cref{fig:semantics}, on top of the judgment  for \emph{pure configurations}, of shape 
+$\RedVal{\ve}{\env}{\rgr}{\loc}{\env'}$. As discussed in \cite{BianchiniDGZ23oopsla}, we adopt a big-step style since in this way no annotations on subterms are needed. 
 
 \begin{figure}
 \begin{small}
 \begin{math}
 \begin{array}{l}
 \NamedRule{var}{ }
-{\Reduce{\x}{\env,\EnvElem{\x}{\rgr}{\loc}}{\mem}{\sgr}{\loc}{\env,\EnvElem{\x}{\rgr'}{\loc}}{\mem}}
+{\RedVal{\x}{\env,\EnvElem{\x}{\rgr}{\loc}}{\sgr}{\loc}{\env,\EnvElem{\x}{\rgr'}{\loc}}}
 {\rgr'\rsum\sgr\rord\rgr}
 \\[3ex]
-\NamedRule{field-access}{}{ \reduce{\Conf{\FieldAccess{\x}{\f_i}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\rgr\rmul\sgr}{\Conf{\loc_i}{\env}{\mem,\MemElem{\loc}{\Subst{\obj}{\rgr'_i}{i}}}}}
+\end{array}
+\end{math}
+\hrule
+\begin{math}
+\begin{array}{l}
+\NamedRule{field-access}
+{ }
+{ \reduce{\Conf{\FieldAccess{\x}{\f_k}}{\env}{\mem,\MemElem{\loc}{\obj}}}{\tgr}{\Conf{\loc_k}{\env}{\mem,\MemElem{\loc}{\Subst{\obj}{\rgr'_k}{k}}}}}
 { \EnvElem{\x}{\rgr}{\loc}\in\env\\
-\obj=\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}\\
+\obj=\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}\\
   \fnames{\C}=\f_1\ldots\f_n,    i\in 1..n\\ 
-\rgr_i'\rsum\rgr\rmul\sgr\rord\rgr_i\\
+\rgr'_k\rsum\rgr\rmul\sgr\rord\rgr_k\\
 \tgr\rord\rgr\rmul\sgr
 }
-\EZComm{usare k}
-\\[5ex]
+\\[6ex]
 \NamedRule{invk}{
-\reduce{\Conf{\Subst{\Subst{\e}{\y'_0}{\this}}{\y'_i}{\y_i}^{i\in 1..n}}{\env',\EnvElem{\y_i}{\rgr_i}{\loc_i}^{i\in 0..n}}{\mem}}{\rgr}{\vconf}
-%\end{array}
+\begin{array}{l}
+\RedVal{\x}{\env}{\rgr_0}{\loc}{\env_0}\\
+\RedVal{\ve_1}{\env_0}{\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr_n}{\val_n}{\env'}\\
+\reduce{\Conf{\Subst{\Subst{\e}{\y_0}{\this}}{\y_i}{\x_i}^{i\in 1..n}}{\env',\EnvElem{\y}{\rgr_0}{\loc},\EnvElem{\y_i}{\rgr_i}{\val_i}^{i\in 1..n}}{\mem}}{\rgr}{\vconf}
+\end{array}
 }
-{\reduce{\Conf{\MethCall{\x_0}{\m}{\x_1,\ldots,\x_n}}{\env,\EnvElem{\x_i}{\rgr_i}{\loc_i}^{i\in 0..n}}{\mem}}{\rgr}{\vconf}}
-{\mem(\loc_0)=\Obj{\C}{\_}\\
-\mbody{\C}{\m}=\Pair{\y_1\dots\y_n}{\e}\\
-\y'_i\not\in\dom{\env}\ \forall i\in 0..n
+{ \reduce{\Conf{\MethCall{\x}{\m}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\vconf}}
+{\mem(\loc)=\Obj{\C}{\_}\\
+\mbody{\C}{\m}=\Pair{\x_1\dots\x_n}{\e}\\
+\y_i\not\in\dom{\env'}\ \forall i\in 0..n
 }
 \\[4ex]
-\NamedRule{new}{}
-{ \reduce{\Conf{\New{\C}{\x_1,\ldots,\x_n}}{\env,\EnvElem{\x_i}{\rgr_i}{\loc_i}^{i\in 1..n}}{\mem}}{\rgr}{\Conf{\loc}{\env,\EnvElem{\x_i}{\rgr'_i}{\loc_i}^{i\in 1..n}}{\mem,\MemElem{\loc}{\Obj{\C}{\GradedValInd{\loc}{1}{\sgr},\ldots,\GradedValInd{\loc}{n}{\sgr}}}}}}
+\NamedRule{new}{
+\begin{array}{l}
+\RedVal{\ve_1}{\env}{\rgr\rmul\rgr_1}{\val_1}{\env_1}\\
+\ldots\\
+\RedVal{\ve_n}{\env_{n-1}}{\rgr\rmul\rgr_n}{\val_n}{\env'}\\
+\end{array}}
+{ \reduce{\Conf{\New{\C}{\ve_1,\ldots,\ve_n}}{\env}{\mem}}{\rgr}{\Conf{\loc}{\env'}{\mem,\MemElem{\loc}{\Obj{\C}{\GradedValInd{\val}{1}{\rgr},\ldots,\GradedValInd{\val}{n}{\rgr}}}}}}
 {
   \fnames{\C}=\f_1\ldots\f_n\\
-\loc\not\in\dom{\mem}\\
-\rgr'_i\rsum\rgr\rmul\sgr_i\rord\rgr_i\ \forall i\in 1..n
+\loc\not\in\dom{\mem}
 }
 \\[4ex]
+\NamedRule{ret}{\RedVal{\ve}{\env}{\sgr}{\val}{\env'}}
+{ \reduce{\Conf{\Return\ve}{\env}{\mem}}{\rgr}{\Conf{\val}{\env'}{\mem}} }
+{ 
+  \rgr\rord\sgr%\ne\rzero 
+}
+\\[3ex]
 \NamedRule{let}{
  \begin{array}{l}
-  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\loc}{\env'}{\mem'}} \\ 
-  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\env',\EnvElem{\x'}{\sgr}{\loc}}{\mem'}}{\rgr}{\vconf}
+  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\val}{\env'}{\mem'}} \\ 
+  \reduce{\Conf{\Subst{\e'}{\x'}{\x}}{\env',\EnvElem{\x'}{\sgr}{\val}}{\mem'}}{\rgr}{\vconf}
   \end{array}
 }{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
 {\x'\not\in\dom{\env}}
@@ -111,9 +133,8 @@ semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, a
 \label{fig:semantics}
 \end{figure}
 
-
-In rule \refToRule{var}, the grade $\rgr$ of the variable decreases to $\rgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). 
-\EZComm{va motivato che non si usa la differenza, o forse potremmo proprio eliminarla?}
+Since the only case of value expressions we consider are variables, the only rule for reducing pure configurations is \refToRule{t-var}, which replaces a variable occurrence by its value in the environment.
+The grade $\rgr$ of the variable decreases to $\rgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). \EZComm{va motivato che non si usa la differenza, o forse potremmo proprio eliminarla?}
 
 In the expressions which specify a receiver, that is, in rules \refToRule{field-access} and \refToRule{invk}, the receiver should denote a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
 

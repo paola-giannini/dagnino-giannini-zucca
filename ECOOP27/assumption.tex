@@ -44,12 +44,12 @@ Results are extended as follows.
 \begin{math}
 \begin{array}{l}
 \NamedRule{field-update}{ }
-{\Reduce{\FieldUpdate{\x}{\f}{\y}}{\env,\EnvElem{\y}{\rgr}{\loc'}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env,\EnvElem{\y}{\rgr'}{\loc'}}{\MemElem{\loc}{\Subst{\obj}{\Pair{\iota'}{\sgr}}{\f}}}}
+{\Red{\FieldUpdate{\x}{\f}{\y}}{\env,\EnvElem{\y}{\rgr}{\loc'}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env,\EnvElem{\y}{\rgr'}{\loc'}}{\MemElem{\loc}{\Subst{\obj}{\Pair{\iota'}{\sgr}}{\f}}}}
 {\EnvElem{\x}{\_}{\loc}\in\env\\
 \rgr'\rsum\sgr\rord\rgr}
 \\[3ex]
 \NamedRule{free}{}
-{\Reduce{\Free{\x}}{\env,\EnvElem{\x}{\rgr}{\loc}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env}{\mem}}
+{\Red{\Free{\x}}{\env,\EnvElem{\x}{\rgr}{\loc}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env}{\mem}}
 {}
 \\[4ex]
 \NamedRule{let-seq}{
