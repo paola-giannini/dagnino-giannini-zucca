@@ -4,8 +4,7 @@
  The extended syntax is given in \cref{fig:ext-syntax}. 
 \begin{figure}
 \begin{grammatica}
-\produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
-\FieldUpdate{\x}{\f}{\y}\mid\Free{\x}\mid\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}\mid\Seq{\e}{\e'}}{expression}\\
+\produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid\FieldUpdate{\x}{\f}{\y}\mid\Free{\x}\mid\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
 \produzione{\tau}{\C}{non-graded type}\\
 \produzione{\grdec}{\GrDec{\Rgr}{\rgr}{\varphi}}{grade decoration}\\
 \produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}\\
@@ -13,10 +12,10 @@
 \end{grammatica}
 \caption{Extended syntax and grade decorations}\label{fig:ext-syntax}
 \end{figure}
-In addition to the previous constructs, we include field update and deallocation.  	\EZComm{ho messo la sequenza per non avere $\Unit$, ma vediamo}
+In addition to previous constructs, we add field update and deallocation. 
 
 Grade decorations have the enriched shape $\GrDec{\Rgr}{\rgr}{\varphi}$, where $\Rgr$ is an \emph{assumption grade}.\footnote{We use different metavariables for assumption grades as a help for the reader; however, both assumption and usage grades are just grades in the underlying grade algebra.}
-Assumption grades are a key novelty of our approach; we informally describe their meaning  by considering, again the affinity algebra and the algebra of modifiers introduced in \cref{ex:alg}. 
+Assumption grades are a key novelty of our approach; we informally describe their meaning  by considering, again, the affinity algebra and the algebra of modifiers introduced in \cref{ex:alg}. 
 
 Assume to typecheck an expression $\e$ in a context where the variable $\x$ has assumption grade $\Rgr$. The meaning is that the expression $\e$ (the programmer) can safely assume that the reference denoted by $\x$ is used at most $\Rgr$ times/in $\Rgr$ mode  in an enclosing program context. The assumption decoration $\Rgr$ in the type of $\e$ expresses that an enclosing program context can safely assume that (the reference which is the result of) $\e$  is used at most $\Rgr$ times/in $\Rgr$ mode elsewhere. 
 
@@ -25,6 +24,46 @@ anything on (the result of) $\e$; for instance, $\e$ cannot initialize a variabl
 anything on (the result of) $\e$; for instance, $\e$ cannot initialize a variable declared with assumption $\readonly$. Note that assumption and usage grades both $\readonly$ means that the reference is \emph{immutable}. 
 
 The meaning of field assumption grades is analogous.\EZComm{da espandere e migliorare}
+
+\subsection{Resource-aware semantics}
+
+Results are extended as follows.
+\begin{figure}
+\begin{grammatica}
+%\produzione{\conf}{\Conf{\e}{\env}{\mem}\mid\Conf{\s}{\env}{\mem}}{configuration}
+%\\
+\produzione{\vconf}{\Conf{\loc}{\env}{\mem}\mid\Conf{\bullet}{\env}{\mem}}{result}
+\end{grammatica}
+\caption{Extended results}
+\label{fig:ext-res}
+\end{figure}
+
+
+\begin{figure}
+\begin{small}
+\begin{math}
+\begin{array}{l}
+\NamedRule{field-update}{ }
+{\Reduce{\FieldUpdate{\x}{\f}{\y}}{\env,\EnvElem{\y}{\rgr}{\loc'}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env,\EnvElem{\y}{\rgr'}{\loc'}}{\MemElem{\loc}{\Subst{\obj}{\Pair{\iota'}{\sgr}}{\f}}}}
+{\EnvElem{\x}{\_}{\loc}\in\env\\
+\rgr'\rsum\sgr\rord\rgr}
+\\[3ex]
+\NamedRule{free}{}
+{\Reduce{\Free{\x}}{\env,\EnvElem{\x}{\rgr}{\loc}}{\mem,\MemElem{\loc}{\obj}}{\bullet}{\bullet}{\env}{\mem}}
+{}
+\\[4ex]
+\NamedRule{let-seq}{
+  \reduce{\Conf{\e}{\env}{\mem}}{\sgr}{\Conf{\bullet}{\env'}{\mem'}} \BigSpace
+  \reduce{\Conf{\e'}{\env'}{\mem'}}{\rgr}{\vconf}
+}{ \reduce{\Conf{\Let{\x}{\e}{\e'}}{\env}{\mem}}{\rgr}{\vconf} }
+{}
+\end{array}
+\end{math}
+\end{small}
+\caption{Extended resource-aware semantics}
+\label{fig:ext-semantics}
+\end{figure}
+
 
 \subsection{Type system}
 
@@ -35,7 +74,7 @@ $\Pair{\Rgr_1}{\rgr_1}\rsum\Pair{\Rgr_2}{\rgr_2}=\Pair{(\Rgr_1 \rsub \rgr_2) \rm
 \end{quote}
 
 Such sum is a key technical feature of our approach. Suppose to have two occurrences of $\x$ with assumption/usage grades $\Pair{\Rgr_1}{\rgr_1}$ and $\Pair{\Rgr_2}{\rgr_2}$, respectively.
-To get the combined usage, the usage grades are summed, as customary in graded type systems. Which we will be the combined assumption?
+To get the combined usage, the usage grades are summed, as customary in graded type systems. Which will be the combined assumption?
 The first occurrence assumes that $\x$ can be used elsewhere with grade (at most) $\Rgr_1$.  Since $\x$ is used elsewhere (in the second occurrence) with grade $\rgr_2$, this amount should be subtracted from $\Rgr_1$. The same holds conversely. Altogether, $\x$ can still be used elsewhere with a grade which is the meet of the two residual assumptions. 
 For a concrete example, consider the algebra of extended natural numbers. Assuming to have two occurrences of $\x$ with assumption/usage grades $\Pair{3}{2}$ and $\Pair{2}{3}$, respectively.We get $3-3=0$ and $2-2=0$, hence we have assumption $0$ in the sum.  %In \cref{ex:ex1} later we show an example of code where this situation arises. 
 
@@ -49,8 +88,6 @@ The extended typing rules are given in \cref{fig:ext-typing-exp}. They use the f
 \begin{math}
 \begin{array}{l}
 
-%R';r'+S;s <= R;r
-
 \NamedRule{t-var}{}
 { \TypingExp{\Gamma}{\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi}{\tau}}
 {\x}
@@ -62,53 +99,30 @@ The extended typing rules are given in \cref{fig:ext-typing-exp}. They use the f
 \NamedRule{t-field-access}{\HasType{\Gamma}{\x}{\C}}
 {
 \TypingExp{\Gamma}
-{\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldGrade{\f_i}{\Rgr_i}{\rgr_i}}}
+{\gamma,\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi,\FieldGrade{\f_i}{\Rgr_i}{\rgr_i}}}
 {\FieldAccess{\x}{\f_i}}
-{\Graded{\tau_i}{\GrDec{}{\rgr\rmul\sgr}{\varphi_i}}}
-{\gamma,\UCtxElem{\x}{\rgr}{\varphi,\FieldGrade{\f_i}{\Rgr'_i}{\rgr'_i}}}}
+{\Graded{\tau_i}{\GrDec{\rgr\rmul\Sgr\rsum\Rgr\rmul(\rgr_i\rsum\Rgr_i)}{\rgr\rmul\sgr}{\varphi_i}}}
+{\gamma,\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi,\FieldGrade{\f_i}{\Rgr'_i}{\rgr'_i}}}}
 {
-\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\\
-i\in 1..n\\
+\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\ i\in 1..n\\
 \Pair{\Rgr'_i}{\rgr'_i}\rsum\Pair{\Sgr}{\sgr}\rord\Pair{\Rgr_i}{\rgr_i}\\
+\rgr'_i\rsum\Rgr_i\rord\Sgr\\
 \fgrades{\tau_i}=\varphi_i
 }
-%\\[6ex]
-%\mbox{\EZComm{regola del metodo solo abbozzata!}}
-%\\
-%\NamedRule{t-invk}
-%{\HasType{\Gamma}{\x}{\C}\BigSpace\HasType{\Gamma}{\x_i}{\tau_i}\ \Space i\in 1..n}{\TypingExp{\Gamma}
-%{\gamma,\gamma^\textit{pre}}{\MethCall{\x}{\m}{\x_1,\ldots,\x_n}}{\Graded{\tau}{\grdec}}
-%{\gamma,\gamma^\textit{post}}}{
-%\gamma^\textit{pre}=\CtxElem{\x}{\grdec_0},\CtxElem{\x_1}{\grdec_1},\ldots,\CtxElem{\x_n}{\grdec_n}\\
-%\mtype{\C}{\m}=\mType{\tau_1\ldots\tau_n}{\tau}\\
-%\mgrade{\C}{\m}=\mGrade{\gamma_\m^\textit{pre}}{\grdec}{\gamma_\m^\textit{post}}\\
-%\gamma_\m^\textit{pre}=\CtxElem{\this}{\grdec_0'},\CtxElem{\y_1}{\grdec'_1},\ldots,\CtxElem{\y_n}{\grdec'_n}\\
-%\gamma_\m^\textit{post}=\CtxElem{\this}{\grdec_0''},\CtxElem{\y_1}{\grdec''_1},\ldots,\CtxElem{\y_n}{\grdec''_n}\\
-%\gamma^\textit{post}=\ldots
-%}
-%\\[6ex]
-%\NamedRule{t-new}{\HasType{\Gamma}{\x_i}{\tau_i}\ \Space \forall i\in 1..n}
-%{\TypingExp{\Gamma}
-%{\gamma,\gamma^\textit{pre}}
-%{\New{\C}{\x_1,\ldots,\x_n}}
-%{\UGraded{\C}{\rgr}{\varphi}}
-%{\gamma,\gamma^\textit{post}
-%}
-%}
-%{
-%\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\\
-%\fgrades{\C}=\FieldUGrade{\f_1}{\sgr_1},\ldots, \FieldUGrade{\f_n}{\sgr_n}\\
-%\gamma^\textit{pre}=\UCtxElem{\x_1}{\rgr_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr_n}{\varphi_n}\\
-%\gamma^\textit{post}=\UCtxElem{\x_1}{\rgr'_1}{\varphi_1},\ldots,\UCtxElem{\x_n}{\rgr'_n}{\varphi_n}\\
-%\rgr'_i\rsum\rgr\rmul\sgr_i\rord\rgr_i\ \forall i\in 1..n\\
-%}
-%\\[5ex]
-%\newcommand{\LocalGamma}{\hat{\Gamma}}
-%\NamedRule{t-let}{
-%\TypingExp{\Gamma}{\gamma}{\e}{\Graded{\tau}{\grdec}}{\gamma'}\BigSpace\TypingExp{\Gamma,\CtxElem{\x}{\tau}}{\gamma',\CtxElem{\x}{\grdec}}{\e'}{\T}{\gamma''}
-%}
-%{\TypingExp{\Gamma}{\gamma}{\Let{\x}{\e}{\e'}}{\T}{\gamma''}}
-%{}
+\\[4ex]
+\NamedRule{t-field-update}{\HasType{\Gamma}{\x}{\C}\BigSpace\HasType{\Gamma}{\y}{\tau_i}}
+{\TypingExp{\Gamma}{\gamma,\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi,\FieldGrade{\f_i}{\Rgr_i}{\rgr_i}},\AUCtxElem{\y}{\Sgr}{\sgr}{\varphi'}}
+{\FieldUpdate{\x}{\f}{\y}}{\bullet}{\gamma,\AUCtxElem{\x}{\Rgr}{\rgr}{\varphi,\FieldGrade{\f_i}{\Sgr_i}{\sgr_i}},\AUCtxElem{\y}{\Sgr'}{\sgr'}{\varphi'}}}
+{
+\ftypes{\C}=\FieldType{\f_1}{\tau_1},\ldots, \FieldType{\f_n}{\tau_n}\\
+\Pair{(\Rgr\rsum\rgr)\rmul \Sgr_i}{(\Rgr\rsum\rgr)\rmul\sgr_i}\rsum\Pair{\Sgr'}{\sgr'}\rord\Pair{\Sgr}{\sgr}\\
+}
+\\[4ex]
+\NamedRule{t-invk}{}{}{}
+\\[4ex]
+\NamedRule{t-new}{}{}{}
+\\[4ex]
+\NamedRule{t-let}{}{}{}
 \end{array}
 \end{math}
 \end{small}

@@ -31,7 +31,7 @@ Expressions include variables (including the special variable $\this$ denoting t
 
 To keep the technical treatment simpler, non-graded types are just class names. \EZComm{dire da qualche parte come includere tipi primitivi}
 However, we keep two distinct metavariables and use $\C$ where a class name is needed.
-Types are \emph{graded}, that is, paired with a \emph{grade decoration} $\grdec$, which will be detailed in \cref{sect:adaptation-typesystem}
+Types are \emph{graded}, that is, paired with a \emph{grade decoration} $\grdec$, which will be detailed in \cref{sect:adaptation-typesystem}.
 
 To be concise, we omit the syntax of the class table, which is standard, apart that field declarations specify, besides a type, a grade, and method headers specify, besides the parameters with their types and the return type, \EZComm{da completare} 
 Instead, the class table is abstractly modeled by the functions extracting the information needed by the semantics and type system, respectively, as detailed in the following.
@@ -52,7 +52,7 @@ The operational semantics assumes \emph{references} (object unique identifiers) 
 \end{figure}
 
 %Values produced by the evaluation are references.
-Environments are (sequences denoting) finite maps from variables into graded references. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are (sequences denoting) finite maps from field names into graded references, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a reference.
+Environments are (sequences denoting) finite maps from variables into graded references. Memories are (sequences denoting) finite maps from references into \emph{object states}. Object states are sequences of graded references, decorated with the class of the object. Configurations are triples consisting of an expression, an environment, and a memory, and results are analogous, apart that the first component is a reference.
 
 The resource-aware semantics is similar to  previous work \cite{ChoudhuryEEW21,BianchiniDGZ23ecoop,BianchiniDGZ23oopsla}: evaluation takes place in an environment of available resources, variable occurrences are replaced one at a time, by consuming some amount of their grade, and, if the required amount is not available, evaluation is stuck. Finally, the reduction relation is indexed by a grade $\rgr$, which will be the grade of the result, if any. 
 
@@ -69,7 +69,6 @@ The (standard) definitions are omitted.\EZComm{o in Appendice?}
 
 The
 semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, and is defined in \cref{fig:semantics}. As discussed in \cite{BianchiniDGZ23oopsla}, we adopt a big-step style since in this way no annotations on subterms are needed. 
-
 
 \begin{figure}
 \begin{small}
@@ -120,7 +119,7 @@ semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, a
 
 
 In rule \refToRule{var}, the grade $\rgr$ of the variable decreases to $\rgr'$, consuming an amount of resource which is the reduction grade. Reduction is stuck if the current amount is not enough (side condition). 
-\EZComm{va motivato che non si usa la differenza}
+\EZComm{va motivato che non si usa la differenza, o forse potremmo proprio eliminarla?}
 
 In the expressions which specify a receiver, that is, in rules \refToRule{field-access} and \refToRule{invk}, the receiver should denote a reference in the current memory. If the reference is \emph{dangling}, that is, undefined in the current memory, then reduction is stuck. 
 
