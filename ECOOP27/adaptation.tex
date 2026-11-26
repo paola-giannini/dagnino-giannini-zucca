@@ -2,35 +2,27 @@
 
 We illustrate our approach on a tiny imperative Java-like language, in the spirit of the seminal calculus Featherweight Java (FJ) \cite{IgarashiPW99}. 
 Imperative means that evaluation takes place in a memory, a map from references (unique object identifiers) into object states, as will be formalized in \cref{sect:semantics}. \EZComm{ci sono stati diversi calcoli imperativi in letteratura forse citarli}.
-% as shown in \cref{fig:mem}.
-%
-%\begin{figure}
-%\begin{grammatica}
-%\produzione{\obj}{\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}}{object state}\\
-%\produzione{\mem}{\MemElem{\loc_1}{\obj_1},\ldots,\MemElem{\loc_n}{\obj_n}}{memory}
-%\end{grammatica}
-%\caption{Memory}
-%\label{fig:mem}
-%\end{figure}
 In this first part, however, the calculus does not include field update and deallocation, since our aim is to focus on indirect usage of resources. 
 
 \subsection{Syntax} 
  The syntax is given in \cref{fig:syntax} . 
-We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. 
+We assume \emph{variables} $\x, \y, \z, \ldots$, class names $\C$, field names $\f$, method names $\m$. Variables include the special variable $\this$ denoting the receiver in a method's body.
 We write $\es$ as  a  metavariable for $\e_1, \ldots, \e_n$, $n\geq 0$, and analogously for other sequences. \begin{figure}
 \begin{grammatica}
-\produzione{\e}{\x\mid\FieldAccess{\x}{\f}\mid
-\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Let{\x}{\e}{\e'}}{expression}\\
+\produzione{\ve}{\x}{value expression}\\
+\produzione{\e}{\FieldAccess{\x}{\f}\mid
+\MethCall{\x}{\m}{\xs}\mid\New{\C}{\xs}\mid\Return{\ve}\mid\Let{\x}{\e}{\e'}}{expression}\\
 \produzione{\tau}{\C}{non-graded type}\\
 \produzione{\T}{\Graded{\tau}{\grdec}}{(graded) type}
 \end{grammatica}
 \caption{Syntax}\label{fig:syntax}
 \end{figure}
 
-Expressions include variables (including the special variable $\this$ denoting the receiver in a method's body), field access, method invocation, object creation, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+The syntax is given in \cref{fig:syntax} in fine-grain style \cite{LevyPT03}. 
+To keep the technical treatment simpler, we omit primitive constructs and types, hence value expressions are just variables, and non-graded types are just class names. \EZComm{dire da qualche parte come includere tipi primitivi} However, we keep two distinct metavariables and use $\x$ and $\C$ where a variable/class name is needed.
 
-To keep the technical treatment simpler, non-graded types are just class names. \EZComm{dire da qualche parte come includere tipi primitivi}
-However, we keep two distinct metavariables and use $\C$ where a class name is needed.
+Expressions include field access, method invocation, and object creation.  Moreover, we consider the standard constructs of fine-grain style, $\terminale{return}$ embedding value expressions into expressions, and $\terminale{let-in}$ expressing sequential composition with value-passing. 
+
 Types are \emph{graded}, that is, paired with a \emph{grade decoration} $\grdec$, which will be detailed in \cref{sect:adaptation-typesystem}.
 
 To be concise, we omit the syntax of the class table, which is standard, apart that field declarations specify, besides a type, a grade, and method headers specify, besides the parameters with their types and the return type, \EZComm{da completare} 
@@ -82,8 +74,10 @@ semantic judgment for configurations has shape $\reduce{\conf}{\rgr}{\vconf}$, a
 { \EnvElem{\x}{\rgr}{\loc}\in\env\\
 \obj=\Obj{\C}{\GradedValInd{\loc}{1}{\rgr},\ldots,\GradedValInd{\loc}{n}{\rgr}}\\
   \fnames{\C}=\f_1\ldots\f_n,    i\in 1..n\\ 
-\rgr_i'\rsum\sgr\rord\rgr_i
+\rgr_i'\rsum\rgr\rmul\sgr\rord\rgr_i\\
+\tgr\rord\rgr\rmul\sgr
 }
+\EZComm{usare k}
 \\[5ex]
 \NamedRule{invk}{
 \reduce{\Conf{\Subst{\Subst{\e}{\y'_0}{\this}}{\y'_i}{\y_i}^{i\in 1..n}}{\env',\EnvElem{\y_i}{\rgr_i}{\loc_i}^{i\in 0..n}}{\mem}}{\rgr}{\vconf}

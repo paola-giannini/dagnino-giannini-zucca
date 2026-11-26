@@ -1,122 +1,33 @@
-\documentclass[acmsmall,screen,review,anonymous,nonacm]{acmart}
-%%% For double-blind review submission, w/ CCS and ACM Reference
-%% For final camera-ready submission, w/ required CCS and ACM Reference
-%\documentclass[acmsmall]{acmart}\settopmatter{}
+\documentclass[a4paper,UKenglish,cleveref]{lipics-v2021}
 
-
-%% Journal information
-%% Supplied to authors by publisher for camera-ready submission;
-%% use defaults for review submission.
-\acmJournal{PACMPL}
-\acmVolume{1}
-\acmNumber{CONF} % CONF = POPL
-\acmArticle{1}
-\acmYear{2018}
-\acmMonth{1}
-\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
-\startPage{1}
-
-%% Copyright information
-%% Supplied to authors (based on authors' rights management selection;
-%% see authors.acm.org) by publisher for camera-ready submission;
-%% use 'none' for review submission.
-\setcopyright{none}
-%\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\copyrightyear{2018}           %% If different from \a+cmYear
-
-%% Bibliography style
-\bibliographystyle{ACM-Reference-Format}
-%% Citation style
-%% Note: author/year citations are required for papers published as an
-%% issue of PACMPL.
-\citestyle{acmauthoryear}   %% For author/year citations
-
-%\usepackage{tikz}
-%\use-package{stmaryrd}
 \usepackage{listings}
+\usepackage{stmaryrd}
+\usepackage{tikz}
 \usepackage{enumerate}
-\usepackage[capitalize]{cleveref}
-%\usepackage{proof}
-\usepackage{lineno}
-\usepackage{mathtools}
-\usepackage{tensor}
-%\usepackage{prooftree}
-\usepackage{turnstile}
+%\usepackage[capitalize]{cleveref}
+%\usepackage{lineno}
+%\usepackage{mathtools}
+%\usepackage{tensor}
+%\usepackage{turnstile}
+%\lstset{%language=Java,
+%  basicstyle=\ttfamily\small,%\scriptsize,
+%  mathescape=true,
+%}
 
-\definecolor{armygreen}{rgb}{0.29, 0.33, 0.13}
+\bibliographystyle{plainurl}% the mandatory bibstyle
 
-\linenumbers
-\input{macros}
+\title{\EZComm{tentativo}Graded ownership and uniqueness}         %% [Short Title] is optional;
 
-\AtBeginDocument{
-\theoremstyle{acmdefinition}
-\newtheorem{remark}[theorem]{Remark}  
-}
+%\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
 
-\begin{document}
+\author{Anonymous}{Anonymous Institution}{}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
 
-%% Title information
-\title{\EZComm{un primo tentativo}Graded type systems meet sharing}         %% [Short Title] is optional;
+%\author{Joan R. Public\footnote{Optional footnote, e.g. to mark corresponding author}}{Department of Informatics, Dummy College, [optional: Address], Country}{joanrpublic@dummycollege.org}{[orcid]}{[funding]}
 
+\authorrunning{Anonymous} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
 
-%% Author information
-%% Contents and number of authors suppressed with 'anonymous'.
+\Copyright{Anonymous} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
-%% Author with single affiliation.
-\author{Francesco Dagnino}
-%\authornote{with author1 note}          %% \authornote is optional;
-\email{francesco.dagnino@dibris.unige.it} 
-\orcid{0000-0003-3599-3535} 
-\affiliation{
- % \position{Position1}
-  \department{DIBRIS}              %% \department is recommended
-  \institution{Universit\`a di Genova}            %% \institution is required
- % \streetaddress{Street1 Address1}
- % \city{City1}
- % \state{State1}
-  %\postcode{Post-Code1}
-  \country{Italy}
-}
-
-%% Author with single affiliation.
-\author{Elena Zucca}
-%\authornote{with author1 note}          %% \authornote is optional;
-                                        %% can be repeated if necessary
-%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
-\affiliation{
- % \position{Position1}
-  \department{DIBRIS}              %% \department is recommended
-  \institution{Universit\`a di Genova}            %% \institution is required
- % \streetaddress{Street1 Address1}
- % \city{City1}
- % \state{State1}
- % \postcode{Post-Code1}   
-  \country{Italy}
-}
-\email{elena.zucca@unige.it}          %% \email is recommended
-
-%% Paper note
-%% The \thanks command may be used to create a "paper note" ---
-%% similar to a title note or an author note, but not explicitly
-%% associated with a particular element.  It will appear immediately
-%% above the permission/copyright statement.
-%\thanks{with paper note}                %% \thanks is optional
-                                        %% can be repeated if necesary
-                                        %% contents suppressed with 'anonymous'
-
-
-%% Abstract
-%% Note: \begin{abstract}...\end{abstract} environment must come
-%% before \maketitle command
-\begin{abstract}
-\EZComm{DA FARE}
-\end{abstract}
-
-%% 2012 ACM Computing Classification System (CSS) concepts
-%% Generate at 'http://dl.acm.org/ccs/ccs.cfm'.
- 
 \begin{CCSXML}
 <ccs2012>
 <concept>
@@ -137,8 +48,38 @@
 
 \keywords{Graded types, uniqueness} %TODO mandatory; please add comma-separated list of keywords
 
+
+%\acknowledgements{}%optional
+
+%\nolinenumbers %uncomment to disable line numbering
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{John Q. Open and Joan R. Access}
+\EventNoEds{2}
+\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
+\EventShortTitle{CVIT 2016}
+\EventAcronym{CVIT}
+\EventYear{2016}
+\EventDate{December 24--27, 2016}
+\EventLocation{Little Whinging, United Kingdom}
+\EventLogo{}
+\SeriesVolume{42}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{macros}
+
+%\usepackage{semirings} 
+
+\begin{document}
+
+%TODO mandatory: add short abstract of the document
 \maketitle
 \EZComm{deadline 11 febbraio, limite 25 pagine esclusa bib e appendici}
+%TODO mandatory: add short abstract of the document
+\begin{abstract}
+...
+\end{abstract}
 \input{intro}
 \input{algebraic}
 \input{adaptation}
@@ -154,3 +95,8 @@
 %\input{appendix}
 
 \end{document}
+
+%% 2012 ACM Computing Classification System (CSS) concepts
+%% Generate at 'http://dl.acm.org/ccs/ccs.cfm'.
+ 
+
