@@ -118,8 +118,9 @@
 \newcommand{\y}{\mvar{y}} 
 \newcommand{\z}{\mvar{z}}
 \newcommand{\ve}{\mvar{v}}
+\newcommand{\vs}{\mvar{vs}}
 \newcommand{\e}{\mvar{e}}
-\newcommand{\es}{\mvar{es}}
+%\newcommand{\es}{\mvar{es}}
 \newcommand{\T}{\mvar{T}}
 \newcommand{\Graded}[2]{#1^{#2}}
 \newcommand{\UGraded}[3]{\Graded{#1}{\UGrDec{#2}{#3}}}
@@ -174,7 +175,7 @@
 
 %type system
 \newcommand{\TypingExp}[5]{#1\vdash\{#2\}\,#3:#4\{ #5\}}
-\newcommand{\HasType}[3]{#1\vdash #2:#3}
+\newcommand{\HasType}[4]{#1\vdash #2:\UGraded{#3}{#4}}
 
 %SECONDA PARTE ASSUMPTIONS
 \newcommand{\FieldUpdate}[3]{#1\terminale{.}#2 \terminale{=}\, #3}
